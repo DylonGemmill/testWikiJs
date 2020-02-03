@@ -1,0 +1,327 @@
+<h3>Preparazione</h3>
+<p>Scariare il pacchetto di installazione per la distribuzione in uso (circa 300mb).<br />Ci sono due versioni disponibili: quella a <a href="http://www.zimbra.com/downloads/ne-downloads.html">pagamento (Network Edition)</a> e quella <a href="http://www.zimbra.com/downloads/os-downloads.html">Open Source (OSS)</a>.</p>
+<p>Importantissimo per l&#39;installazione che siano correttamente configurati <em>hostname</em> e <em>DNS</em>. Il documento simula l&#39;installazione sull&#39;host <strong>zimbra.yetopen.it</strong>, e la gestione del dominio di posta <strong>yetopen.it</strong>, con un IP <strong>10.22.22.5</strong>. Il testo chiuso tra parentesi quadre è per l&#39;installazione di <em>Zimbra 7</em>.<br />Tenere in considerazione che l&#39;hostname specificato verrà usato da Zimbra per la composizione di alcuni url (ad esempio per l&#39;apertura di documenti presenti nella valigetta), quindi dovrebbe essere accessibile via DNS dalla rete interna e, se necessario, anche da internet.</p>
+<p>In questo howto, se non diversamente specificato tutti i comandi che iniziano per <em><strong>zm</strong></em> devono essere eseguiti come utente <em>zimbra</em> (quindi <em>su - zimbra</em>).</p>
+<p>Lasciare in <strong>/etc/hosts</strong> solo localhost e l&#39;hostname della macchina:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">127.0.0.1	localhost
+10.22.22.5 zimbra.yetopen.it zimbra</pre>
+<p> </p>
+<h3>Installazione dipendenze</h3>
+<h4>Ubuntu 16</h4>
+<pre class="language-markup"><code>apt install perl openssl libltdl7 libpcre3 libgmp10 libexpat1 libxml2 libidn11 fetchmail file sysstat libstdc++6 unzip bzip2 sudo unrar-free cabextract arj libperl5.22 sqlite3 p7zip-full pax libaio1 
+apt remove --purge postfix</code></pre>
+<h4>Ubuntu 12</h4>
+<pre class="language-markup"><code>apt-get install perl openssl libltdl7 libpcre3 libgmp3c2 libexpat1 libxml2 libidn11 fetchmail file sysstat libstdc++6 unzip bzip2 sudo unrar-free cabextract arj libperl5.14 dnsmasq sqlite3 p7zip-full pax libaio1 
+apt-get remove --purge postfix 
+apt-get autoremove</code></pre>
+<p>Configurare <em>dnsmasq</em> per fare in modo che ritorni un record MX per il dominio che vogliamo gestire con l&#39;ip della macchina su cui è installato zimbra. Creare un file /etc/dnsmasq.d/zimbra.conf con il seguente contenuto:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">mx-host=yetopen.it,zimbra.yetopen.it,5
+strict-order</pre>
+<p>Riavviare <em>dnsmasq</em>.</p>
+<p>In <em>/etc/resolv.conf</em> assicurarsi che il primo nameserver sia <strong>127.0.0.1</strong>.</p>
+<p>In caso di problemi con la configurazione dei dns rimuovere il pacchetto <strong>resolvconf</strong>.</p>
+<h3>Installazione di Zimbra</h3>
+<p>Scompattare quindi il file scaricato da Zimbra, entrare nella directory creata ed eseguire</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">./install.sh</pre>
+<p>Dopo alcuni controlli, lo script di installazione chiede ad uno ad uno quali pacchetti installare. Dopo aver accettato i termini di licenza (premere Y ed invio), confermare per ogni pacchetto l&#39;opzione di default (racchiusa tra quadre) <strong>ad esclusione del pacchetto dnscache</strong>, premendo il tasto invio.</p>
+<p>Ad un certo punto il programma di installazione potrebbe dire che il dominio non è corretto (di solito compare se l&#39;hostname non corrisponde al dominio che si gestirà), rispondere <em>Yes</em> per effettuare il cambio e modificarlo con il dominio reale della posta (che avremo configurato con dnsmasq), quindi <em><strong>yetopen.it</strong></em>.</p>
+<p>Accettare l&#39;installazione dei pacchetti (Y) e premere invio.</p>
+<p>Terminata l&#39;installazione dei pacchetti verrà proposto il menù di configurazione. Obbligatorio cambiare la password di admin. Opzionalmente:</p>
+<ol>
+<li>punto 1: cambiare la TimeZone in <em><strong>Europe/Berlin</strong></em> (78).</li>
+<li>punto 3: impostare la password con l&#39;<em><strong>opzione 3</strong></em></li>
+<li>punto 3: impostare la modalità di funzionamento con l&#39;<em><strong>opzione 12</strong></em> (in genere <strong><em>both</em></strong>)</li>
+<li>punto 3: disabilitare le notifiche di nuove versioni (<em><strong>opzione 21</strong></em>)</li>
+<li>punto 8: se richiesta attivare la funzione di Instant Messaging</li>
+</ol>
+<p>Tornare al menù iniziale e premere <strong><em>a</em></strong> per salvare la configurazione e proseguire nell&#39;installazione.</p>
+<p>Al termine dell&#39;installazione memorizzare la password dell&#39;LDAP di Zimbra, ottenibile con il comando:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">su - zimbra -c "zmlocalconfig -s zimbra_ldap_password"</pre>
+<p><span style="font-size: 15px; font-weight: bold;">Configurazione del sistema</span></p>
+<p>Zimbra è configurabile al 100% via <a href="http://wiki.zimbra.com/wiki/Category:Command_Line_Interface">CLI</a> tramite comandi suoi, oppure al 95% tramite l&#39;interfaccia web di amministrazione, accessibile all&#39;indirizzo</p>
+<p><strong>https://10.22.22.5:7071</strong></p>
+<p>Siccome in fase di aggiornamento la Classe di Servizio (CoS) di default viene sempre resettata ai parametri standard, crearne subito una dedicata al cliente con il comando (da utente zimbra [su zimbra]) e impostarla come predefinita per il dominio:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">zmprov cpc default yetopen
+zmprov md yetopen.it zimbraDomainDefaultCOSId `zmprov gc yetopen | grep "zimbraId:" | cut -f 2 -d " "`</pre>
+<p><span style="font-size: 13px;">Collegarsi al sito, entrare con la password di admin selezionata in fase di configurazione, selezionare console di amministrazione in alto a destra e andare in <em>Configuta &gt; </em></span><em style="font-size: 13px;">Classi di servizio &gt; yetopen</em><span style="font-size: 13px;"> e modificare (tasto destro &gt; modifica):</span></p>
+<ul>
+<li>Funzioni: valutare se alcune funzioni non interessano e si possono disabilitare, aumentando lo spazio per i tab in Zimbra</li>
+</ul>
+<p>In <em>Impostazioni globali</em> modificare i seguenti parametri:</p>
+<ul>
+<li>Informazioni generali &gt; Dimensioni massime di un file caricato in valigetta: modificare questo parametro al valore che si desidera per vincolare l&#39;upload dei file. Attenzione che condiziona anche il caricamento delle mail via IMAP, quindi in caso di importazione via <em>imapsync</em> dimensionarlo correttamente per le mail presenti attualmente nel sistema<br />
+<pre class="language-markup"><code>zmprov mcf zimbraFileUploadMaxSize 500000000 \
+  zimbraMailContentMaxSize 500000000 \
+  zimbraImapMaxRequestSize 500000000?</code></pre>
+</li>
+<li>MTA &gt; MRA di inoltro per consegna esterna: se la linea che si sta utilizzando non consente la consegna diretta delle email, impostare in questo campo l&#39;SMTP a cui affidare la posta in uscita. </li>
+<li>MTA &gt; Messaggi &gt; Dimensioni massime messaggio: dimensione massima di un messaggio in uscita o in ingresso al sistema. Questo parametro condiziona anche la dimensione massima di una email caricata via IMAP!
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">zmprov mcf zimbraMtaMaxMessageSize 20000000</pre>
+</li>
+<li>IMAP &gt; Attiva accesso con testo non crittografato: da selezionare se si usa il sistema con client poco evoluti, come ad esempio <em>imapsync</em> per l&#39;importazione da sistemi esistenti</li>
+<li>AS/AV &gt; Percentuale tag: imposta il valore oltre cui le mail vengono considerate spam. Di default a 33, <strong>impostare</strong> invece <strong>a 25</strong>, che significa 5 di spamassassin. Il valore di SA è calcolato con <em>Tag*0,2</em>. Aumentiamo al massimo anche la percentuale di eliminazione dello spam, per cancellare il meno possibile<em><em><br /></em></em>
+<pre class="language-markup"><code>zmprov mcf zimbraSpamTagPercent 25 \
+  zimbraSpamKillPercent 99 \
+  zimbraAmavisLogLevel 2</code></pre>
+L&#39;ultimo parametro aumenta il logging di amavis in zimbra.log, così da vedere direttamente nei log i tempi e lo scoring di una email.</li>
+<li>Disabilitare i crawler<br />
+<pre class="language-markup"><code>zmprov mcf zimbraMailKeepOutWebCrawlers TRUE +zimbraResponseHeader "X-Robots-Tag: noindex"?</code></pre>
+</li>
+<li><span style="font-size: 13px;"><span style="font-size: 13px;">Modificare la porta esterna dell&#39;HTTP proxy:<br /></span></span>
+<pre class="language-markup"><code>zmprov md domaina.com zimbraPublicServicePort 443</code></pre>
+</li>
+<li><span style="font-size: 13px;"><span style="font-size: 13px;"><span style="font-size: 13px;"><span style="font-size: 13px;">Disabilitare la consegna degli allegati che potenzialmente potrebbero contenere virus<br /></span></span></span></span>
+<pre class="language-markup"><code>zmprov mcf +zimbraMtaBlockedExtension exe \
+ +zimbraMtaBlockedExtension cmd +zimbraMtaBlockedExtension bat \
+ +zimbraMtaBlockedExtension js +zimbraMtaBlockedExtension ocx \
+ +zimbraMtaBlockedExtension vbs +zimbraMtaBlockedExtension vbx \
+ +zimbraMtaBlockedExtension iso +zimbraMtaBlockedExtension cab \
+ zimbraVirusWarnRecipient TRUE</code></pre>
+</li>
+<li><span style="font-size: 13px;"><span style="font-size: 13px;"><span style="font-size: 13px;">Aggiungere i controlli antispam tramite dnsbl:<br /></span></span></span>
+<pre class="language-markup"><code>zmprov mcf zimbraMtaPostscreenDnsblSites &#39;b.barracudacentral.org=127.0.0.2*7&#39; zimbraMtaPostscreenDnsblSites &#39;zen.spamhaus.org=127.0.0.[10;11]*8&#39; zimbraMtaPostscreenDnsblSites &#39;zen.spamhaus.org=127.0.0.[4..7]*6&#39; zimbraMtaPostscreenDnsblSites &#39;zen.spamhaus.org=127.0.0.3*4&#39; zimbraMtaPostscreenDnsblSites &#39;zen.spamhaus.org=127.0.0.2*3&#39; zimbraMtaPostscreenDnsblSites &#39;list.dnswl.org=127.0.[0..255].0*-2&#39; zimbraMtaPostscreenDnsblSites &#39;list.dnswl.org=127.0.[0..255].1*-3&#39; zimbraMtaPostscreenDnsblSites &#39;list.dnswl.org=127.0.[0..255].2*-4&#39; zimbraMtaPostscreenDnsblSites &#39;list.dnswl.org=127.0.[0..255].3*-5&#39; zimbraMtaPostscreenDnsblSites &#39;bl.mailspike.net=127.0.0.2*5&#39; zimbraMtaPostscreenDnsblSites &#39;bl.mailspike.net=127.0.0.[10;11;12]*4&#39; zimbraMtaPostscreenDnsblSites &#39;wl.mailspike.net=127.0.0.[18;19;20]*-2&#39; zimbraMtaPostscreenDnsblSites &#39;dnsbl.sorbs.net=127.0.0.10*8&#39; zimbraMtaPostscreenDnsblSites &#39;dnsbl.sorbs.net=127.0.0.5*6&#39; zimbraMtaPostscreenDnsblSites &#39;dnsbl.sorbs.net=127.0.0.7*3&#39; zimbraMtaPostscreenDnsblSites &#39;dnsbl.sorbs.net=127.0.0.8*2&#39; zimbraMtaPostscreenDnsblSites &#39;dnsbl.sorbs.net=127.0.0.6*2&#39; zimbraMtaPostscreenDnsblSites &#39;dnsbl.sorbs.net=127.0.0.9*2&#39;</code></pre>
+</li>
+<li><span style="font-size: 13px;"><span style="font-size: 13px;">Disabilitare il controllo antispam per le mail locali al server. Su ZCS8 (attenzione che se c&#39;è fetchmail non viene fatto il controllo antispam per le mail scaricate!):<br /></span></span>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">zmlocalconfig -e amavis_originating_bypass_sa=true</pre>
+<span style="font-size: 13px;"><span style="font-size: 13px;">su ZCS8.5+<br /></span></span>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">zmprov mcf zimbraAmavisOriginatingBypassSA TRUE</pre>
+</li>
+<li><span style="font-size: 13px;"><span style="font-size: 13px;">Configurare l&#39;aggiornamento automatico delle regole di SpamAssassin<br /></span></span>
+<pre class="language-markup"><code>zmlocalconfig -e antispam_enable_rule_updates=true
+zmlocalconfig -e antispam_enable_restarts=true</code></pre>
+</li>
+<li><span style="font-size: 13px;">Ricerca automatica nelle rubriche condivise: è disabilitato di default, ma noi lo usiamo quasi sempre. Per abilitarlo a livello di CoS:</span><br />
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">zmprov mc yetopen zimbraPrefGalSearchEnabled FALSE</pre>
+</li>
+<li><span style="font-size: 13px;">Selettore indirizzi: non proporre la GAL come predefinita:</span><br />
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">zmprov mc yetopen zimbraPrefSharedAddrBookAutoCompleteEnabled TRUE </pre>
+</li>
+<li>Inoltro delle mail di admin verso support: la casella di admin del dominio è quella a cui arrivano tutte le segnalazioni del server, vale la pena inoltrarla verso support. Entrare nell&#39;account <em>admin</em> andare in <em>Preferenze &gt; Email &gt; Inoltra copia a</em> <br />
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">zmprov ma admin zimbraPrefMailForwardingAddress support@yetopen.it</pre>
+</li>
+<li>Impostazione CoS default: Primo giorno della settimana, Timezone, lingua<br />
+<pre class="language-markup"><code>zmprov mc yetopen zimbraPrefCalendarFirstDayOfWeek 1 \
+  zimbraPrefTimeZoneId &#39;(GMT+01.00) Amsterdam / Berlin / Bern / Rome / Stockholm / Vienna&#39; \
+  zimbraPrefLocale it</code></pre>
+</li>
+<li>Ripristino da cestino: CoS &gt; default &gt; Funzioni &gt; Funzioni Generali &gt; Cartella Dumpster<br />
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">zmprov mc yetopen zimbraDumpsterEnabled TRUE</pre>
+</li>
+<li>Invio posticipato: CoS &gt; default &gt; Funzioni &gt; Funzioni di Posta &gt; Invio posta successivo<br />
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">zmprov mc yetopen zimbraFeatureMailSendLaterEnabled TRUE</pre>
+</li>
+<li>A causa di un <a href="https://bugzilla.zimbra.com/show_bug.cgi?id=67317">bug</a> occorre disabilitare il blocco degli archivi compressi:<br />
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">zmprov mcf zimbraVirusBlockEncryptedArchive FALSE</pre>
+</li>
+<li>Per migliorare la sicurezza dall&#39;esterno disabilitare i vecchi protocolli TLS 1.0 e 1.1 con<br />
+<pre class="language-markup"><code>zmprov mcf -zimbraReverseProxySSLProtocols TLSv1 \
+ -zimbraReverseProxySSLProtocols TLSv1.1</code></pre>
+(potrebbe  creare problemi con i browser molto vecchi)</li>
+<li>Uso del database di Clamav più vicino (in base a GeoIP)<br />
+<pre class="language-markup"><code>zmprov mcf zimbraClamAVDatabaseMirror db.local.clamav.net \
+ zimbraVirusDefinitionsUpdateFrequency 2h</code></pre>
+<br />o in alternativa si può usare quello diretto della nazione<br />
+<pre class="language-markup"><code>zmprov mcf zimbraClamAVDatabaseMirror db.it.clamav.net \  
+ zimbraVirusDefinitionsUpdateFrequency 2h</code></pre>
+<br /><br /></li>
+<li>Non avvisare <em>admin</em> di un&#39;email bloccata<br />
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">zmprov mcf zimbraVirusWarnAdmin FALSE</pre>
+</li>
+<li>Rimuovere le notifiche per lo spazio occupato (tanto usiamo Zabbix)<br />
+<pre class="language-markup"><code>zmlocalconfig -e zmdisklog_warn_threshold=90
+zmlocalconfig -e zmdisklog_critical_threshold=98
+zmstatctl stop
+zmstatctl start</code></pre>
+</li>
+<li>Account condivisi: usare la zimlet <a href="https://github.com/Zimbra-Community/shared-mailbox-toolkit"><em>shared mailbox toolkit</em></a>, altrimenti se si vuole usare il <em>vecchio</em> metodo vedere <a href="https://gist.github.com/barrydegraaff/48e68ab9d4f97536446b">https://gist.github.com/barrydegraaff/48e68ab9d4f97536446b</a> </li>
+<li>Se si è selezionata la modalità <strong>both</strong> per servire sia in http che in https, dalla 8.6 in poi dove è obbligatorio il proxy questa modalità va impostata anche su nginx. Per farlo usare il comando:<br />
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">zmprov ms `zmhostname` zimbraReverseProxyMailMode both</pre>
+</li>
+<li>Configurare i loghi personalizzati YetOpen. A livello globale:<br />
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">zmprov mcf zimbraSkinLogoURL http://www.yetopen.it \<br /> zimbraSkinLogoAppBanner https://logo.ufficyo.com/2017/yo_zimbra_appbanner_8.x.png \<br /> zimbraSkinLogoLoginBanner https://logo.ufficyo.com/2017/yo_zimbra_loginbanner_8.x.png
+</pre>
+o per dominio:<br />
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">zmprov md dominio.com zimbraSkinLogoURL http://www.yetopen.it \
+ zimbraSkinLogoAppBanner https://logo.ufficyo.com/2017/yo_zimbra_appbanner_8.x.png \
+ zimbraSkinLogoLoginBanner https://logo.ufficyo.com/2017/yo_zimbra_loginbanner_8.x.png</pre>
+le immagini sono memorizzate su <em>appcontabo</em>, in <em>/dati/www/logo</em>. I sorgenti originali in <em>Nextcloud/YetOpen/Marketing 2015/zimbra_logo/</em>. Per i dettagli su come modificare i loghi vedere il <a href="https://blog.zimbra.com/2015/09/change-login-app-logo-open-source-network-edition/" target="_blank" rel="noopener">wiki di zimbra</a>.<br /><a href="https://logo.ufficyo.com/2017/yo_zimbra_loginbanner_8.x.png">Per Zimbra 8.0.x</a> modificare <em>8.x</em>. con <em>8.0.x</em>.</li>
+<li>Se il link dell&#39;amministrazione si apre sulla porta 9071 modificarlo con il comando<br />
+<pre class="language-markup"><code>zmprov mcf zimbraWebClientAdminReference https://HOSTNAME:7071</code></pre>
+</li>
+</ul>
+<p>Per loggare l&#39;IP corretto dei client che si connettono bisogna mettere nella whitelist del proxy l&#39;IP del server, quello pubblico per un server cloud o quello privato per uno in rete LAN:</p>
+<pre class="language-markup"><code>zmprov mcf +zimbraMailTrustedIP 192.168.1.200</code></pre>
+<p>Per prevenire gli <strong>attacchi bruteforce</strong> configurare il DoSFilter. Prima di tutto mettere in whitelist gli indirizzi IP legittimi, quindi la subnet locale o se il server è in cloud l&#39;IP pubblico dell&#39;ufficio:</p>
+<pre class="language-markup"><code>zmprov mcf +zimbraHttpThrottleSafeIPs 10.0.0.0/24 \
+  +zimbraHttpThrottleSafeIPs 99.88.44.111</code></pre>
+<p>Per bloccare per 60 minuti gli IP che hanno fatto più di 5 tentativi falliti di login, oppure chi fa più di 100 richieste al secondo:</p>
+<pre class="language-markup"><code>zmprov mcf zimbraInvalidLoginFilterMaxFailedLogin 5 \
+  zimbraHttpDosFilterDelayMillis 20 \ 
+  zimbraInvalidLoginFilterDelayInMinBetwnReqBeforeReinstating 60</code></pre>
+<p>Altri parametri utili sono <em>zimbraHttpDosFilterMaxRequestsPerSec</em> e <em>zimbraInvalidLoginFilterReinstateIpTaskIntervalInMin</em> ma i valori predefiniti sono adeguati. <a href="https://www.missioncriticalemail.com/2018/10/19/using-zimbras-dosfilter-and-failed-login-lockout-policy-together/" target="_blank" rel="noopener">Rif</a>.</p>
+<p>Molto importante: se Zimbra deve inviare le mail direttamente occorre <strong>verificare che l&#39;indirizzo IP pubblico non sia in blacklist</strong>. Usare la <a href="index.php?action=artikel&amp;cat=2&amp;id=3&amp;artlang=it">guida apposita</a>.</p>
+<h3>Installazione firme aggiuntive per antivirus ClamAV</h3>
+<p>È possibile aggiungere firme non ufficiali a ClamAV per migliorare il riconoscimento dei virus in ingresso. Ci sono firme della community e commerciali. Per scaricare le diverse firme insieme usiamo <a href="https://github.com/extremeshok/clamav-unofficial-sigs" target="_blank" rel="noopener">clamav-unofficial-sigs</a>.</p>
+<p>Scaricare l&#39;<a href="https://github.com/extremeshok/clamav-unofficial-sigs/releases/latest" target="_blank" rel="noopener">ultima versione</a> in <em>/tmp</em> e scompattarla.</p>
+<pre class="language-markup"><code>CUS_VER="6.1.1"
+wget -P /tmp https://github.com/extremeshok/clamav-unofficial-sigs/archive/$CUS_VER.tar.gz
+tar -xzf /tmp/$CUS_VER.tar.gz -C /tmp
+cd /tmp/clamav-unofficial-sigs-$CUS_VER
+cp clamav-unofficial-sigs.sh /usr/local/sbin
+chmod 755 /usr/local/sbin/clamav-unofficial-sigs.sh
+mkdir /opt/zimbra/conf/clamav-unofficial-sigs/
+mkdir /opt/zimbra/data/clamav-unofficial-sigs
+cp config/{master,user}.conf /opt/zimbra/conf/clamav-unofficial-sigs/
+cp config/os/os.zimbra.conf /opt/zimbra/conf/clamav-unofficial-sigs/os.conf
+# Modificare user.conf aggiungendo il codice di securiteinfo da bitwarden yetopen
+chown -R zimbra:zimbra /opt/zimbra/conf/clamav-unofficial-sigs/
+chown -R zimbra:zimbra /opt/zimbra/data/clamav-unofficial-sigs
+</code></pre>
+<p>Se previsto con il cliente modificare /opt/zimbra/conf/clamav-unofficial-sigs/user.conf e modificare il parametro securiteinfo_authorisation_signature con il valore <em>Hash download</em> della chiave bitwarden www.securiteinfo.com.</p>
+<p>Eseguire una volta il download delle firme con il comando:</p>
+<pre class="language-markup"><code>/usr/local/sbin/clamav-unofficial-sigs.sh</code></pre>
+<p>Se tutto ok procediamo con la configurazione di logrotate e cron:</p>
+<pre class="language-markup"><code>/usr/local/sbin/clamav-unofficial-sigs.sh --install-logrotate
+/usr/local/sbin/clamav-unofficial-sigs.sh --install-cron</code></pre>
+<p><strong>ATTENZIONE</strong> - Whitelist. Può essere che alcune firme siano troppo <em>rigorose</em> e debbano essere ignorate. Nell&#39;email di notifica di Zimbra viene riportato il nome della regola che ha scatenato il blocco:</p>
+<pre class="language-markup"><code>Our content checker found
+    virus: MBL_48252676.UNOFFICIAL</code></pre>
+<p>Prendere il nome (senza la parte finale <em>.UNOFFICIAL</em>) e aggiungerlo al file <em>/opt/zimbra/data/clamav/db/sigwhitelist.ign2</em> poi riavviare <em>zmclamdctl</em>.</p>
+<h4>Securiteinfo</h4>
+<p>Abbiamo acquistato una subscription <em>Gold</em> come YetOpen, utilizzabile con 50 IP diversi. In caso il cliente voglia fare l&#39;acquisto da sé o si voglia provare un account gratuito registrarsi <a href="https://www.securiteinfo.com/services/anti-spam-anti-virus/improve-detection-rate-of-zero-day-malwares-for-clamav.shtml">sul sito</a>.</p>
+<p>Se si sottoscrive un abbonamento aggiungere in /opt/zimbra/conf/clamav-unofficial-sigs/user.conf</p>
+<pre class="language-markup"><code>securiteinfo_update_hours="1"</code></pre>
+<h4>MalwarePatrol.net</h4>
+<p><a href="https://www.malwarepatrol.net/free-guard-upgrade-option/">Registrarsi</a> con l&#39;account admin del cliente (o con altro account loro). Sulla <a href="https://www.malwarepatrol.net/my-account/">pagina personale</a>, in fondo, c&#39;è l&#39;elenco delle <em>Block lists</em> con i link di download. Prendere nota dei parametri <em>receipt, product </em>e<em> list</em> dell&#39;url e aggiungerli nel file /opt/zimbra/conf/clamav-unofficial-sigs/user.conf:</p>
+<pre class="language-markup"><code>malwarepatrol_receipt_code="fXXXX"
+malwarepatrol_product_code="32"
+malwarepatrol_list="clamav_basic"
+malwarepatrol_free="yes"</code></pre>
+<p> </p>
+<h3>Operazioni da effettuare prima/dopo il trasporto dal cliente</h3>
+<ul>
+<li><span style="font-size: 13px;">modificare /etc/network/interfaces con l&#39;indirizzo IP della rete di destinazione</span></li>
+<li><span style="font-size: 13px;">modificare /etc/hosts mettendo nella riga corrispondente all&#39;hostname il nuovo indirizzo ip</span></li>
+<li><span style="font-size: 13px;">verificare i nameserver in /etc/resolv.conf</span></li>
+<li><span style="font-size: 13px;">andare in <em>Zimbra Admin &gt; Configurazione &gt; Server &gt; nomeserver &gt; MTA</em> e verificare che tra le reti attendibili ci sia quella del cliente</span></li>
+</ul>
+<h3>Scaricamento automatico degli account esterni</h3>
+<p>Ogni utente ha la possibilità di configurarsi degli account esterni POP o IMAP. Di default non viene effettuato l&#39;aggiornamento automatico di questi account, per evitare di sovraccaricare il server.</p>
+<p>In Zimbra 7 è possibile impostare i tempi di download automatico andando dal pannello web in <em>Classe di servizio &gt; default &gt; Avanzate &gt; Ricezione automatica origine dati</em>.</p>
+<p>In Zimbra 6 occorre usare la CLI:</p>
+<ul>
+<li>ottenere gli ID degli account esterni per l&#39;account con il comando<br />
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">zmprov gds nomeutente|grep zimbraDataSourceId</pre>
+</li>
+<li>modificare l&#39;intervallo con il comando<br />
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">zmprov mds nomeutente {id_ottenuto_sopra} zimbraDataSourcePop3PollingInterval 10m zimbraDataSourceImapPollingInterval 10m</pre>
+</li>
+<li>per annullare il polling, impostare a 0</li>
+</ul>
+<p>Ref: <a href="http://www.zimbra.com/forums/administrators/14208-solved-imap-periodic-polling-not-working.html">zimbra forum</a>, <a href="http://bugzilla.zimbra.com/show_bug.cgi?id=22114">bug 22114</a>, <a href="http://bugzilla.zimbra.com/show_bug.cgi?id=21199">bug 21199</a>.</p>
+<h3>Controllo duplicati</h3>
+<p>Come ad esempio cyrus, anche Zimbra ha un suo controllo duplicati, attivato di default, che sopprime i messaggi ricevuti con ID duplicato. Di default la cache di questa funzione è di 3000 messaggi. E&#39; consigliato disabilitare il controllo con il comando</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">zmprov mcf zimbraMessageIdDedupeCacheSize 0</pre>
+<p>Per visualizzare il valore impostato:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">zmprov gcf zimbraMessageIdDedupeCacheSize</pre>
+<p><span style="font-size: 15px; font-weight: bold;">Antispam</span></p>
+<p>Ci sono margini di miglioramento del sistema antispam di Zimbra, che è basato su SpamAssassin.</p>
+<p>Scarichiamo delle regole aggiuntive (correggere il path a seconda della versione):</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">wget -O /opt/zimbra/data/spamassassin/localrules/98_KAM.cf http://www.pccc.com/downloads/SpamAssassin/contrib/KAM.cf</pre>
+<p> </p>
+<p>Creare il file <em>/opt/zimbra/data/spamassassin/localrules</em>/<em>99_yetopen.cf</em> (per &lt;8.5 <em>/opt/zimbra/conf/sa/99_yetopen.cf</em>) con il seguente contenuto:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">## YetOpen ###
+score BAYES_80 3.0
+score BAYES_95 4.0
+score BAYES_99 5.1
+score SPF_FAIL 10.000
+score SPF_HELO_FAIL 10.000
+score RAZOR2_CHECK 2.500
+score PYZOR_CHECK 2.500
+
+# Codifiche caratteri consentite ("en" sta per caratteri europei e latin)
+ok_locales en  <br /><br />#loadplugin Mail::SpamAssassin::Plugin::Razor2 <br />#loadplugin Mail::SpamAssassin::Plugin::Pyzor<br /><br /># Override per KAM troppo restrititivi <br />score KAM_LAZY_DOMAIN_SECURITY 0.1 </pre>
+<p>Se il server riceve la posta direttamente (è un MX), è possibile configurare delle RBL, per bloccare le connessioni da IP considerati spammer, o dialup. Nel pannello di amministrazione &gt; Impostazioni Globali &gt; MTA, in fondo si trova la possibiltà di aggiungere dei server RBL. L&#39;elenco è disponibile sul <a href="http://wiki.zimbra.com/wiki/Zimbra_MTA#Turning_On_or_Off_RBLs">wiki</a>. Di default aggiungiamo Barracuda e SpamHaus:</p>
+<pre class="language-markup"><code>zmprov mcf +zimbraMtaRestriction "reject_rbl_client b.barracudacentral.org" \
+   +zimbraMtaRestriction "reject_rbl_client sbl.spamhaus.org"</code></pre>
+<p>ref: <a href="http://wiki.zimbra.com/index.php?title=Improving_Anti-spam_system">http://wiki.zimbra.com/index.php?title=Improving_Anti-spam_system</a></p>
+<h3>Mail da linea di comando</h3>
+<p>Non essendoci postfix di sistema, non esiste il comando <em>mail</em> da usare ad esempio da script.</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">aptitude install mailx</pre>
+<p>Configurare nullmailer per l&#39;invio locale (<a class="intfaqlink" href="index.php?action=artikel&amp;cat=1&amp;id=122&amp;artlang=it">Installazione di nullmailer, per la consegna della posta</a>).</p>
+<p><span style="font-size: 15px; font-weight: bold;">Apprendimento ham/spam</span></p>
+<p>Appena installato Zimbra non ha una base per identificare al meglio spam e posta legittima, quindi lo scanner risulterà poco affidabile, riconoscendo falsi positivi e falsi negativi. </p>
+<p>Se si sta facendo una migrazione da posta esistente, al termine dell&#39;operazione è possibile addestrare SpamAssassin sulle mail presenti. Attenzione che è indispensabile far apprendere sia spam che posta legittima! Per fare questo si usa il comando <em>zmtrainsa</em>. Per eseguire l&#39;apprendimento su tutti gli utenti importati, usare uno script simile al seguente, da lanciare come utente <em>zimbra</em>:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">#!/bin/bash
+
+wikiuser=`zmprov getConfig zimbraNotebookAccount | cut -d &#39; &#39; -f 2`;
+hamuser=`zmprov getConfig zimbraSpamIsNotSpamAccount | cut -d &#39; &#39; -f 2`;
+spamuser=`zmprov getConfig zimbraSpamIsSpamAccount | cut -d &#39; &#39; -f 2`;
+
+users=`zmprov getAllAccounts | grep -v -e $wikiuser -e $hamuser -e $spamuser`;
+
+for zuser in $users
+do
+echo "Train for $zuser"
+/opt/zimbra/bin/zmtrainsa $zuser ham 
+/opt/zimbra/bin/zmtrainsa $zuser spam 
+done
+
+echo "Zimbra training complete"</pre>
+<p>Se non specificate opzioni aggiuntive, il comando apprenderà spam dalla cartella <em>Junk</em> di Zimbra, e la posta legittima dalla <em>Inbox</em>. Se si vuole fare training da cartelle diverse, aggiungere il nome della stessa in fondo al comando <em>zmtrainsa.</em></p>
+<h2>Operazioni aggiuntive opzionali</h2>
+<h3><a id="disabilitare-auth-porta-25"></a>Disabilitare l&#39;invio con autenticazione sulla porta 25</h3>
+<p>Se non si vuole che le credenziali vengano trasmesse in chiaro, e che l&#39;invio con autenticazione avvenga solo sulle porte 465 e 587, modificare il file /opt/zimbra/common/conf/master.cf.in e modificare il blocco che inizia con <em>smtpd</em> in questo modo:</p>
+<pre class="language-markup"><code>smtpd     pass  -       -       n       -       -       smtpd
+        -o smtpd_tls_security_level=%%zimbraMtaTlsSecurityLevel%%
+        -o smtpd_sasl_auth_enable=no</code></pre>
+<p>aggiungendo quindi l&#39;ultima riga e riavviando l&#39;MTA con <em>zmmtactl restart</em>. <a href="https://forums.zimbra.org/viewtopic.php?t=62418#p277656">Rif</a>.</p>
+<h3>Per consentire la creazione di account esterni senza StartTLS</h3>
+<ul>
+<li><br />
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">zmlocalconfig -e javamail_imap_enable_starttls=false;  
+zmlocalconfig -e javamail_pop3_enable_starttls=false;  </pre>
+questi comandi richiedono il riavvio di <em>zmmailboxd</em>. <a href="http://www.andrewklau.com/using-the-zimbra-external-accounts-and-self-signed-cert/">rif</a>.</li>
+</ul>
+<h3>Abilitazione valigetta</h3>
+<p>Rimossa di default in Zimbra8. <strong>Valutare</strong> se vale la pena abilitarla, sicuramente con Nextcloud non serve:</p>
+<pre class="language-markup"><code>zmprov mc yetopen zimbraFeatureBriefcasesEnabled TRUE</code></pre>
+<p> </p>
+<p> </p>
+<h3>Aggiornamento e backup</h3>
+<p>Prima di aggiornare assicurarsi sempre di avere una copia del vecchio sistema, ed i file di installazione per la versione che si sta sostituendo, per poter ripristinare in caso di errore.</p>
+<p>In caso di NE, almeno 24h prima di eseguire l&#39;aggiornamento lanciare un backup completo (<em>zmbackup -f</em>).</p>
+<p>In caso di OSS, crearsi una copia di tutta la /opt/zimbra a sistema fermo. Per ridurre al minimo l&#39;interruzione di servizio è possibile fare un rsync <em>a caldo</em>, e quindi rieseguirlo una volta arrestati i servizi. Il comando potrebbe essere:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">rsync -avHt --stats --progress --delete --delete-after /opt/zimbra /opt/zmback</pre>
+<p>Da lanciare quindi a sistema attivo (ignorando eventuali errori per file aperti), e poi a sistema fermo. </p>
+<h3>Split domain</h3>
+<p>zmprov ma rudy@blancasings.com zimbraMailTransport smtp:mail.blancasings.com:25</p>
+<h3>Montaggio cartelle della valigetta</h3>
+<p>E&#39; possibile montare le cartelle della valigetta come normali filesystem davfs.</p>
+<p>Su client Ubuntu:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">aptitude install davfs2
+adduser nomeutente davfs2
+dpkg-reconfigure davfs2
+</pre>
+<p>Selezionare <em>Si</em> quando viene chiesto se gli utenti normali devono poter montare il filesystem. Aggiungere quindi il proprio utente al gruppo davfs2, come specificato nel comando sopra.</p>
+<p>Modificare in /etc/davfs2/davfs2.conf i seguenti parametri:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">dav_group	davfs2
+use_locks	0</pre>
+<p>Con Nautilus, aprire un nuovo url come segue:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">davs://zimbra.yetopen.it/dav/nomeutente/Briefcase</pre>
+<p><em>davs</em> significa usare <em>https</em>. Per connessioni <em>http</em> usare solo <em>dav</em>. <em>nomeutente</em> è il nome dell&#39;utente Zimbra, <em>Briefcase</em> è la Valigetta a cui vogliamo accedere.</p>
+<p>Con fstab aggiungere una riga</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">https://zimbra.yetopen.it/dav/nomeutente/Briefcase /home/nomeutentelocale/ufficio_dav davfs rw,user,noauto 0 0
+</pre>
+<p>(se l&#39;utente deve includere il dominio, usare gli escape html. Per la @ ad esempio è %40, lo spazio %20)</p>
+<h4>Memorizzazione utente e password</h4>
+<p>Non è possibile specificare utente e pass in fstab, ma può essere fatto in <em>~/.davfs2/secrets</em>. Aggiungere una riga con mountpoint, utente e password. Ad es:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">https://zimbra.yetopen.it/dav/nomeutente/Briefcase nomeutente lamiapassword</pre>
+<p>Altri client, per linux e windows su <a href="http://wiki.zimbra.com/index.php?title=WebDAV">wiki.zimbra.com</a>. Altre info, per cert, su <a href="http://ubuntuforums.org/showpost.php?p=4394576&amp;postcount=5">ubuntuforums.org</a>.</p>
+<h3>Thunderbird</h3>
+<p>Thunderbird è utilizzabile con Zimbra: la posta è accessibile via IMAP, il calendario tramite Lightning e CalDAV. Per quanto riguarda i contatti esiste una estensione che consente di sincronizzare i contatti di TB con Zimbra o Gmail. Per funzionalità e limitazioni vedere <a href="http://www.zindus.com/faq-thunderbird/">http://www.zindus.com/faq-thunderbird/</a>.</p>
+<h3> </h3>
+<h3>Troubleshooting</h3>
+<p>Q: IO::Socket::INET: connect: timeout at /opt/zimbra/libexec/zmldapinit line 136.<br />A: Verificare che l&#39;LDAP master url sia raggiungibile dai dns</p>
+<p>Q: Come svuotare una cartella di posta (probabilmente anche di contatti)<br />A: zmmailbox -z -m account@domain emptyFolder /Inbox</p>
+<p>Q: Escludere alcuni mountpoint dalle email di notifica spazio occupato<br />A: zmlocalconfig -e &#39;zmstat_df_excludes=PATH1:PATH2:PATH3&#39; &amp;&amp; zmstatctl restart (<a href="https://forums.zimbra.org/viewtopic.php?p=293399#p293405">rif</a>)</p>
