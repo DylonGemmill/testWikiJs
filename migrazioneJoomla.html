@@ -1,0 +1,25 @@
+<!--
+title: Migrazione di Joomla verso un altro hosting
+description: 
+published: true
+date: 2020-02-03T13:25:57.069Z
+tags: 
+-->
+
+<p>Di seguito i passaggi da effettuare per la migrazione di un sito basato su Joomla da un hosting all&#39;altro, con relative tempistiche.&nbsp;<br />La fase pi&ugrave; critica &egrave; da quando il nuovo provider comunica il passaggio di gestione, periodo durante il quale &egrave; possibile ci sia un puntamento diverso dei DNS (alcuni verso il vecchio, alcuni verso il nuovo dominio).</p>
+<p>I passaggi da seguire sono i seguenti</p>
+<ol>
+<li>allestimento di una copia del sito presso il nuovo hosting, presumibilmente con accesso diretto tramite indirizzo IP</li>
+<li>in caso di operazioni intermedie (ad es. aggiornamenti da fare, migrazioni pi&ugrave; complesse, operazioni aggiuntive) documentare in modo molto dettagliato le operazioni da eseguire, in modo da ridurre al minimo i tempi durante la fase di migrazione finale</li>
+<li>eseguire dei test di funzionamento approfonditi sull&#39;installazione temporanea, alla ricerca di eventuali possibili malfunzionamenti da risolvere, che andranno quindi inclusi nel punto 2</li>
+<li>se i test sono ok, acordarsi con il cliente su quando effettuare il passaggio dei DNS. Questa operazione pu&ograve; durare fino a due giorni lavorativi, periodo entro il quale il sito potrebbe potenzialmente essere raggiungibile su due diverse piattaforme</li>
+<li>se si tratta di un sito dinamico, all&#39;inizio della fase di migrazione del dominio, mettere offline il sito sul vecchio hosting, in modo che il vecchio database non venga pi&ugrave; modificato</li>
+<li>effettuare la migrazione del sito come indicato ai punti 1 e 2</li>
+<li>fare nuovi test di funzionamento del sito presso il nuovo hosting</li>
+<li>impostare il vecchio sito per fare in modo che gli accessi vengano redirezionati verso quello nuovo, attraverso l&#39;IP</li>
+</ol>
+<p>Punti particolari di attenzione, da verificare bene:</p>
+<ul>
+<li>joomla pu&ograve; funzionare su un indirizzo IP, anche se la risoluzione del DNS del dominio web punta ad un altro IP? (es: joomla configurato per funzionare su www.yetopen.it, ma nel nuovo hosting fino al passaggio dei dns sar&agrave; raggiungibile solo come http://1.2.3.4). Con Joomla 1.0 occorre modificare il file di configurazione, mentre con 1.5 non dovrebbe essere necessario, comqunque <strong>VERIFICARE BENE</strong></li>
+<li>in caso il sito sia configurato per usare <em>mod_rewrite</em>&nbsp;e gli url <strong>sef</strong>, come si effettua il redirect della stessa url verso il nuovo sito?</li>
+</ul>
