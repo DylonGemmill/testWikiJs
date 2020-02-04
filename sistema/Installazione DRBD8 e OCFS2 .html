@@ -1,0 +1,99 @@
+<p><a href="http://www.drbd.org/">DRBD</a> è un modulo che crea il cosiddetto <em>raid over ethernet</em>, e consente di replicare un disco o una partizione su due computer diversi connessi via rete. Dalla versione 0.8 è possibile configurarlo in modalità <em>active-active</em>, ovvero online su entrambi i sistemi. Questo rende disponibile la partizione, ma non effettua controllo accessi. Qui interviene <a href="http://oss.oracle.com/projects/ocfs2/">ocfs2</a>, filesystem di Oracle che gestisce l&#39;accesso concorrente (esiste come alternativa <a href="http://www.redhat.com/gfs/">GFS2</a>, ma è molto più complesso da configurare, in quanto richiede un cluster redhat).</p>
+<p>La replica dei dati di drbd è molto impegnativa, e deve essere più veloce possibile. Tipicamente si riserva un&#39;interfaccia di rete, gigabit, a questo scopo.</p>
+<p>Drbd è incluso nel kernel da parecciho, quindi è sufficiente aggiungere la riga</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">drbd</pre>
+<p>in <strong>/etc/modules</strong> per assicurarsi il caricamento del modulo all&#39;avvio. In caso di installazione su server per la virtualizzazione, creare il file <strong>/etc/modprobe.d/drbd.conf</strong> con il seguente contenuto:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">options drbd disable_sendpage=1</pre>
+<p>quindi eseguire</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">apt-get install drbd8-utils</pre>
+<p>La configurazione di DRBD è splittata in diversi file: uno globale per tutti, e poi ogni singolo file per risorsa. Apriamo <strong>/etc/drbd.d/global_common.conf</strong> aggiungendo o modificando le seguenti righe:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">global {
+ usage-count no;
+}
+
+syncer {
+ rate 200M;
+}
+
+handlers {
+ # Il nodo è primario, ma dovrebbe diventare target da dopo la negoziazione. Inviare alert
+ pri-lost "echo pri-lost su DRBD. Verificare i log! | mail -s &#39;DRBD Alert&#39; support@yetopen.it"; 
+ # Notifica in caso di split-brain
+ split-brain "echo split-brain. drbdadm -- --discard-my-data connect $DRBD_RESOURCE ? | mail -s &#39;DRBD Alert&#39; support@yetopen.it"; 
+}
+
+startup {
+ # Questi sono i tempi di timeout massimi per cui il sistema verrà tenuto fermo 
+ # (in genere servono per permettere la risincronizzazione del raid prima di far partire il sistema in ogni caso)
+ degr-wfc-timeout 120;
+ wfc-timeout 120; 
+ # Per active-active
+ become-primary-on both;
+}
+
+disk {
+ on-io-error detach;
+}
+
+net {
+ allow-two-primaries; 
+ after-sb-0pri disconnect; 
+ after-sb-1pri disconnect; 
+ after-sb-2pri disconnect; 
+ rr-conflict disconnect; 
+}
+
+syncer {
+ rate 200M;
+}</pre>
+<p>Quindi creiamo la configurazione di una risorsa, nel file <strong>/etc/drbd.d/r0.res</strong>:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">resource r0 {
+    on xensrv01 { 
+        device     /dev/drbd0; 
+        disk       /dev/sda5; 
+        address    10.99.99.101:7788; 
+        meta-disk  internal; 
+    } 
+
+    on xensrv02 { 
+        device     /dev/drbd0; 
+        disk       /dev/sda5; 
+        address    10.99.99.102:7788; 
+        meta-disk  internal; 
+    } 
+}
+</pre>
+<p>Fondamentale è impostare i due hostname correttamente, con l&#39;output del comando <em><strong>uname -n</strong></em>, ed ovviamente gli indirizzi IP della rete privata di drbd. Inoltre il parametro <strong>disk</strong> è la partizione che drbd userà sul sistema locale per la replica. Per ogni risorsa è possibile effettuare una override dei parametri globali, quali <em>rate</em> ad esempio. Attiviamo la configurazione con il comando</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">/etc/init.d/drbd restart</pre>
+<p>In questa fase i dischi fisici non sono ancora inizializzati per DRBD, quindi potrebbe essere che ci siano degli errori. Un errore potrebbe essere <em><strong>No valid meta-data signature found</strong></em>, nel qual caso basta eseguire</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">drbdadm create-md r0</pre>
+<p>Altro errore potrebbe essere che la partizione conteneva già dati, nel qual caso possiamo pulirla con il comando</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">dd if=/dev/zero bs=1M count=1 of=/dev/sda5; sync</pre>
+<p>e quindi eseguiamo di nuovo il <em>create-md</em> di prima. Essendo la prima esecuzione, dobbiamo definire quale dei due dischi è primario, quindi lanciamo:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">drbdadm -- --overwrite-data-of-peer primary r0</pre>
+<h3>ocfs2</h3>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">apt-get install ocfs2-tools
+</pre>
+<p>Creare il file /etc/ocfs/cluster.conf con il seguente contenuto:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">#/etc/ocfs2/cluster.conf 
+node: 
+        ip_port = 7777 
+        ip_address = 192.168.0.128 
+        number = 0 
+        name = hostname1 
+        cluster = nomecluster
+node: 
+        ip_port = 7777 
+        ip_address = 192.168.0.129 
+        number = 1 
+        name = hostname2 
+        cluster = nomecluster 
+cluster: 
+        node_count = 2 
+        name = nomecluster</pre>
+<p>quindi lanciare</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">dpkg-reconfigure ocfs2-tools</pre>
+<p>impostare a Si l&#39;avvio automatico al boot, mettere <em>nomecluster</em> come nome del cluster da avviare al boot, e lasciare gli altri parametri invariati.</p>
+<p>Sulla partizione drbd creare quindi il filesystem con i comandi:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">mkfs.ocfs2 /dev/drbd/by-res/r0</pre>
+<p>e in fstab aggiungere la riga con le opzioni <strong><em>_netdev,noatime,nointr</em></strong>, e <em>0 0</em> come parametri finali.</p>

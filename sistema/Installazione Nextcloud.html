@@ -1,0 +1,158 @@
+<h1>Preparazione</h1>
+<p>In MySQL bisogna abilitare il <a href="https://docs.nextcloud.com/server/16/admin_manual/configuration_database/mysql_4byte_support.html">supporto 4 byte</a> e modificare la modalità di <a href="https://docs.nextcloud.com/server/16/admin_manual/configuration_database/linux_database_configuration.html#configuring-a-mysql-or-mariadb-database">gestione delle transazioni</a> (per evitare perdita di dati).</p>
+<p>Creare il file <em>/etc/mysql/mariadb.conf.d/99-yetopen.cnf</em> con questo contenuto:</p>
+<pre class="language-markup"><code>[mysqld]
+innodb_large_prefix=true
+innodb_file_format=barracuda
+; questo dovrebbe già essere abilitato di default
+innodb_file_per_table=1
+
+transaction_isolation = READ-COMMITTED
+binlog_format = ROW</code></pre>
+<p>e riavviare MySQL.</p>
+<p>Per abilitare il supporto 4 byte su installazioni esistenti vedere <a href="https://docs.nextcloud.com/server/16/admin_manual/configuration_database/mysql_4byte_support.html" target="_blank" rel="noopener">questa guida</a>.</p>
+<h1>Installazione</h1>
+<p>Installare i pacchetti necessari di PHP:</p>
+<pre class="language-markup"><code>apt install php-fpm php-mbstring php-xmlrpc php-soap php-apcu php-smbclient php-ldap php-redis php-gd php-xml php-intl php-json php-imagick php-mysql php-cli php-mcrypt php-ldap php-zip php-curl</code></pre>
+<p>Creare una directory in <em>/dati</em> (o comunque fuori dalla document root del webserver) e dare i permessi del webserver (default <em>www-data:www-data</em>).<br />Se non è possibile mettere la <em>data/</em> fuori dalla webroot bloccare l&#39;accesso pubblico con htaccess su Apache. <br />Per l&#39;installazione con nginx vedere <a href="https://docs.nextcloud.com/server/stable/admin_manual/installation/nginx.html?highlight=nginx">questa guida</a>, che tra le altre cose blocca già l&#39;accesso alla <em>/data</em>. Inserire nei parametri del server { }.</p>
+<pre class="language-markup"><code>add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+
+location ~ \.php$ {
+        try_files $uri =404;
+        fastcgi_split_path_info ^(.+\.php)(/.+)$;
+        fastcgi_pass unix:/var/run/php/php7.1-fpm.sock;
+        fastcgi_index index.php;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        include fastcgi_params;
+    }
+
+        location ~ /\.ht {
+                deny all;
+        }
+
+
+
+ location ^~ /nextcloud {
+        # set max upload size
+        client_max_body_size 512M;
+        fastcgi_buffers 64 4K;
+
+        # Disable gzip to avoid the removal of the ETag header
+        gzip off;
+
+
+        location /nextcloud {
+            rewrite ^ /nextcloud/index.php$uri;
+        }
+
+          location ~ ^/nextcloud/(?:build|tests|config|lib|3rdparty|templates|data)/ {
+                deny all;
+        }
+        location ~ ^/nextcloud/(?:\.|autotest|occ|issue|indie|db_|console) {
+            deny all;
+        }
+
+
+                location ~ ^/nextcloud/(?:index|remote|public|cron|core/ajax/update|status|ocs/v[12]|updater/.+|ocs-provider/.+|core/templates/40[34])\.php(?:$|/) {
+            fastcgi_split_path_info ^(.+\.php)(/.*)$;
+            include fastcgi_params;
+            fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+            fastcgi_param PATH_INFO $fastcgi_path_info;
+       #     fastcgi_param HTTPS on;
+            #Avoid sending the security headers twice
+            fastcgi_param modHeadersAvailable true;
+            fastcgi_param front_controller_active true;
+            fastcgi_pass unix:/var/run/php/php7.1-fpm.sock;
+            fastcgi_intercept_errors on;
+#            fastcgi_request_buffering off;
+        }
+
+    location ~ ^/nextcloud/(?:updater|ocs-provider)(?:$|/) {
+            try_files $uri/ =404;
+            index index.php;
+        }
+location ~* \.(?:css|js|woff|svg|gif)$ {
+        try_files $uri /nextcloud/index.php$request_uri;
+        add_header Cache-Control "public, max-age=15778463";
+        # Add headers to serve security related headers (It is intended to
+        # have those duplicated to the ones above)
+        # Before enabling Strict-Transport-Security headers please read into
+        # this topic first.
+        # add_header Strict-Transport-Security "max-age=15768000; includeSubDomains; preload;";
+        #
+        # WARNING: Only add the preload option once you read about
+        # the consequences in https://hstspreload.org/. This option
+        # will add the domain to a hardcoded list that is shipped
+        # in all major browsers and getting removed from this list
+        # could take several months.
+        add_header X-Content-Type-Options nosniff;
+        add_header X-XSS-Protection "1; mode=block";
+        add_header X-Robots-Tag none;
+        add_header X-Download-Options noopen;
+        add_header X-Permitted-Cross-Domain-Policies none;
+        # Optional: Don&#39;t log access to assets
+        access_log off;
+    }
+
+location ~* \.(?:png|html|ttf|ico|jpg|jpeg)$ {
+            try_files $uri /nextcloud/index.php$uri$is_args$args;
+            # Optional: Don&#39;t log access to other assets
+            access_log off;
+        }
+
+}
+</code></pre>
+<p>Creare un database su MySQL ed un utente con accesso a quel db con questi comandi. È importare usare questa modalità per abilitare il supporto alle emoji:</p>
+<pre class="language-markup"><code>CREATE USER &#39;username&#39;@&#39;localhost&#39; IDENTIFIED BY &#39;password&#39;;
+CREATE DATABASE IF NOT EXISTS nextcloud CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+GRANT ALL PRIVILEGES on nextcloud.* to &#39;username&#39;@&#39;localhost&#39;;
+FLUSH privileges;</code></pre>
+<p>Installare Nextcloud, usando come nome utente amministrativo <em>ncadmin</em> (invece del predefinito <em>admin</em>), ed impostando la directory di dati alla posizione creata sopra.</p>
+<p>In caso di login su LDAP, per usare gli stessi UID del server (username) cliccare su <em>Esperto</em> ed impostare</p>
+<ul>
+<li>Nome utente interno: <em>uid</em> (o <em>samAccountName</em> per AD)</li>
+<li>Attributo UUID per gli utenti: <em>(vuoto)</em></li>
+<li>Attributo UUID per i gruppi: <em>(vuoto</em><em>)</em></li>
+</ul>
+<p>Cliccare poi il pulsante <em>Cancella associazione Nome Utente - Utente LDAP</em>. Rif <a href="https://github.com/Zimbra-Community/owncloud-zimlet/wiki/Connect-ownCloud-to-Zimbra-LDAP-for-accounts-and-credentials#owncloud-ldap-app-expert-tab">questa guida</a>.</p>
+<p>Installare php-apcu ed <a href="https://docs.nextcloud.com/server/stable/admin_manual/configuration_server/caching_configuration.html?#id1">abilitare APCu</a> come cache locale.</p>
+<p>Installare ed <a href="https://docs.nextcloud.com/server/stable/admin_manual/configuration_server/caching_configuration.html?#id2">abilitare Redis</a> come cache globale.</p>
+<p>Configurare <a href="https://docs.nextcloud.com/server/stable/admin_manual/configuration_server/background_jobs_configuration.html#cron">cron</a>, e verificare in <em>Impostazioni &gt; Amministrazione &gt; Impostazioni di base</em> in alto che da parte al titolo <em>Operazioni in background</em> cron sia stato eseguito.</p>
+<p>Verificare gli avvisi post installazione visitando su Nextcloud l&#39;url <em>settings/admin/overview</em>, oppure andando in <em>Impostazioni &gt; Amministrazione &gt; Riepilogo</em>.</p>
+<p>Sistemare la configurazione di PHP-FPM: aprire <em>/etc/php/7.1/fpm/pool.d/www.conf</em> (modificare il path in base alla versione di PHP) e decommentare queste righe:</p>
+<pre class="language-markup"><code>env[HOSTNAME] = $HOSTNAME
+env[PATH] = /usr/local/bin:/usr/bin:/bin
+env[TMP] = /tmp
+env[TMPDIR] = /tmp
+env[TEMP] = /tmp</code></pre>
+<p>In ultimo andare in <em>Impostazioni &gt; Amministrazione &gt; Riepilogo</em> e verificare che non ci siano avvisi post installazione.</p>
+<h1>Ottimizzazioni</h1>
+<p>Per l&#39;installazione  di Technion abbiamo avuto dei grossi problemi di lentezza dei client risolto incrementando il parametro:</p>
+<p>innodb_buffer_pool_size</p>
+<p>Per calcolare il giusto valore si può eseguire la seguente query</p>
+<p><code>SELECT CEILING(Total_InnoDB_Bytes*1.6/POWER(1024,3)) RIBPS FROM</code><br /><code> (SELECT SUM(data_length+index_length) Total_InnoDB_Bytes</code><br /><code>  FROM information_schema.tables WHERE engine=&#39;InnoDB&#39;) A;</code></p>
+<h2>Pulizia spazio cestino</h2>
+<p>Di <a href="https://docs.nextcloud.com/server/16/admin_manual/configuration_server/config_sample_php_parameters.html?highlight=trash#deleted-items-trash-bin">default</a> <strong>il cestino viene mantenuto fino a quando c&#39;è spazio su disco</strong>. Per far si che la pulizia avvenga sia quando lo spazio sta per esaurirsi ed ogni 30 giorni inserire questa opzione:</p>
+<p><code>&#39;trashbin_retention_obligation&#39; =&gt; &#39;auto, 30&#39;,</code></p>
+<h3><code>Pulizia spazio versioni</code></h3>
+<p>Di <a href="https://docs.nextcloud.com/server/16/admin_manual/configuration_server/config_sample_php_parameters.html?highlight=trash#deleted-items-trash-bin">default</a> <strong>i file di verisoni vengono mantenuti fino a quando c&#39;è spazio su disco</strong>. Per far si che la pulizia avvenga sia quando lo spazio sta per esaurirsi ed ogni 30 giorni inserire questa opzione:</p>
+<pre><span class="s1">&#39;versions_retention_obligation&#39;</span> <span class="o">=&gt;</span> <span class="s1">&#39;auto</span><span class="p">, 30&#39;<br /><br /></span></pre>
+<p><code>E&#39; possibile forzare sia per i file trashbin che per quelli di versione la pulizia prima dell&#39;esaurimento dello spazio, con:</code></p>
+<pre class="language-markup"><code>sudo -u www-data /usr/bin/php7.1 /dati/www/nextcloud/occ versions:expire (per i file di versionamento)
+sudo -u www-data /usr/bin/php7.1 /dati/www/nextcloud/occ versions:trashbin (per i file del cestino)
+</code></pre>
+<p><code></code><code></code></p>
+<h1>Antivirus con Clamav</h1>
+<p>È possibile effettuare la scansione con clamav dei file di NC (<a href="https://docs.nextcloud.com/server/stable/admin_manual/configuration_server/antivirus_configuration.html">guida</a>). Installare il server Clamav con</p>
+<pre class="language-markup"><code>apt install clamav-daemon
+systemctl start clamav-freshclam</code></pre>
+<p>Verificare il log di freshclam e quando ha finito di scaricare il database riavviare clamav-daemon. Controllare che entrambi i servizi siano attivi.</p>
+<p>Andare nelle impostazioni di <em>NC web &gt; Applicazioni</em>, nella ricerca immettere <em>Antivirus for files</em>, premere il pulsante <em>Scarica ed attiva</em>.</p>
+<p>Impostare la modalità <em>Demone (socket)</em>, e nel path del socket indicare <em>/var/run/clamav/clamd.ctl</em> (verificare in <em>/etc/clamav/clamd.conf</em>).</p>
+<p>I file identificati come virus saranno rifiutati dal client con un avviso ed un errore. Inoltre i virus trovati sono registrati nel file di log.</p>
+<p> </p>
+<h1>Client</h1>
+<p>Se in Ubuntu il client non si avvia durante lo startup nonostante la spunta sul client aggiungere il comando &#39;nextcloud&#39; nelle applicazioni di avvio di ubuntu</p>
+<h1>Ricerca <em>fulltext</em> in Nextcloud</h1>
+<p>FIXME</p>
+<p>https://github.com/nextcloud/fulltextsearch/wiki/Basic-Installation <br />https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html<br />https://hub.docker.com/r/srohatgi/elasticsearch-ingest/ <br />https://github.com/netsyno/elasticsearch-ingest-attachment</p>

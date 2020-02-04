@@ -1,0 +1,84 @@
+<header>
+<h1 id="limit-your-ssh-logins-using-geoip">Limit your SSH logins using GeoIP</h1>
+</header>
+<p>I run a Raspberry PI which acts as a firewall, VPN and DNS server for my network. One annoyance I really have are the constant login brute-force attempts, mainly from countries like China.</p>
+<p>Rather than loading in entire lists of network blocks into iptables and using up precious memory for (in my case) New Zealand, I wanted to simply check the origin of the connecting IP and deny those connections if not found matching a certain list of countries.</p>
+<h2 id="installing-geoip-country-database">Installing GeoIP country database</h2>
+<p>The first thing you need to do is to install <code>geoiplookup</code> and the GeoIP country (free) database. Most Linux distributions have these packages. On Debian you can simply:</p>
+<pre><code class="language-bash hljs ">$ apt-get install geoip-bin geoip-database</code></pre>
+<p>Make sure it works by doing a simple test:</p>
+<pre><code class="language-bash hljs ">$ geoiplookup <span class="hljs-number">8.8</span>.<span class="hljs-number">8.8</span>
+GeoIP Country Edition: US, United States</code></pre>
+<h2 id="the-script">The script</h2>
+<p>I wrote a simple shell script which returns either an true (ACCEPT) or false (DENY) response, and if it&#39;s a DENY it logs to the system messages (using <code>logger</code>). Save this file in <code>/usr/local/bin/sshfilter.sh</code>:</p>
+<pre><code class="language-bash hljs "><span class="hljs-shebang">#!/bin/bash
+</span>
+<span class="hljs-comment"># UPPERCASE space-separated country codes to ACCEPT</span>
+ALLOW_COUNTRIES=<span class="hljs-string">"NZ AU"</span>
+
+<span class="hljs-keyword">if</span> [ <span class="hljs-variable">$#</span> <span class="hljs-operator">-ne</span> <span class="hljs-number">1</span> ]; <span class="hljs-keyword">then</span>
+  <span class="hljs-built_in">echo</span> <span class="hljs-string">"Usage:  `basename <span class="hljs-variable">$0</span>` &lt;ip&gt;"</span> <span class="hljs-number">1</span>&gt;&amp;<span class="hljs-number">2</span>
+  <span class="hljs-keyword">exit</span> <span class="hljs-number">0</span> <span class="hljs-comment"># return true in case of config issue</span>
+<span class="hljs-keyword">fi</span>
+
+COUNTRY=`/usr/bin/geoiplookup <span class="hljs-variable">$1</span> | awk -F <span class="hljs-string">": "</span> <span class="hljs-string">&#39;{ print $2 }&#39;</span> | awk -F <span class="hljs-string">","</span> <span class="hljs-string">&#39;{ print $1 }&#39;</span> | head -n <span class="hljs-number">1</span>`
+
+[[ <span class="hljs-variable">$COUNTRY</span> = <span class="hljs-string">"IP Address not found"</span> || <span class="hljs-variable">$ALLOW_COUNTRIES</span> =~ <span class="hljs-variable">$COUNTRY</span> ]] &amp;&amp; RESPONSE=<span class="hljs-string">"ALLOW"</span> || RESPONSE=<span class="hljs-string">"DENY"</span>
+
+<span class="hljs-keyword">if</span> [ <span class="hljs-variable">$RESPONSE</span> = <span class="hljs-string">"ALLOW"</span> ]
+<span class="hljs-keyword">then</span>
+  <span class="hljs-keyword">exit</span> <span class="hljs-number">0</span>
+<span class="hljs-keyword">else</span>
+  logger <span class="hljs-string">"<span class="hljs-variable">$RESPONSE</span> sshd connection from <span class="hljs-variable">$1</span> (<span class="hljs-variable">$COUNTRY</span>)"</span>
+  <span class="hljs-keyword">exit</span> <span class="hljs-number">1</span>
+<span class="hljs-keyword">fi</span></code></pre>
+<p>Edit the <code>ALLOW_COUNTRIES</code> to include a list of country codes you want your SSH server to accept connections from.</p>
+<p><strong>Note</strong>: is an IP address cannot be matched to a country (such as an internal IP address), the connection is accepted too (see the <code>$COUNTRY = "IP Address not found"</code>).</p>
+<p>Don&#39;t forget to make the script executable:</p>
+<pre><code class="language-bash hljs ">chmod <span class="hljs-number">775</span> /usr/local/bin/sshfilter.sh</code></pre>
+<h2 id="lock-down-ssh">Lock down SSH</h2>
+<p>The last things we need to do is tell the ssh daemon (sshd) to deny all connections (by default) and to run this script to determine whether the connection should be allowed or not.</p>
+<p>In <code>/etc/hosts.deny</code> add the line:</p>
+<pre><code class="language-bash hljs ">sshd: ALL</code></pre>
+<p>and in <code>/etc/hosts.allow</code> add the line</p>
+<pre><code class="language-bash hljs ">sshd: ALL: aclexec /usr/local/bin/sshfilter.sh %a</code></pre>
+<h2 id="testing">Testing</h2>
+<p>Obviously you want to test that this is working before you are accidentally logged out of your system. On the console I can do a test with the <code>8.8.8.8</code> which I happen to know is from the US, and in my case should be DENIED access. So:</p>
+<pre><code class="language-bash hljs ">/usr/local/bin/sshfilter.sh <span class="hljs-number">8.8</span>.<span class="hljs-number">8.8</span></code></pre>
+<p>The script <strong>will not</strong> return anything visible, however in /var/log/messages I have the result:</p>
+<pre><code class="language-bash hljs ">Jun <span class="hljs-number">26</span> <span class="hljs-number">17</span>:<span class="hljs-number">02</span>:<span class="hljs-number">37</span> pi root: DENY sshd connection from <span class="hljs-number">8.8</span>.<span class="hljs-number">8.8</span> (US)</code></pre>
+<p>Do test a working connection too (via normal SSH), although I don&#39;t expect there to be any problems.</p>
+<p>After a while you should find results in your <code>/var/log/messages</code> along the lines of:</p>
+<pre><code class="language-bash hljs ">Jun <span class="hljs-number">25</span> <span class="hljs-number">11</span>:<span class="hljs-number">59</span>:<span class="hljs-number">54</span> pi logger: DENY sshd connection from <span class="hljs-number">82.221</span>.<span class="hljs-number">102.185</span> (IS)
+Jun <span class="hljs-number">25</span> <span class="hljs-number">15</span>:<span class="hljs-number">47</span>:<span class="hljs-number">54</span> pi logger: DENY sshd connection from <span class="hljs-number">220.227</span>.<span class="hljs-number">123.122</span> (IN)
+Jun <span class="hljs-number">25</span> <span class="hljs-number">18</span>:<span class="hljs-number">43</span>:<span class="hljs-number">51</span> pi logger: DENY sshd connection from <span class="hljs-number">221.229</span>.<span class="hljs-number">166.252</span> (CN)
+Jun <span class="hljs-number">25</span> <span class="hljs-number">20</span>:<span class="hljs-number">49</span>:<span class="hljs-number">04</span> pi logger: DENY sshd connection from <span class="hljs-number">221.208</span>.<span class="hljs-number">245.226</span> (CN)
+Jun <span class="hljs-number">25</span> <span class="hljs-number">22</span>:<span class="hljs-number">53</span>:<span class="hljs-number">22</span> pi logger: DENY sshd connection from <span class="hljs-number">122.224</span>.<span class="hljs-number">247.188</span> (CN)
+Jun <span class="hljs-number">25</span> <span class="hljs-number">23</span>:<span class="hljs-number">36</span>:<span class="hljs-number">40</span> pi logger: DENY sshd connection from <span class="hljs-number">61.160</span>.<span class="hljs-number">207.146</span> (CN)
+Jun <span class="hljs-number">26</span> <span class="hljs-number">01</span>:<span class="hljs-number">13</span>:<span class="hljs-number">56</span> pi logger: DENY sshd connection from <span class="hljs-number">82.221</span>.<span class="hljs-number">102.185</span> (IS)
+Jun <span class="hljs-number">26</span> <span class="hljs-number">01</span>:<span class="hljs-number">24</span>:<span class="hljs-number">42</span> pi logger: DENY sshd connection from <span class="hljs-number">1.93</span>.<span class="hljs-number">34.228</span> (CN)
+Jun <span class="hljs-number">26</span> <span class="hljs-number">06</span>:<span class="hljs-number">04</span>:<span class="hljs-number">48</span> pi logger: DENY sshd connection from <span class="hljs-number">118.98</span>.<span class="hljs-number">96.81</span> (ID)
+Jun <span class="hljs-number">26</span> <span class="hljs-number">06</span>:<span class="hljs-number">28</span>:<span class="hljs-number">00</span> pi logger: DENY sshd connection from <span class="hljs-number">61.47</span>.<span class="hljs-number">35.61</span> (TH)
+Jun <span class="hljs-number">26</span> <span class="hljs-number">07</span>:<span class="hljs-number">17</span>:<span class="hljs-number">45</span> pi logger: DENY sshd connection from <span class="hljs-number">118.98</span>.<span class="hljs-number">96.81</span> (ID)
+Jun <span class="hljs-number">26</span> <span class="hljs-number">15</span>:<span class="hljs-number">07</span>:<span class="hljs-number">39</span> pi logger: DENY sshd connection from <span class="hljs-number">117.79</span>.<span class="hljs-number">91.220</span> (CN)</code></pre>
+<p>From the connecting side of a non-allowed country, the ssh connection is simply cut off before it can even be attempted:</p>
+<pre><code class="language-bash hljs ">$ ssh root@&lt;ipaddress&gt;
+ssh_exchange_identification: Connection closed by remote host</code></pre>
+<h2 id="updating-geoip">Updating GeoIP</h2>
+<p>In order to make sure you are up-to-date with your GeoIP (free) country database, you will need to write another script which you can run as a monthly root cron job.</p>
+<p><strong>Please note</strong> that if you just installed the GeoIP database, or you have never manually updated it (it does not auto-update), then you should run the following script manually after installing it! The default database that gets installed is several years old and <em>very</em> inaccurate.</p>
+<pre><code class="language-bash hljs "><span class="hljs-shebang">#!/bin/bash
+</span>
+<span class="hljs-built_in">cd</span> /tmp
+wget -q https://geolite.maxmind.com/download/geoip/database/GeoLiteCountry/GeoIP.dat.gz
+<span class="hljs-keyword">if</span> [ <span class="hljs-operator">-f</span> GeoIP.dat.gz ]
+<span class="hljs-keyword">then</span>
+    gzip <span class="hljs-operator">-d</span> GeoIP.dat.gz
+    rm <span class="hljs-operator">-f</span> /usr/share/GeoIP/GeoIP.dat
+    mv <span class="hljs-operator">-f</span> GeoIP.dat /usr/share/GeoIP/GeoIP.dat
+<span class="hljs-keyword">else</span>
+    <span class="hljs-built_in">echo</span> <span class="hljs-string">"The GeoIP library could not be downloaded and updated"</span>
+<span class="hljs-keyword">fi</span></code></pre>
+<p> </p>
+<p> </p>
+<p>https://www.axllent.org/docs/view/ssh-geoip/</p>

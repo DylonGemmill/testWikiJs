@@ -1,0 +1,28 @@
+<p>Gi&agrave; da <strong>etch</strong>&nbsp;Debian supporta iSCSI tramite il pacchetto <a href="http://packages.debian.org/search?keywords=open-iscsi">open-iscsi</a>.</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">aptitude install open-iscsi</pre>
+<p>modificare il file <em>/etc/iscsi/iscsid.conf</em>, decommentando la riga <em><br /></em></p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">node.startup = automatic
+</pre>
+<p>riavviare iSCSI con il comando&nbsp;<span style="font-family: &#39;courier new&#39;, courier;">&nbsp;</span></p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">service open-iscsi restart</pre>
+<p>Quindi per ottenere l&#39;elenco delle risorse iSCSI disponibili da un server, digitare il comando</p>
+<p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">iscsiadm -m discovery -t sendtargets -p IP_SERVER_ISCSI</pre>
+</p>
+<p> stamper&agrave; una o pi&ugrave; righe contenenti i target iSCSI a cui &egrave; possibile connettersi. Segnare l&#39;<em><strong>iqn</strong></em>&nbsp;che ci interessa.<br />Se la risorsa richiede login, dobbiamo memorizzare i parametri di autenticazione con i comandi:</p>
+<p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">iscsiadm -m node --targetname "IQN_SELEZIONATO" --portal "IP_ISCSI" --op=update --name node.session.auth.authmethod --value=CHAP
+iscsiadm -m node --targetname "IQN_SELEZIONATO" --portal "IP_ISCSI" --op=update --name node.session.auth.username --value=someuser
+iscsiadm -m node --targetname "IQN_SELEZIONATO" --portal "IP_ISCSI" --op=update --name node.session.auth.password --value=secret </pre>
+</p>
+<p>quindi eseguire l&#39;accesso con</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">iscsiadm --mode node --targetname "IQN_SELEZIONATO" --portal "IP_SERVER_ISCSI" --login</pre>
+<p>dovrebbe fare login al server iSCSI. Se tutto ok riavviare di nuovo il servizio</p>
+<p><span style="font-family: &#39;courier new&#39;, courier;">
+</span></p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">service open-iscsi restart</pre>
+<p>a questo punto in <em>dmesg</em>&nbsp;o <em>syslog</em>&nbsp;dovremmo vedere un nuovo device fisico (ad esempio <em>sdb</em>) da gestire.</p>
+<p><strong>ATTENZIONE</strong>: a meno di attrezzature e configurazioni adeguate, non lasciare il disco iSCSI montato e non mettere il mount automatico al boot. Se il sistema dovesse perdere la connessione si bloccherebbe completamente!</p>
+<p>&nbsp;</p>
+<p>Riferimenti:</p>
+<p><a href="http://www.cyberciti.biz/faq/howto-setup-debian-ubuntu-linux-iscsi-initiator/">http://www.cyberciti.biz/faq/howto-setup-debian-ubuntu-linux-iscsi-initiator/<br /></a><a href="http://wiki.debian.org/iSCSI/open-iscsi">http://wiki.debian.org/iSCSI/open-iscsi<br />http://www.howtoforge.com/using-iscsi-on-ubuntu-10.04-initiator-and-target</a></p>

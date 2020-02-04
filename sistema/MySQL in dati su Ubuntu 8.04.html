@@ -1,0 +1,8 @@
+<h2 style="margin-bottom: 0,5em;"><span style="font-weight: normal; font-size: 13px;">C&#39;&egrave; un bug in </span><span style="font-size: 13px;">AppArmor</span><span style="font-weight: normal; font-size: 13px;"> di Ubuntu 8.04 che fa si che </span><span style="font-size: 13px;">MySQL</span><span style="font-weight: normal; font-size: 13px;"> non parta se viene spostata la directory dei dati (parametro&nbsp;<strong>datadir</strong>&nbsp;in<em>/etc/mysql/my.cnf</em>), normalmente&nbsp;<em>/var/lib/mysql</em>. Anche creando un link, mysql non parte.</span></h2>
+<div id="article_content">
+<p>Per farlo funzionare, occorre aggiungere nei parametri di configurazione di AppArmor la directory che si intende uilizzare.</p>
+<p>Per cui:</p>
+<p>1. Modificare /etc/apparmor.d/usr.sbin.mysqld aggiungendo le seguenti linee:<br /><br />&nbsp;&nbsp;&nbsp; /home/mysql/ r,<br />&nbsp;&nbsp;&nbsp; /home/mysql/** rwk,<br /><br />&nbsp;&nbsp;&nbsp; da qualche parte nel mezzo del file. Dopo le linee&nbsp;<em>/var/lib/mysql</em>&nbsp;andr&agrave; bene.<br />2. /etc/init.d/apparmor restart<br />3. /etc/init.d/mysql restart</p>
+<p>&nbsp;</p>
+<p>Ref: <a href="https://bugs.launchpad.net/ubuntu/+source/mysql-dfsg-5.0/+bug/201799">https://bugs.launchpad.net</a></p>
+</div>

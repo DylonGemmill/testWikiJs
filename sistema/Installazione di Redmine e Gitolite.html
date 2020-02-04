@@ -1,0 +1,121 @@
+<h3>Redmine</h3>
+<p>In Ubuntu 12 è già nei repository, quindi:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">apt-get install redmine redmine-mysql libapache2-mod-passenger</pre>
+<p>è possibile omettere l&#39;uso di MySQL, in tal caso verrà usato SQLite.</p>
+<p>Se il database è su un server diverso da quello dove si installa Redmine, dire di No alla configurazione del db con dbconfig-common, ed eseguire:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">cp /usr/share/redmine/templates/database.yml.template /etc/redmine/default/database.yml
+chown www-data:www-data /etc/redmine/default/database.yml</pre>
+<p>modificare il file /etc/redmine/default/database.yml impostando:</p>
+<ul>
+<li>adapter: mysql</li>
+<li>database: NOME_DB</li>
+<li>host: HOST_SQL_SERVER</li>
+<li>username: USERNAME_DB</li>
+<li>password: PASWORD_DB</li>
+</ul>
+<div>quindi lanciare:</div>
+<div>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">RAILS_ENV=production rake db:migrate</pre>
+</div>
+<div>che si occuperà di creare la struttura del database.</div>
+<div>Per configurare apache:</div>
+<div>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">cp /usr/share/doc/redmine/examples/apache2-passenger-host.conf /etc/apache2/conf.d/redmine.conf</pre>
+</div>
+<div>modificare il file appena creato sostituendo <em>localhost</em> con <em>* </em>nel VirtualHost e riavviare apache:</div>
+<div>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">service apache2 restart</pre>
+</div>
+<h3> </h3>
+<p>Collegarsi al vhost dove è stato configurato redmine, sottodir /redmine, ed impostare la configurazione predefinita.</p>
+<h3> </h3>
+<h3>Gitolite</h3>
+<p>Eseguire questi comandi. Non dare nessuna passphrase al comando di keygen, e fornire <em>/tmp/id_rsa.pub</em> come chiave SSH amministrativa:</p>
+<div>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">apt-get install gitolite
+cd /tmp
+ssh-keygen -t rsa -f /tmp/id_rsa
+dpkg-reconfigure gitolite</pre>
+</div>
+<div>Quindi copiare le chiavi ssh:</div>
+<div>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">cp /tmp/id_rsa* /var/lib/gitolite/.ssh
+chown gitolite:gitolite /var/lib/gitolite/.ssh/*
+chmod 600 /var/lib/gitolite/.ssh/id_rsa
+chmod 644 /var/lib/gitolite/.ssh/id_rsa.pub
+
+mkdir /usr/share/redmine/.ssh
+cp /var/lib/gitolite/.ssh/id_rsa* /usr/share/redmine/.ssh/
+cd /usr/share/redmine/
+mv .ssh/id_rsa .ssh/gitolite_admin_id_rsa
+mv .ssh/id_rsa.pub .ssh/gitolite_admin_id_rsa.pub
+chown www-data:www-data -R .ssh
+chmod 700 .ssh
+chmod 600 .ssh/gitolite_admin_id_rsa
+chmod 644 .ssh/gitolite_admin_id_rsa.pub
+
+cd /usr/share/redmine
+mkdir public/plugin_assets
+chown -R www-data:www-data public/plugin_assets
+chmod -R 777 public/plugin_assets
+gem install lockfile net-ssh rdoc inifile
+./script/plugin install https://github.com/kubitron/redmine_git_hosting.git</pre>
+</div>
+<p>Modificare il file <span> /usr/share/redmine/vendor/plugins/redmine_git_hosting/init.rb andando a correggere i seguenti parametri:</span></p>
+<ul>
+<li>httpServer: redmine.ufficyo.com</li>
+<li>gitServer: redmine.ufficyo.com</li>
+<li>gitUser: gitolite</li>
+</ul>
+<div>qiundi</div>
+<div>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">cd /usr/share/redmine
+rake db:migrate_plugins RAILS_ENV=production
+cd /usr/share/redmine/public/plugin_assets
+ln -s ../../vendor/plugins/redmine_git_hosting/assets ./redmine_git_hosting </pre>
+</div>
+<p>Modificare il file sudoers aggiungendo in fondo:</p>
+<pre>www-data    ALL=(gitolite) NOPASSWD:ALL
+gitolite    ALL=(www-data) NOPASSWD:ALL
+</pre>
+<p> </p>
+<p>Riavviare apache</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">service apache2 restart</pre>
+<p> </p>
+<p>Andare in <em>Redmine &gt; Administration &gt; Plugins &gt; Redmine Git Hosting Plugin &gt; Configure</em> ed impostare a true il parametro <em>Automatically Initialize Git Repositories.</em></p>
+<p> </p>
+<p>Per abilitare la visualizzazione dei commit nelle segnalazioni (quando nel commit message metto #BUGID) andare in<em> Amministrazione &gt; Impostazioni &gt; Repository</em> e nel campo <em>Parole chiave riferimento</em> mettere <em>*</em>. Nei bug ora si vedranno automaticamente i commit che referenziano il bug. <a href="http://www.redmine.org/projects/redmine/wiki/RedmineSettings#Referencing-issues-in-commit-messages">Rif</a>.</p>
+<p> </p>
+<h3>Autenticazione LDAP</h3>
+<p>Andare in Administrator &gt; Autenticazione LDAP e creare una nuova modalità con questi parametri:</p>
+<ul>
+<li>Nome: <em>nome identificativo</em></li>
+<li>Host: localhost (o host di ldap)</li>
+<li>Porta: 389 (standard)</li>
+<li>Utente: cn=admin,dc=yetopen,dc=it</li>
+<li>Password: <em>password dell&#39;utente sopra</em></li>
+<li>DN base: ou=Users,dc=yetopen,dc=it</li>
+<li>Utente: uid</li>
+<li>Nome: givenName</li>
+<li>Cognome: sn</li>
+<li>Email: mail</li>
+</ul>
+<h3>Configurazione notifiche email</h3>
+<p>Creare il file di config:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">zcat /usr/share/doc/redmine/examples/configuration.yml.example.gz &gt; /etc/redmine/default/configuration.yml</pre>
+<p>Aprire il file creato e trovare la configurazione SMTP non commentata modificandola come segue:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">default:
+  email_delivery:
+    delivery_method: :smtp
+    smtp_settings:
+      address: 10.22.22.190
+      port: 25
+      domain: ufficyo.com
+</pre>
+<p> </p>
+<p>Riavviare apache2, poi andare in <em>Redmine &gt; Amministrazione &gt; Impostazioni &gt; Notifiche via email</em> e cambiare i parametri di notifica secondo le esigenze.</p>
+<p> </p>
+<h3>Forzare l&#39;aggiornamento del repository</h3>
+<p>Non so come mai il repository spesso non è aggiornato con gli ultimi changeset. Per forzare l&#39;aggiornamento della gui di Redmine lanciare il comando:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">/usr/share/redmine/script/runner "Repository.fetch_changesets" -e production</pre>
+<p> </p>

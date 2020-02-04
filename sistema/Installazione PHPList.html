@@ -1,0 +1,42 @@
+<h3>Installazione</h3>
+<div>Scompattare phplist in una directory di lavoro, entrarci ed eseguire</div>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">mv public_html/lists /var/www/mailing
+cd /var/www/mailing
+chown www-data:www-data .
+mkdir uploadimages
+chmod 755 uploadimages
+</pre>
+<div>Quindi occorre creare il database per PHPList:</div>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">mysql -u root -p
+mysql&gt; create database phplist;
+mysql&gt; GRANT SELECT, INSERT, UPDATE, DELETE, CREATE ON phplist.* TO &#39;listuser&#39;@&#39;localhost&#39; IDENTIFIED BY &#39;miapassword&#39;;
+</pre>
+<div>modificare il file <em>config/config.php</em> in particolare:</div>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">$database_host = "localhost";
+$database_name = "phplist";
+$database_user = "listuser";
+$database_password = &#39;l10fFD25&#39;;
+$installation_name = &#39;Mailing CIA Automazione&#39;;
+$pageroot = &#39;/mailing&#39;;
+$adminpages = &#39;/mailing/admin&#39;;
+define ("REGISTER",0);
+define("UNSUBSCRIBE_JUMPOFF",1); // se a 1 non richiede una ragione per l&#39;unsubscribe
+define("FCKIMAGES_DIR","uploadimages");<br />define ("TEST",0);
+</pre>
+<div>Collegarsi al server web dove abbiamo installato PHPList, sottodirectory <em>admin/</em>&nbsp;per iniziare la configurazione:</div>
+<div>http://webserver/mailing/admin/</div>
+<div>Come prima operazione modificare la password di admin.</div>
+<div>Andare in <strong>Configura</strong>&nbsp;&nbsp;ed impostare:</div>
+<div>
+<ul>
+<li>indirizzo internet: url (senza http://) dell&#39;installazione di phplist, per comporre gli indirizzi di unsubscribe ed altro</li>
+<li>nome del dominio: dominio dell&#39;indirizzo email</li>
+<li>amministratore del server: indirizzo email (va bene lasciare <em>nome@[DOMAIN]</em>)</li>
+<li>chi riceve i report: email destinatario che ricever&agrave; i rapporti di invio</li>
+<li>nome mittente delle email di sistema: impostare a piacimento</li>
+<li>footer predefinito per i messaggi email: impostare il pi&egrave; di pagina predefinito</li>
+</ul>
+</div>
+<div>Andare quindi nella pagina <em>liste</em>&nbsp;e creare una nuova lista.</div>
+<h3>Gestione dei bounce</h3>
+<div><a href="http://docs.phplist.com/PhplistInstallation">http://docs.phplist.com/PhplistInstallation</a></div>

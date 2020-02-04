@@ -1,0 +1,13 @@
+<p>Prima della 13.10 era possibile agire nel registro di gnome con il comando</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">gsettings set com.canonical.Unity.Panel systray-whitelist "[&#39;JavaEmbeddedFrame&#39;, &#39;Wine&#39;, &#39;Update-notifier&#39;, &#39;Skype&#39;]"
+oppure
+gsettings set com.canonical.Unity.Panel systray-whitelist "[&#39;all&#39;]"
+</pre>
+<p> </p>
+<p>Dalla 13.10 in poi, invece, la voce nel registro di gnome non è più presente e con la versione di skype scaricata dal sito si continua ad avere il problema. Per risolvere occorre abilitare il repo dei partner e scaricare skype da lì</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">sudo add-apt-repository "deb http://archive.canonical.com/ $(lsb_release -sc) partner"
+sudo apt-get update
+sudo apt-get install skype &amp;&amp; sudo apt-get -f install</pre>
+<p> </p>
+<p> </p>
+<p>fonte: <a href="http://askubuntu.com/questions/286233/how-to-add-a-skype-indicator">http://askubuntu.com/questions/286233/how-to-add-a-skype-indicator</a></p>

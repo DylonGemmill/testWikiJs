@@ -1,0 +1,16 @@
+<p>Se non correttamente configurato apache può consumare molte risorse di sistema, ram in primis, e costringere il server a swappare, degradando le prestazioni.</p>
+<p> </p>
+<p>Come prima cosa è essenziale condizionare il numero di processi.</p>
+<p>Una configurazione di partenza può essere la seguente:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">StartServers 10
+MinSpareServers 5
+MaxSpareServers 10
+ServerLimit 20
+MaxClients 10
+MaxRequestsPerChild 2000</pre>
+<p>Modificare il parametro ServerLimit in base alle richieste che si andranno a servire.</p>
+<p> </p>
+<p>Per un tuning più accurato vedere i seguenti link:</p>
+<p><a href="http://andypanix.com/articoli/maxclients-maxkeepaliverequests-e-keepalivetimeout-ottimizzazione-di-apache-http-server">http://andypanix.com/articoli/maxclients-maxkeepaliverequests-e-keepalivetimeout-ottimizzazione-di-apache-http-server</a></p>
+<p><a href="http://www.devside.net/articles/apache-performance-tuning">http://www.devside.net/articles/apache-performance-tuning</a></p>
+<p><a href="http://www.modsecurity.org/blog/archives/2006/08/apache_reverse.html">http://www.modsecurity.org/blog/archives/2006/08/apache_reverse.html</a></p>

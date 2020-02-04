@@ -1,0 +1,74 @@
+<p>Premesso che ci sia gi&agrave; installato mysql</p>
+<p># aptitude install phpmyadmin apache2 proftpd-mysql&nbsp;</p>
+<p># groupadd -g 2001 ftpgroup</p>
+<p># useradd -u 2001 -s /bin/false -d /bin/null -c "proftpd user" -g ftpgroup ftpuser</p>
+<p># ??mysql -u root -p</p>
+<p>&gt;&nbsp;CREATE DATABASE ftp;<br />&gt; GRANT SELECT, INSERT, UPDATE, DELETE ON ftp.* TO &#39;ftp&#39;@&#39;localhost&#39; IDENTIFIED BY &#39;password&#39;;<br />&gt; FLUSH PRIVILEGES;&nbsp;<br />&gt; USE ftp;</p>
+<p>CREATE TABLE ftpgroup (<br />groupname varchar(16) NOT NULL default &#39;&#39;,<br />gid smallint(6) NOT NULL default &#39;5500&#39;,<br />members varchar(16) NOT NULL default &#39;&#39;,<br />KEY groupname (groupname)<br />) TYPE=MyISAM COMMENT=&#39;ProFTP group table&#39;;</p>
+<p class="command">CREATE TABLE ftpquotalimits (<br />name varchar(30) default NULL,<br />quota_type enum(&#39;user&#39;,&#39;group&#39;,&#39;class&#39;,&#39;all&#39;) NOT NULL default &#39;user&#39;,<br />per_session enum(&#39;false&#39;,&#39;true&#39;) NOT NULL default &#39;false&#39;,<br />limit_type enum(&#39;soft&#39;,&#39;hard&#39;) NOT NULL default &#39;soft&#39;,<br />bytes_in_avail bigint(20) unsigned NOT NULL default &#39;0&#39;,<br />bytes_out_avail bigint(20) unsigned NOT NULL default &#39;0&#39;,<br />bytes_xfer_avail bigint(20) unsigned NOT NULL default &#39;0&#39;,<br />files_in_avail int(10) unsigned NOT NULL default &#39;0&#39;,<br />files_out_avail int(10) unsigned NOT NULL default &#39;0&#39;,<br />files_xfer_avail int(10) unsigned NOT NULL default &#39;0&#39;<br />) TYPE=MyISAM;</p>
+<p class="command">CREATE TABLE ftpquotatallies (<br />name varchar(30) NOT NULL default &#39;&#39;,<br />quota_type enum(&#39;user&#39;,&#39;group&#39;,&#39;class&#39;,&#39;all&#39;) NOT NULL default &#39;user&#39;,<br />bytes_in_used bigint(20) unsigned NOT NULL default &#39;0&#39;,<br />bytes_out_used bigint(20) unsigned NOT NULL default &#39;0&#39;,<br />bytes_xfer_used bigint(20) unsigned NOT NULL default &#39;0&#39;,<br />files_in_used int(10) unsigned NOT NULL default &#39;0&#39;,<br />files_out_used int(10) unsigned NOT NULL default &#39;0&#39;,<br />files_xfer_used int(10) unsigned NOT NULL default &#39;0&#39;<br />) TYPE=MyISAM;</p>
+<p class="command">CREATE TABLE ftpuser (<br />id int(10) unsigned NOT NULL auto_increment,<br />userid varchar(32) NOT NULL default &#39;&#39;,<br />passwd varchar(32) NOT NULL default &#39;&#39;,<br />uid smallint(6) NOT NULL default &#39;5500&#39;,<br />gid smallint(6) NOT NULL default &#39;5500&#39;,<br />homedir varchar(255) NOT NULL default &#39;&#39;,<br />shell varchar(16) NOT NULL default &#39;/sbin/nologin&#39;,<br />count int(11) NOT NULL default &#39;0&#39;,<br />accessed datetime NOT NULL default &#39;0000-00-00 00:00:00&#39;,<br />modified datetime NOT NULL default &#39;0000-00-00 00:00:00&#39;,<br />PRIMARY KEY (id),<br />UNIQUE KEY userid (userid)<br />) TYPE=MyISAM COMMENT=&#39;ProFTP user table&#39;;</p>
+<p>Modificare&nbsp;/etc/proftpd/proftpd.conf e decommentare la parte di&nbsp;&lt;IfModule mod_sql.c&gt; e&nbsp;?Include /etc/proftpd/sql.conf.</p>
+<p>Modificare /etc/proftpd/sql.conf con il seguente contenuto:</p>
+<pre>&lt;IfModule mod_sql.c&gt;<br />DefaultRoot ~
+
+SQLBackend              mysql
+# The passwords in MySQL are encrypted using CRYPT
+SQLAuthTypes            Plaintext Crypt
+SQLAuthenticate         users groups
+
+
+# used to connect to the database
+# databasename@host database_user user_password
+SQLConnectInfo  ftp@localhost proftpd password
+
+
+# Here we tell ProFTPd the names of the database columns in the "usertable"
+# we want it to interact with. Match the names with those in the db
+SQLUserInfo     ftpuser userid passwd uid gid homedir shell
+
+# Here we tell ProFTPd the names of the database columns in the "grouptable"
+# we want it to interact with. Again the names match with those in the db
+SQLGroupInfo    ftpgroup groupname gid members
+
+# set min UID and GID - otherwise these are 999 each
+SQLMinID        500
+
+# create a user&#39;s home directory on demand if it doesn&#39;t exist
+CreateHome on
+
+# Update count every time user logs in
+SQLLog PASS updatecount
+SQLNamedQuery updatecount UPDATE "count=count+1, accessed=now() WHERE userid=&#39;%u&#39;" ftpuser
+
+# Update modified everytime user uploads or deletes a file
+SQLLog  STOR,DELE modified
+SQLNamedQuery modified UPDATE "modified=now() WHERE userid=&#39;%u&#39;" ftpuser
+
+# User quotas
+# ===========
+QuotaEngine on
+QuotaDirectoryTally on
+QuotaDisplayUnits Mb
+QuotaShowQuotas on
+
+SQLNamedQuery get-quota-limit SELECT "name, quota_type, per_session, limit_type, bytes_in_avail, bytes_out_avail, bytes_xfer_avail, files_in_avail, files_out_avail, files_xfer_avail FROM ftpquotalimits WHERE name = &#39;%{0}&#39; AND quota_type = &#39;%{1}&#39;"
+
+SQLNamedQuery get-quota-tally SELECT "name, quota_type, bytes_in_used, bytes_out_used, bytes_xfer_used, files_in_used, files_out_used, files_xfer_used FROM ftpquotatallies WHERE name = &#39;%{0}&#39; AND quota_type = &#39;%{1}&#39;"
+
+SQLNamedQuery update-quota-tally UPDATE "bytes_in_used = bytes_in_used + %{0}, bytes_out_used = bytes_out_used + %{1}, bytes_xfer_used = bytes_xfer_used + %{2}, files_in_used = files_in_used + %{3}, files_out_used = files_out_used + %{4}, files_xfer_used = files_xfer_used + %{5} WHERE name = &#39;%{6}&#39; AND quota_type = &#39;%{7}&#39;" ftpquotatallies
+
+SQLNamedQuery insert-quota-tally INSERT "%{0}, %{1}, %{2}, %{3}, %{4}, %{5}, %{6}, %{7}" ftpquotatallies
+
+QuotaLimitTable sql:/get-quota-limit
+QuotaTallyTable sql:/get-quota-tally/update-quota-tally/insert-quota-tally
+
+RootLogin off
+RequireValidShell off<br />&lt;/IfModule&gt;
+</pre>
+<p>Tornare in mysql:</p>
+<p># mysql -u ftp -p<br />&gt; use ftp;<br />INSERT INTO `ftpgroup` (`groupname`, `gid`, `members`) VALUES (&#39;ftpgroup&#39;, 2001, &#39;ftpuser&#39;);<br />INSERT INTO `ftpquotalimits` (`name`, `quota_type`, `per_session`, `limit_type`, `bytes_in_avail`, `bytes_out_avail`, `bytes_xfer_avail`, `files_in_avail`, `files_out_avail`, `files_xfer_avail`) VALUES (&#39;exampleuser&#39;, &#39;user&#39;, &#39;true&#39;, &#39;hard&#39;, 15728640, 0, 0, 0, 0, 0);<br />INSERT INTO `ftpuser` (`id`, `userid`, `passwd`, `uid`, `gid`, `homedir`, `shell`, `count`, `accessed`, `modified`) VALUES (1, &#39;exampleuser&#39;, &#39;secret&#39;, 2001, 2001, &#39;/home/www.example.com&#39;, &#39;/sbin/nologin&#39;, 0, &#39;&#39;, &#39;&#39;);&nbsp;</p>
+<p class="command">&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p><a href="http://howtoforge.com/virtual-hosting-with-proftpd-and-mysql-debian-lenny">http://howtoforge.com/virtual-hosting-with-proftpd-and-mysql-debian-lenny</a></p>

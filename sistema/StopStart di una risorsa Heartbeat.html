@@ -1,0 +1,16 @@
+<p>Sui sistemi nuovi basati su corosync i comandi sono stati modificati come segue:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">crm resource stop NOMERISORSA 
+crm resource start NOMERISORSA</pre>
+<p> </p>
+<p>Se la risorsa risulta in errore possiamo tentare una ripartenza con il comando</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">crm resource cleanup NOMERISORSA</pre>
+<p> </p>
+<p> </p>
+<p><strong>2013.10.25 OBSOLETA</strong></p>
+<p>In caso di Heartbeat con monitor dei servizi, se arresto uno di questi demoni, HB tenterà di riavviarlo o di fare fallback verso l&#39;altro host.</p>
+<p>In caso l&#39;arresto sia necessario per manutenzione o altro, occorre spegnere il demone tramite HB stesso.<br />Per fare questo uso il comando</p>
+<p> </p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">crm_resource -r zimbra_11 -p target_role -v stopped</pre>
+<p>Dove <em>zimbra_11</em> è il nome della risorsa che devo arrestare.<br />Al termine delle operazioni:</p>
+<p> </p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">crm_resource -r zimbra_11 -p target_role -v started</pre>

@@ -1,0 +1,9 @@
+<p>Per rimuovere i fastidiosi a capo di windows (visualizzati come ^M) torna utile il programma <strong>dos2unix</strong> che &#39;depura&#39; i file da questi fastidiosi caratteri.</p>
+<p>&nbsp;</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">dos2unix nomefile.txt</pre>
+<p>&nbsp;</p>
+<p>Il comando modifica il file cancellando i caratteri indesiderati.</p>
+<p>Per depurare un&#39;intera cartella di sorgenti:</p>
+<p>&nbsp;</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">find mysrc/ -iname "*.php" -exec dos2unix {} \;</pre>
+<p>&nbsp;</p>
