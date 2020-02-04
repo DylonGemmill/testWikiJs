@@ -1,0 +1,45 @@
+<h2>Installazione di Joomla</h2>
+<p>// FIXME</p>
+<ul>
+<li><em>Sito &gt; Configurazione Globale &gt; Server</em>: impostare il fuso orario italiano</li>
+<li>Nella maggior parte dei casi si vorranno nascondere autore, ultima modifica, ed altre informazioni che per i non-blog non sono utili. Andare in <em>Contenuti &gt; Gestione articoli</em> e premere il pulsante <em>Preferenze</em>.<br />Scheda <em>Articoli</em><br /><ol>
+<li>Categoria: nascondi</li>
+<li>Autore: nascondi</li>
+<li>Data pubblicazione: nascondi</li>
+<li>Visite: nascondi</li>
+</ol>Scheda <em>Categoria<br /></em><ol>
+<li>Titolo categoria: nascondi</li>
+<li>Descrizione categoria: nascondi</li>
+<li>Immagine categoria: nascondi</li>
+</ol>Scheda <em>Categorie</em><br /><ol>
+<li>n. articoli della categoria: nascondi</li>
+</ol>Scheda <em>Lista layouts</em><br /><ol>
+<li>nascondere tutto!</li>
+</ol></li>
+<li><em>Estensioni &gt; Gestione template &gt; Opzioni</em>: Anteprima modulo: Abilita</li>
+<li><em><br /></em></li>
+</ul>
+<h2>Installazione componenti base</h2>
+<ul>
+<li><a href="http://www.joomlacontenteditor.net/downloads">JCE Editor</a>: dopo l&#39;installazione andare in <em>Sito &gt; Configurazione globale &gt; Sito</em> e modificare l&#39;editor predefinito in <strong>JCE</strong></li>
+<li><a href="http://www.akeebabackup.com/download.html">Akeeba Backup</a> per effettuare backup e migrazioni</li>
+</ul>
+<h2>Componenti specifici</h2>
+<ul>
+<li>Google Maps: <a href="http://www.phoca.cz/phocamaps">phocamaps</a> è molto bello per creare le mappe. L&#39;unico difetto è che impostando un indirizzo lui posiziona il marker sulle coordinate ottenute da Google, e se non sono precise non c&#39;è modo di sistemarlo (2011.05.20)</li>
+<li>HTML Map: <a href="http://extensions.joomla.org/extensions/style-a-design/design/7332">HTML maps</a> permette di impostare dei link, ed anche animazione (immagini diverse <em>on hover</em>)</li>
+<li>Sitemap: <a href="http://extensions.joomla.org/extensions/structure-a-navigation/site-map/3066">Xmap</a></li>
+<li>Generazione menù da articoli di una categoria: <a href="http://extensions.joomla.org/extensions/structure-a-navigation/menu-systems/menu-editors/7191">mod_autogen</a></li>
+<li>Statistiche: <a href="http://extensions.joomla.org/extensions/site-management/site-analytics/4300">J!Analytics</a> è un modulo da pubblicare, nel footer, per l&#39;inserimento del codice necessario al tracciamento tramite Google Analytics</li>
+<li>Galleria di immagini: la più bella è sicuramente <a href="http://extensions.joomla.org/extensions/photos-a-images/photo-gallery/11426">SigPlus</a>, che tramite jQuery consente di creare gallerie dinamiche con ridimensionamento automatico, creazione automatica miniature, animazione e scorrimento automatico, possibilità di inserire titolo e descrizion. Attenzione: usare il pacchetto <em><strong>pkg_sigplus</strong></em>!</li>
+<li>File Download: <a href="http://www.phoca.cz/phocadownload">Phoca Download</a> permette di creare un&#39;area per ospitare file</li>
+<li>Guestbook: <a href="http://www.phoca.cz/phocaguestbook">Phoca Guestbook</a></li>
+<li>Newsletter: <a href="http://extensions.joomla.org/extensions/content-sharing/newsletter/11585">jNews</a> è il componente top per l&#39;invio di newsletter tramite joomla. La versione base in teoria non permette di modificare i template, in realtà inserendo l&#39;url corretto nella pagina di admin è possibile modificarli, perché i file di gestione sono comunque installati. Oltre a questo, nella <a href="http://www.joobi.co/marketplace/product-display/show?eid=82">versione pro</a> è possibile gestire statistiche avanzate, bounce (con estensione apposita), gestione delle code ed altro</li>
+<li>Gestione avanzata dei menù con <a href="http://extensions.joomla.org/extensions/structure-a-navigation/menu-systems/menu-editors/168">swMenuFree</a>. Permette di creare, tramite pannello di amministrazione, di un menù con sfondi e colori personalizzati, in grado anche di espandere automaticamente una categoria di articoli creando le voci di menù relative. La versione a pagamento permette di avere submenu orizzontali, e di espandere i sottomenù oltre il primo livello</li>
+<li><em><a href="http://extensions.joomla.org/extensions/structure-a-navigation/site-navigation/13789">Page navigation titles</a></em> consente di sostituire i link <em>Prec</em> e <em>Succ</em> con il titolo reale dell&#39;articolo</li>
+<li>News a scorrimento: <a href="http://extensions.joomla.org/extensions/news-display/news-tickers-a-scrollers/15315">mod_xpertscroller</a> è molto bello, personalizzabile, che consente la visualizzazione di news a scorrimento con anteprima in qualunque posizione del sito. Demo <a href="http://demo.themexpert.com/extensions/">qui</a></li>
+<li><a href="http://extensions.joomla.org/extensions/social-web/social-profiles/11989">Social media links</a>: bottoni per i principali siti</li>
+<li><a href="http://extensions.joomla.org/extensions/social-web/republish/16585">Facebook Like Button</a>: bottone per effettuare il like su una pagina fb. Serve un pagina fb su cui poter effettuare il like.</li>
+<li>Galleria in homepage: in molti siti si tende a mettere uno showcase, una galleria in alto con immagini a scorrimento (<a href="http://www.aleflex.it">aleflex</a>, <a href="http://www.sherpaonline.it">sherpa</a>). Se la slideshow è passiva si può usare <a href="http://extensions.joomla.org/extensions/photos-a-images/images-slideshow/16404">JV Slideshow</a>, o del semplice codice jQuery. Se si vuole fare qualcosa di interattivo, cliccabile, e gestibile dal backend, valutare <a href="http://demo.joomlaworks.gr/">Frontpage Slideshow di JoomlaWorks</a>.</li>
+<li>Disabilitare MooTools di sistema: per disabilitare la libreria MooTools inclusa in Joomla, solitamente a causa di conflitti con estensioni che fanno uso di altre librerie tipo jQuery, utilizzare il plugin <a href="http://digitaldisseny.com/en/joomla-extensions/disable-mootools-joomla-per-itemid-solve-jquery-conflicts">Mootools Enabler/Disabler</a>. Il plugin, oltre a disabilitare MooTools, permette anche di abilitarlo solo per i componenti che ne hanno effettivamente bisogno.</li>
+</ul>

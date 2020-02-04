@@ -1,0 +1,17 @@
+<p>Per rendere un foglio di stile importato ed editabile da jvframework occorre metterlo nella directory</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">templates/jv-framework/themes/MIOTEMA/css</pre>
+<p>e poi aggiungerlo all&#39;elenco dei css da importare. Tale elenco si trova nel file</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">components/com_jvframework/basethemes/layouts/head.xml</pre>
+<p>Per aggiungerlo, modificare il tag relativo inserendo il nome del file (senza l&#39;estensione css) separandolo con una virgola da quelli gi&agrave; presenti, esempio:</p>
+<pre class="brush: xml;fontsize: 100; first-line: 1; ">--- head.xml    2011-10-10 16:02:39.600743817 +0200
++++ head.xml.orig       2011-10-10 16:14:09.539514032 +0200
+@@ -40,7 +40,7 @@
+         
+         &lt;!-- Add style to head--&gt;
+         &lt;stylefile  names=&#39;typo&#39; path=&#39;base_theme&#39; /&gt;   
+-        &lt;stylefile  names=&#39;layout,css3,k2&#39; media=&#39;&#39; path=&#39;&#39; /&gt;   
++        &lt;stylefile  names=&#39;layout,css3&#39; media=&#39;&#39; path=&#39;&#39; /&gt;   
+         
+         &lt;!-- Stylesheet from framework addon --&gt;
+         &lt;addonstyle/&gt;</pre>
+<p>per aggiungere il file templates/jv-framework/themes/MIOTEMA/css/k2.css</p>

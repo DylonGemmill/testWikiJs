@@ -1,0 +1,7 @@
+<p>Nel caso in cui si utilizzino dei componenti che richiamano altri componenti, può capitare che la lingua non venga caricata correttamente per tutti i file e quindi vengano stampate le costanti relative ma senza traduzione.</p>
+<p> </p>
+<p>Per forzare il caricamento della lingua in una parte di codice, usare</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">$language = JFactory::getLanguage();
+$language-&gt;load(&#39;com_virtuemart&#39;, JPATH_ADMINISTRATOR);
+</pre>
+<p>dove <em>com_virtuemart</em> è il componente della lingua che vogliamo caricare e <em>JPATH_ADMINISTRATOR</em> la directory da cui caricare la lingua (può essere anche <em>JPATH_SITE</em>).</p>

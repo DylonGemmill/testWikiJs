@@ -1,0 +1,66 @@
+<p>Scaricati i file dal sito Artio dovremmo avere com_vminvoice.zip e plg_vminvoice_autorun.zip. Installare i due pacchetti usando il tool fornito da Joomla (Estensioni &gt; Installa / rimuovi).</p>
+<p> </p>
+<p>Andare quindi in <em>Componenti &gt; VM Invoice &gt; Global configuration</em>.</p>
+<ul>
+<li>General Config</li>
+<ul>
+<li>Operation Mode: definisce se le fatture devono essere generate ed inviate automaticamente, o in modalità <strong>manuale</strong>;</li>
+<li>Required Order Status: nella modalità automatica quando un ordine raggiunge questo stato viene generato il numero ed inviata la fattura. Normalmente è <strong>Confirmed</strong>;</li>
+<li>Mailing interval: intervallo ogni quando vengono inviate le fatture tramite posta elettronica;</li>
+<li>Extra Field 1: se si vuole far stampare sotto l&#39;indirizzo i campi aggiuntivi (P.IVA e C.F.), con relativa etichetta (opzione precedente). Impostare a <strong>No</strong> la visualizzazione etichette, e ad <strong>extra field 1 </strong>e <strong>extra field 2</strong> i campi.</li>
+</ul>
+<li>Order editing</li>
+<ul>
+<li>Default currency: valuta predefinita per le fatture: <strong>EUR</strong>;</li>
+<li>Show Signature: <strong>No</strong>;</li>
+<li>Show pagination: <strong>When more pages</strong>;</li>
+<li>Information fields position: <strong>Footer (last page)</strong>;</li>
+</ul>
+<li>Page Appearance</li>
+<ul>
+<li>Use Customer Language: se si vuole inviare la fattura nella lingua scelta dall&#39;utente. <strong>No</strong>;</li>
+</ul>
+<li>Mailing Configuration<br />Nei campi delle email è possibile mettere dei codici per visualizzare alcuni campi specifici: <em>[%invoiceID%]</em> verrà sostituito con il numero fattura, <em>[%orderID%]</em> con il numero ordine,  <span><em>[%firstName%] [%lastName%]</em> con nome e cognome del cliente.</span></li>
+<ul>
+<li>Send mail to: si può decidere di inviare la fattura solo al cliente, solo al negoziante o ad entrambi;</li>
+<li>Sender Email: email del mittente;</li>
+<li>Sender Name: nominativo del mittente;</li>
+<li>Mail Subject: oggetto della mail;</li>
+<li>Mail Body: corpo del messaggio (attenzione! se non compare premere show/hide sopra l&#39;editor un paio di volte)</li>
+<li>Delivery Note Subject: oggetto (in caso di invio delle bolle);</li>
+<li>Delivery Note Body: corpo della mail in caso di invio bolle.</li>
+</ul>
+<li>Registration</li>
+<ul>
+<li>VM Invoice Download ID: inserire il codice di download di VMInvoice ricevuto da Artio.</li>
+</ul>
+</ul>
+<div>Passiamo ora alla configurazione delle fatture andando in <em>VM Invoice &gt; Invoice Configuration</em><span>.</span></div>
+<div>
+<ul>
+<li>Invoice Numbering</li>
+<ul>
+<li>Invoice Number: si può decidere se usare lo stesso numeratore degli ordini o usarne uno separato. <strong>Own numbering</strong>;</li>
+<li>Starting Order For Numbering: numero ordine da cui partire per la creazione delle fatture. Ad esempio se sto importando un vecchio db o un backup e non voglio che gli ordini vecchi vengano "fatturati" al cambio di stato. <strong>0</strong>;</li>
+<li>Numbering Prefix: prefisso da anteporre al numero fattura. Di solito si usa l&#39;anno;</li>
+<li>Allow invoice number prefix editing: permettere la modifica manuale del prefisso di numerazione delle fatture. <strong>No</strong>.</li>
+</ul>
+<li>Invoice Configuration</li>
+<ul>
+<li>Address Shown: decide se mostrare l&#39;indirizzo di fatturazione, spedizione o entramb. <strong>Both if shipping is different</strong>i;</li>
+<li>Show Address Label: mostrare l&#39;etichetta davanti all&#39;indirizzo (spedizione, fatturazione). <strong>Si</strong>;</li>
+<li><span style="font-size: 13px;">Address Format: <strong>STANDARD_ADDRESS_FORMAT</strong>;</span></li>
+<li>Show Customer Number: <strong>No</strong>;</li>
+<li><span style="font-size: 13px;">Default Invoice Date: la data da mostrare sulla fattura, generalmente </span><strong><em style="font-size: 13px;">Invoice Create Date</em></strong><span style="font-size: 13px;">;</span></li>
+<li><span style="font-size: 13px;">Show taxable payment date: <strong>No</strong>;</span></li>
+<li><span style="font-size: 13px;">Show customer note: <strong>No</strong>;</span></li>
+</ul>
+<li>Invoice items configuration</li>
+<ul>
+<li>Repeat table header: <strong>Si</strong>;</li>
+<li>Show quantity unit: <strong>Si</strong>:</li>
+<li>Always show currency unit: <strong>Si</strong>;</li>
+<li>Extend total line: <strong>Si</strong>;</li>
+</ul>
+</ul>
+</div>

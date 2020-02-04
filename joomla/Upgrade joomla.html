@@ -1,0 +1,26 @@
+<p>Fonte http://wiki.joomla.it/index.php/Aggiornamento_da_una_versione_di_Joomla_1.7_alla_nuova_2.5.1</p>
+<p><span class="mw-headline">Metodo n&deg;2: Aggiornamento SemiAutomatico&nbsp; se si &egrave; in dubbio sul percorso della cartella </span>andare dal pannello amministratore:</p>
+<p>sito-&gt;configurazione globale-&gt;sistema Percorso Log<span class="star">&nbsp;* modificandolo opportunamente con la cartella tmp</span></p>
+<p>&nbsp;</p>
+<p><span class="star">Risoluzione di eventuali problemi:</span></p>
+<p>&nbsp;</p>
+<h2 class="contentheading"><a href="http://www.gluone70.com/it/linux/42-upgrade-joomla-alla-versione-172.html">Upgrade Joomla alla versione 1.7.3</a></h2>
+<ul class="actions">
+<li class="print-icon"><a title="Stampa" href="http://www.gluone70.com/it/linux/42-upgrade-joomla-alla-versione-172.html?tmpl=component&amp;print=1&amp;layout=default&amp;page=" rel="nofollow"><img src="http://www.gluone70.com/templates/allrounder-j1.6/images/system/printButton.png" alt="Stampa" /></a></li>
+<li class="email-icon"><a title="Email" href="http://www.gluone70.com/it/component/mailto/?tmpl=component&amp;template=allrounder-j1.6&amp;link=21325ea16fabdc542643edbca569d7ac00f513bb"><img src="http://www.gluone70.com/templates/allrounder-j1.6/images/system/emailButton.png" alt="Email" /></a></li>
+</ul>
+<p><span class="star"><a class="article-detailer">Dettagli</a></span></p>
+<div class="content-links">&nbsp;</div>
+<p>Cercando di aggiornare Joomla dalla versione 1.7.0 e 1.7.1 alla 1.7.3 vi sar&agrave; capitato di incappare nell&#39;errore -1 copia fallita.</p>
+<p>&nbsp;</p>
+<p>questa &egrave; la mia soluzione:</p>
+<p>&nbsp;</p>
+<ol>
+<li>modificare il file /libraries/joomla/filesystem/folder.php (fate prima una copia di sicurezza del file).<br />andate alla riga 137 e e modificate la riga&nbsp;<br />return JError::raiseError(-1, JText::_(&#39;JLIB_FILESYSTEM_ERROR_COPY_FAILED&#39;));<br />con<br />return JError::raiseError(-1, $dfid);</li>
+<li>Abilitate il debug dal backend di Joomla.</li>
+<li>controllate che le cartelle tmp e log abbiano i permessi di scrittura</li>
+<li>procedete all&#39;upgrade come indicato su joomla.it</li>
+<li>se non andr&agrave; a buon fine, ora vi dir&agrave; qual&#39;&egrave; il file che non riesce a sovrascrivere, modificate i permessi e riprovate finch&egrave; non vi dar&agrave; pi&ugrave; l&#39;errore.</li>
+<li>se tutto &egrave; okay allora utilizzando la copia di backup di folder.php rimettetelo in libraries/joomla/filesystem</li>
+</ol>
+<p><span class="star"><br /></span></p>

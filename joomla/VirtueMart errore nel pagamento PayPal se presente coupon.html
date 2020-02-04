@@ -1,0 +1,6 @@
+<p>Se presente un codice sconto, il pagamento PayPal non corrisponde al totale ordine.<br />Questo perch&eacute; viene erroneamente calcolata l&#39;iva sul codice sconto.</p>
+<p>Per risolvere: entrare in VirtueMart &gt; Negozio &gt; Pagamenti &gt; PayPal &gt; Configurazione e sostituire:</p>
+<p><span style="font-family: &#39;courier new&#39;, courier;">"amount" =&gt; round( $db-&gt;f("order_subtotal")+$db-&gt;f("order_tax")-$discount_total, 2),</span><br /><span style="font-family: &#39;courier new&#39;, courier;">"shipping" =&gt; sprintf("%.2f", $db-&gt;f("order_shipping")+$db-&gt;f("order_shipping_tax")),</span></p>
+<p><span style="font-family: &#39;courier new&#39;, courier;">con </span><br /><span style="font-family: &#39;courier new&#39;, courier;">"amount" =&gt; round( $db-&gt;f("order_total") - $db-&gt;f("order_shipping"), 2),</span><br /><span style="font-family: &#39;courier new&#39;, courier;">"shipping" =&gt; sprintf("%.2f", $db-&gt;f("order_shipping")),</span></p>
+<p>&nbsp;</p>
+<p><a href="http://forum.vmitalia.net/index.php?topic=6848.msg26208#msg26208">http://forum.vmitalia.net/index.php?topic=6848.msg26208#msg26208</a></p>

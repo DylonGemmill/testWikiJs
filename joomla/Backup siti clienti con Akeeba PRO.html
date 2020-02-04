@@ -1,0 +1,15 @@
+<p>Abbiamo acquistato la sottoscrizione ad Akeeba Backup PRO per effettuare il backup remoto dei siti web Joomla.</p>
+<p>I backup sono schedulati via cron (/etc/cron.d/yetopen) su <em>ispc</em>, il server FTP è su <em>ispc.ufficyo.com</em> associato al sito <em>backups.yetopen.it</em>.</p>
+<p>Essendo l&#39;FTP di ISPConfig associato ad un sito, nella webroot di <em>backups</em> c&#39;è un link <em>siti</em> che punta al NAS.</p>
+<p>Per effettuare il backup di un sito:</p>
+<ol>
+<li>loggarsi ad ISPConfig di demo con l&#39;account <em>yetopen</em></li>
+<li>creare un account FTP associato al dominio <em>backups.yetopen.it</em>, mettendo in <em>Options &gt; Directory</em> un percorso relativo al nome del sito. Ad esempio per il sito <em>yetopen.it</em> /var/www/clients/client1/<strong>web8/web/siti/yetopen.it</strong>. Creare la directory su filesystem ed assegnargli i permessi <em>web8:client1</em>.</li>
+<li>installare akeeba backup pro sul sito web. Anche se c&#39;è già installata la versione base si può fare un&#39;installazione diretta.</li>
+<li>andare in <em>Components &gt; Akeeba Backup</em>, premere <em>Opzioni</em> ed abilitare il backup da frontend, inserendo una parola segreta casuale e gli altri campi come da esempio:<br /><br /><img src="https://apps.ufficyo.com/kb/images/screenshot-www.sherpaonline.it%202016-03-14%2010-31-20.png" width="614" height="247" /></li>
+<li>creare un nuovo profilo di backup dalla gestione profili, copiando l&#39;esistente ma dandogli come nome <em>Backup con FTP</em>. Modificare le opzioni:<br />* Motore di archiviazione: selezionare <strong>JPS</strong>, generare una passphrase di almeno 15 caratteri e <span style="text-decoration: underline;">memorizzarla su una voce <em>Akeeba Backup</em> nella cartella del cliente su BitWarden</span>;<br />* Strumento di analisi delle informazioni: selezionare <em>Carica su server FTP remoto </em>e configurare i parametri FTP come di seguito<br /><br /><img src="https://apps.ufficyo.com/kb/images/screenshot-www.sherpaonline.it%202016-03-14%2010-39-41.png" width="640" height="468" /></li>
+<li>Gestione quota: Abiliare gestione quota file remoti, Abilita conteggio quota a <strong>3</strong>.<br /><img src="https://apps.ufficyo.com/kb/images/screenshot-www.rifugiosassicastelli.it-2018.10.16-14-21-05.png" width="575" height="505" /><br />Salvare il profilo.</li>
+<li>Dal pannello principale di Akeeba andare in <em>Scheduling information &gt; Front-end backup feature &gt; cURL </em>e copiare il comando di backup e incollarlo in fondo a <em>/dati/yetopen/bin/akeeba_backup.sh</em> su <em>ispc</em>. </li>
+</ol>
+<p> E&#39; possibile selezionare questi storage remoti in alternativa a quello appena usato:</p>
+<p><img id="74C58153-C14C-4022-B317-C5F2F2EC7EB7" class="" src="https://postino.ufficyo.com/service/home/~/?auth=co&amp;loc=it&amp;id=186367&amp;part=2.2" /> </p>

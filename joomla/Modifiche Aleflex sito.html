@@ -1,0 +1,64 @@
+<p>Modifiche da apportare al sito aleflex da valutare se conviene fare un backup con akeeba e portarlo online eventualemnte se hanno aggiunto articoli sul sito online si puo&#39; seguire il seguente schema:</p>
+<p><strong>N.B. PRIMA DI ESEGUIRE LE SEGUENTI PROCEDURE FARE UN BACKUP DEL SITO ONLINE E OFFLINE DI ALEFLEX E TRASFERIRE I BACKUP IN WORKAREA/WORKINGPROGRESS/ALEFLEX.</strong></p>
+<p>1)Fare un backup delle tabelle articoli,categorie,sezioni, utenti, gruppi<strong> del sito online </strong>seguendo la seguente guida <a href="https://mail.ufficyo.com/kb/index.php?action=artikel&amp;cat=5&amp;id=393&amp;artlang=it">https://mail.ufficyo.com/kb/index.php?action=artikel&amp;cat=5&amp;id=393&amp;artlang=it</a> </p>
+<p>2)Importare le tabelle sul sito demo come da guida <a href="https://mail.ufficyo.com/kb/index.php?action=artikel&amp;cat=5&amp;id=393&amp;artlang=it">https://mail.ufficyo.com/kb/index.php?action=artikel&amp;cat=5&amp;id=393&amp;artlang=it</a> </p>
+<p>3)Verificare se i contenuti sono stati importati e il funzionamento del sito.</p>
+<p>4)Eseguire un backup con akeeba backup del <strong>sito demo</strong> e ripristinarlo online</p>
+<p>5)verificare il funzionamento.</p>
+<p> </p>
+<p>Se le precedenti procedure non vanno a buon fine fine si puosso apportare le modifiche manualmente:</p>
+<p> </p>
+<p>1)<strong>Creazione riquadro anteprime prodotti in alto a destra</strong></p>
+<p>  1.1 Copiare dalla cartella  templates/as002006_16/css i file template.css e joomla.css</p>
+<p>  1.2  <span>Copiare dalla cartella  templates/as002006_16/ i file index.php e templateDetails.xml</span></p>
+<p><span>  1.3  Creare un modulo online custom-html e copiare il contenuto tramite il N.B. dal codice html del modulo sul sito           offline  prodotti-slide</span></p>
+<p><span>   1.4 Posizione del modulo indicare mia  </span></p>
+<p>   1.5 pubblicare il modulo.</p>
+<p> </p>
+<p>2)<strong>Creazione modulo contatti in footer pagina</strong></p>
+<p>   2.1 Creare un modulo custom html online "Contatti" e copiare il codice html del modulo del sito demo Contatti</p>
+<p>   2.2 Posizione del modulo position-10</p>
+<p>   2.3 Pubblicare il modulo</p>
+<p> </p>
+<p>3)<strong>Modulo News</strong></p>
+<p>   3.1 Installare sul sito online il componente lots of article scroller</p>
+<p>   3.2 Cambiare il titolo con news</p>
+<p>   3.3 Position -4</p>
+<p>   3.4 Impostare l&#39;altezza 230px e la larghezza 300px</p>
+<p>   3.5 Copiare dalla cartella modules/mod_lofarticlescroller/assets il file style.css <strong>dal sito demo a quello online </strong></p>
+<p>   3.6 Copiare dalla cartella Languages/en-GB/en-GB.mod_lofarticlescroller.ini</p>
+<p> </p>
+<p>4)<strong>Richiedi un preventivo</strong></p>
+<p>   4.1 Installare il componente chronoform</p>
+<p>   4.2 Ripristinare il backup del form online andando dal panello principale di chronoform in alto a destra si trova <strong>restore forms </strong>il file  CFV4_FormsBackup_ON_demo.ufficyo.com_15_May_2012_10-05-50.cf4bak  si trova in workarea/work-in-progress/aleflex/modiche-sito/chronoform</p>
+<p>   4.3 Copiare il file frontform.css dalla cartella components/com_chronoforms/css dal sito demo a quello online </p>
+<p>   4.4 Creare un modulo chrono form con titolo RICHIEDI UN PREVENTIVO</p>
+<p>   4.5 In form name indicare RICHIEDI</p>
+<p>   4.6 position-4</p>
+<p> </p>
+<p>5)<strong>modulo Seguici(like fb) e social medi icons</strong></p>
+<p>   5.1 installare il modulo valaddthis</p>
+<p>   5.2 titolo seguici </p>
+<p>   5.3 position piace</p>
+<p>   5.4 <span>Module class suffix <strong>piace</strong></span></p>
+<p><span><strong>   </strong></span></p>
+<p>   5.5 Clonare il modulo social media icon links </p>
+<p>   5.6 Position <strong>sociale</strong></p>
+<p>   5.7 suffisso classe css modulo da avanzate socialp</p>
+<p>   </p>
+<p>   5.8 Creare un modulo custom html </p>
+<p>   5.9 titolo icone-socilai</p>
+<p>   5.10 position-16</p>
+<p>   5.10 incollare nel testo il seguente codice <span>{loadposition piace} {loadposition sociale}</span></p>
+<p> </p>
+<p><span>6)<strong>Creazione home page</strong></span></p>
+<p>   6.1 andare in articoli benvenuto</p>
+<p>   6.2 copiare tutto il codice html del articolo da sito demo a quello online </p>
+<p> </p>
+<p>7)<strong>Creare modulo custom html </strong></p>
+<p>   7.1 Titolo offerte e occasioni</p>
+<p>   7.2  position-4</p>
+<p>   7.3 <span>Copiare il codice html dal sito demo a quello online</span></p>
+<p> </p>
+<p>    </p>
+<p> </p>
