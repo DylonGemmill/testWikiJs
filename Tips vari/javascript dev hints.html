@@ -1,0 +1,14 @@
+<p>Quando si lavora con chiamate SOAP, o altri webservices, è possibile che, cercando la variabile con la risposta, si utilizzi l&#39;attributo <em>data</em> in questo modo</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">zres.xml.getElementsByTagName("return")[0].firstChild.data</pre>
+<p><span style="font-size: 13px;">Può però capitare di ottenere una risposta troncata (tipicamente a 4096 caratteri). Questo perché alcuni browser (tra cui Firefox) spezzano le stringhe troppo lunghe in più nodi. Per accedere all&#39;intera risposta bisogna utilizzare l&#39;attributo </span><em style="font-size: 13px;">textContent</em><span style="font-size: 13px;"> invece di accedere al </span><em style="font-size: 13px;">firstChild</em><span style="font-size: 13px;">, in questo modo</span></p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">zres.xml.getElementsByTagName("return")[0].textContent</pre>
+<p><span style="font-size: 13px;">fonte: </span><a style="font-size: 13px;" href="http://stackoverflow.com/questions/1967741/is-there-a-4096-character-limit-for-javascript-xml-text-nodes">http://stackoverflow.com/questions/1967741/is-there-a-4096-character-limit-for-javascript-xml-text-nodes</a></p>
+<p> </p>
+<p>A volte si pensa di copiare un oggetto con un semplice assegnamento, in realtà non viene copiato ma ci si rifeirsce sempre allo stesso elemento.</p>
+<p>Esempio:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">a = [1, 2, 3];
+b = a;
+b.push (5);
+console.log (a); // [1, 2, 3, 5]
+console.log (b); // [1, 2, 3, 5]
+</pre>

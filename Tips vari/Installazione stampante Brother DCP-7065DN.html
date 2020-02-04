@@ -1,0 +1,24 @@
+<p>Scaricare dal sito Brother i driver (sia lpr che cupswrapper) in formato deb.</p>
+<p><a href="http://welcome.solutions.brother.com/bsc/public_s/id/linux/en/download_prn.html#DCP-7065DN">http://welcome.solutions.brother.com/bsc/public_s/id/linux/en/download_prn.html#DCP-7065DN</a></p>
+<p>Sui sistemi i386 occorrono alcune dipendenze:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">apt-get install a2ps ia32-libs lib32stdc++6</pre>
+<p>Sui sistemi amd64:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">apt-get install ia32-libs</pre>
+<p> </p>
+<p>quindi installare i due pacchetti scaricati prima:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">dpkg -i --force-all *.deb</pre>
+<p> </p>
+<p>verrà creata in automatico una stampante di nome DCP7065DN, configurata come USB. Se la stampante è di rete modificare la configurazione (anche a cups, o da gnome) dando come uri:</p>
+<p><strong>ipp://IP_STAMPANTE/ipp</strong></p>
+<p> </p>
+<h3>Configurazione scanner</h3>
+<p>Lo scanner viene visto usando SANE, e va installato usando i driver Brother.</p>
+<p>Prelevare il pacchetto debian di installazione dal sito brother:</p>
+<p><a href="http://welcome.solutions.brother.com/bsc/public_s/id/linux/en/download_scn.html#brscan4">http://welcome.solutions.brother.com/bsc/public_s/id/linux/en/download_scn.html#brscan4</a></p>
+<p>Installare quindi eseguire il comando:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">brsaneconfig4 -a name="Scanner Brother" model=DCP-7065DN ip=192.168.2.39</pre>
+<p>modificando ove necesario IP e modello. L&#39;elenco dei modelli disponibili è visibile con il comando</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">brsaneconfig4 -q</pre>
+<p>fatto il comando sopra lo scanner sarà utilizzabile da <strong>xsane</strong>.</p>
+<p> </p>
+<p>Rif: <a href="http://bleedux.wordpress.com/2011/08/01/brother-dcp-7065dn-receiving-data-but-not-printing/">http://bleedux.wordpress.com/2011/08/01/brother-dcp-7065dn-receiving-data-but-not-printing/</a></p>

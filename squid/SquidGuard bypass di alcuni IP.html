@@ -1,0 +1,45 @@
+<p>In una configurazione SquidGuard dove tutti gli utenti sono filtrati, pu&ograve; essere necessario fare il bypass di alcuni IP in modo che navighino liberamente.</p>
+<p>La configurazione di esempio dei proxy Internavigare &egrave;:</p>
+<p>&nbsp;</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">acl {
+	default {
+		pass !myblack !porn  all
+		redirect http://hotspot/sito/errore.html
+	}
+}</pre>
+<p>&nbsp;</p>
+<p> che blocca per tutti le categorie <em>myblack</em> e <em>porn</em>.</p>
+<p>Se consideriamo da sbloccare gli IP da&nbsp; <em>10.10.10.11</em> a <em>.20</em>, modifichiamo il file /etc/squid/squidGuard.conf aggiungendo un gruppo <strong><em>src</em></strong>, ed indicando che questo potr&agrave; navigare liberamente. Quindi la parte che abbiamo messo sopra diventa:</p>
+<p>&nbsp;</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">src liberi {
+  ip 10.10.10.11-10.10.10.20
+}
+
+acl {
+        liberi {
+                pass all
+        }
+	default {
+		pass !myblack !porn  all
+		redirect http://hotspot/sito/errore.html
+	}
+}</pre>
+<p>&nbsp;</p>
+<p>E&#39; anche possibile introdurre ulteriori limitazioni, quali ad esempio un lasso di tempo in cui la restrizione &egrave; attiva. Per cui definendo un timeframe possiamo dire che al di fuori delle ore di lavoro il gruppo <em>liberi</em> pu&ograve; navigare liberamente, ma per il resto sar&agrave; soggetto a restrizioni. Quindi:</p>
+<p>&nbsp;</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">time orenonlavorative {
+weekly * 00:00-8:00    #Mattina
+weekly * 12:00-13:00   #Pausa pranzo
+weekly * 17:00-24:00   #Dopo lavoro
+}
+acl {
+ libero within orenonlavorative {
+  pass all
+ } else {
+  pass !porn all
+ }
+[...]
+}</pre>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p><a href="http://www.squidguard.org/Doc/">http://www.squidguard.org/Doc/</a><br /><a href="http://www.squidguard.org/Doc/sourceacl.html">http://www.squidguard.org/Doc/sourceacl.html</a></p>

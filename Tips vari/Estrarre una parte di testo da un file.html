@@ -1,0 +1,8 @@
+<p>Con awk è possibile estrarre una parte di un file di testo. Ad esempio da un dump MySQL è possibile estrarre la creazione e le insert di una tabella, o di un database, cosa che con dump grossi e vi non è fattibile.</p>
+<p>Ad esempio per estrapolare la creazione di una tabella e le relative insert andiamo a prendere tutto il testo racchiuso tra le due righe <em>Table structure for table `...`</em>.</p>
+<p> </p>
+<p>Il comando è il seguente:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">awk &#39;/Table structure for table `table1`/,/Table structure for table `table2`/{print}&#39; fileinput &gt; fileoutput</pre>
+<p> </p>
+<p> </p>
+<p>rif: <a href="http://blog.mostlychris.com/2010/04/extracting-single-table-from-mysql-dump-file/">http://blog.mostlychris.com/2010/04/extracting-single-table-from-mysql-dump-file/</a></p>

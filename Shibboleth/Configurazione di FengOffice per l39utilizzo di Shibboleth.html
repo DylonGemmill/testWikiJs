@@ -1,0 +1,22 @@
+<p>FengOffice non supporta l&#39;autenticazione HTTP ne esistono plugin che ne aggiungono le funzionalit&agrave;. Per questo &egrave; stato necessario modificare il file di controllo degli accessi, aggiungendo il controllo sulla variabile $_SERVER[&#39;REMOTE_USER&#39;]</p>
+<p>Per applicare le modifiche si pu&ograve; utilizzare il file patch presente in allegato a questo documento.</p>
+<p>Spostarsi nella cartella in cui &egrave; situato il file in questione e fare un backup del file originale</p>
+<pre class="brush">cd /path/di/feng/application/controllers/
+cp AccessController.class.php AccessController.class.php.ORIG</pre>
+<p> &nbsp;A questo punto applicare la patch al file</p>
+<pre class="brush">patch -i /dir/della/patch/AccessController.class.patch</pre>
+<p>E&#39; importante applicare il file patch dalla stessa posizione in cui si trova il file da
+patchare.</p>
+<h4>Modifica del link di logout</h4>
+<p>Per fare in modo che Feng utilizzi il link di logout di Shibboleth &egrave; stato modificato il codice HTML
+dell&#39;applicazione.<br />
+Per applicare le stesse modifiche si pu&ograve; utilizzare la patch user_box.patch allegata a questo articolo.</p>
+<p>Spostarsi nella directory dove si trova il file in questione e fare un backup dell&#39;originale.</p>
+<pre class="brush">cd /path/di/feng/application/views/application/
+cp user_box.php user_box.php.ORIG
+</pre>
+<p> &nbsp;A questo punto applicare la patch al file</p>
+<pre class="brush">patch  -i /dir/della/patch/user_box.patch
+</pre>
+<p> ricordo nuovamente l&#39;importanza di rinominare il file con estensione .ORIG e di applicare la patch dalla stessa
+directory in cui si trova il file.</p>

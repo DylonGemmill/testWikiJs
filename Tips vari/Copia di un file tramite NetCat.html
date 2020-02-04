@@ -1,0 +1,8 @@
+<p>Sul server sorgente</p>
+<p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">cat /var/log/syslog | gzip | nc -q 10 -l -p 9000</pre>
+</p>
+<p> sulla destinazione</p>
+<p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">nc -w 10 10.22.22.254 9000 | gunzip &gt; syslog_copiato.txt</pre>
+dove ovviamente 10.22.22.254 &egrave; la sorgente</p>

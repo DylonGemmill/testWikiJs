@@ -1,0 +1,75 @@
+<p>Le pagine di Shibboleth accessibili al pubblico sono delle JavaServer Pages (.jsp) fornite sia dall&#39;Identity Provider (la pagina di
+login) sia dai vari Service Provider (pagine di logout e degli errori locali)
+</p>
+<h4>Modifica della pagina di login</h4>
+<p>
+La pagina di login a cui si viene reindirizzati per l&#39;autenticazione, si trova nella directory
+/var/lib/tomcat6/webapps/idp/ e per la precisione si tratta del file login.jsp.</p>
+<p>Per creare una pagina di login personalizzata bisogna innanzi tutto includere tutte le librerie richieste da Shibboleth
+per il login (codice copiato direttamente dalla pagina di login di esempio)
+</p>
+<pre class="brush">&lt;%@ page import="edu.internet2.middleware.shibboleth.idp.authn.LoginContext" %&gt;
+&lt;%@ page import="edu.internet2.middleware.shibboleth.idp.authn.LoginHandler" %&gt;
+&lt;%@ page import="edu.internet2.middleware.shibboleth.idp.session.*" %&gt;
+&lt;%@ page import="edu.internet2.middleware.shibboleth.idp.util.HttpServletHelper" %&gt;
+&lt;%@ page import="org.opensaml.saml2.metadata.*" %&gt;
+
+&lt;%
+    LoginContext loginContext = HttpServletHelper.getLoginContext(HttpServletHelper.getStorageService(application), application, request);
+    Session userSession = HttpServletHelper.getUserSession(request);
+%&gt;
+</pre>
+<p>
+Dopo di che si pu&ograve; proseguire con la costruzione della pagina in semplice HTML.</p>
+<p><br />
+Affinch&eacute; il login avvenga correttamente, il form in cui vengono inseriti username e password deve avere l&#39;attributo
+action="j_security_check" e method="post".<br />
+Il campo in cui viene inserito l&#39;username deve avere l&#39;attributo name="j_username", mentre il campo in cui viene
+inserita la password deve avere l&#39;attributo name="j_password".
+</p>
+<pre class="brush">&lt;form action="j_security_check" method="post"&gt;
+Username &lt;input type="text" name="j_username"&gt;
+Password &lt;input type="password" name="j_password"&gt;
+&lt;input type="submit" value="login"&gt;
+&lt;/form&gt;
+</pre>
+<p>
+E&#39; inoltre utile sapere che per avere l&#39;url del server si pu&ograve; usare il metodo request.getContextPath(), utile per
+esempio per inserire delle immagini
+</p>
+<pre class="brush">&lt;img src="&lt;%= request.getContextPath() %&gt;/immagini/logo.png"&gt;
+</pre>
+<p>
+request.getContextPath() restituisce l&#39;url associato alla directory /var/lib/tomcat6/webapps/idp/ quindi ogni altra
+sottodirectory che si aggiunge al dominio si deve trovare in quella locazione. Nell&#39;esempio precedente dunque,
+l&#39;immagine logo.png si trover&agrave; nella directory /var/lib/tomcat6/webapps/idp/immagini/.</p>
+<p><br />
+Un altro metodo utile potrebbe essere loginContext.getRelyingPartyId() che restituisce l&#39;ID del Service Provider che ha
+fatto richiesta di autenticazione (lo stesso usato nei metadata). Questo metodo non ha nessuna utilit&agrave; pratica nella fase di login, ma pu&ograve; tornare
+comodo stamparlo nella pagina per essere certi di essere arrivati alla pagina di login, esattamente dal servizio di cui
+avevamo bisogno.
+</p>
+<pre class="brush">Autenticazione richiesta da: &lt;%= loginContext.getRelyingPartyId() %&gt;
+</pre>
+<h4></h4>
+<h4>Modifica delle pagine di logout</h4>
+<p>
+Le pagine di logout sono gestite dai vari Service Provider e si trovano nella directory /etc/shibboleth/.<br />
+Queste pagine sono solo una risposta restituita DOPO il processo di logout. Non hanno nessun ruolo nel processo e sono
+solo semplici pagine XHTML.<br />
+L&#39;unica parte "interattiva" della pagina sono gli alias &lt;shibmlp styleSheet/&gt; e &lt;shibmlp logoLocation/&gt; che
+restituiscono rispettivamente la posizione del foglio di stile e del logo, configurati nell&#39;oggetto Errors del file
+/etc/shibboleth/shibboleth2.xml. Si possono utilizzare come valori degli attributi href e src
+</p>
+<pre class="brush">&lt;img src="&lt;shibmlp logoLocation/&gt;"&gt;
+</pre>
+<p>
+Le pagine di logout sono in tutto tre per i differenti tipi di logout:
+</p>
+<ul>
+<li>globalLogout.html</li>
+<li>localLogout.html</li>
+<li>partialLogout</li>
+</ul>
+<p>
+Nel nostro caso il logout utilizzato &egrave; il partialLogout.</p>

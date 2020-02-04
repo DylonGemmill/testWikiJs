@@ -1,0 +1,30 @@
+<h2>SITUAZIONE</h2>
+<p>Spesso si necessita di accedere a pc o a servizi che non vediamo direttamente.<br />Un esempio tipico:<br /><img src="https://mail.ufficyo.com/kb/images/tunnel_ssh.jpg" alt="" width="618" height="185" /></p>
+<p>In questo caso io riesco ad accedere a srv01 perche&#39; sul router e&#39; impostato<br />un forward della porta 22 di srv01 (che e&#39; quella su cui e&#39; in ascolto il<br />demone ssh) in modo che sia accessibile dall&#39;esterno come porta 2222.<br />Cio&#39; significa che qualsiasi richiesta inviata al router, su quella porta,<br />verra&#39; girata sulla porta 22 di srv01. In questo modo posso connettermi in ssh a<br />srv01 col comando:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">[gain@local ~]$ ssh -p2222 root@234.23.xxx.xxx
+[root@srv01 ~]# _</pre>
+<p> </p>
+<p>Per accedere a srv02 e&#39; necessario loggarsi sul primo server e poi sul secondo<br />in questo modo:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">[gain@local ~]$ ssh root@234.23.xxx.xxx -p2222
+[root@srv01 ~]# ssh root@192.168.5.9
+[root@srv02 ~]# _</pre>
+<p> </p>
+<p>In realta&#39; con ssh e&#39; possibile accedere direttamente in questo modo:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">[gain@local ~]$ ssh -t user@234.23.xxx.xxx ssh user@192.168.5.9
+[root@srv02 ~]# _</pre>
+<p> </p>
+<p>Si passera&#39; quindi sempre da srv01, ma in maniera trasparente, gestita da ssh.</p>
+<p>Un&#39;altra interessante feature di ssh, e&#39; quella di creare un tunnel su una<br />porta. Per esempio se avessi bisogno di accedere al pannello di controllo del<br />router, non lo potrei fare direttamente perche&#39; e&#39; disponibile solo<br />sull&#39;interfaccia 192.168.5.1; posso pero&#39; fare in modo che sia srv01 a fare le<br />richieste al mio posto e a passarmi i dati su una porta. Esempio:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">[gain@local ~]$ ssh -L 127.0.0.1:8888:192.168.5.1:80 root@234.23.xxx.xxx -p2222 -N</pre>
+<p> </p>
+<p>Con questo comando faccio in modo che tutte le richieste inviate a<br />127.0.0.1:8888 vengano invece girate a 192.168.5.1:80 per mezzo di srv01.<br />L&#39;opzione -N lascia il processo in foreground, in modo da poterlo terminare con<br />ctrl-C nel momento in cui non mi serva piu&#39;. In caso contrario lo dovrei cercare<br />e terminare con utility apposite (ps e kill, top, htop, etc ...).<br />In questo modo puntando il nostro browser su http://127.0.0.1:8888 avro&#39; accesso<br />al pannello del router, come se fossi all&#39;interno della rete 192.168.5.x</p>
+<p>Un giorno mi e&#39; capitato un caso strano, un pannello che effettuava dei redirect<br />alle proprie pagine. Visitando infatti http://127.0.0.1:8888 venivo ributtato su<br />http://192.168.5.1/doc/index.html che non essendo accessibile, terminava il<br />proprio caricamento con un errore. Nemmeno visitando direttamente<br />127.0.0.1:8888/doc/index.html il pannello funzionava, perche&#39; anche in questo<br />caso mi trovavo ributtato su http://192.168.5.1/doc/index.html<br />Dovevo trovare il modo per inoltrare tutte le richieste a 192.168.5.1 come se<br />fossero locali. La prima soluzione che mi e&#39; venuta in mente e&#39; stata di<br />aggiungere la riga</p>
+<p> </p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">127.0.01 192.168.5.1</pre>
+<p>al file /etc/hosts, ma non ha funzionato, forse perche&#39; come secondo parametro<br />l&#39;ip non soddisfa le caratteristiche che deve avere un hostname.<br />Ho provato allora ad agire sulle interfacce di rete, e sono riuscito a<br />risolvere in questo modo:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">[root@local ~]# ifconfig wlan0:1 192.168.5.1
+[root@local ~]# ssh -L 192.168.5.1:80:192.168.5.1:80 root@234.23.xxx.xxx -p2222 -N</pre>
+<p> </p>
+<p>Col primo comando creo un&#39;interfaccia di rete virtuale (nel mio caso<br />sull&#39;interfaccia della scheda wifi) per avere lo stesso ip del router. In<br />questo modo pingando 192.168.5.1 pinghero&#39; invece me stesso. Il secondo comando<br />specifica invece che tutte le richieste effettuate su 192.168.5.1:80 (che in<br />realta&#39; sono io), vanno girate al 192.168.5.1:80 per mezzo della connessione<br />ssh. Il 192.168.5.1:80 che vede ssh sara&#39; quello del router. In questo modo,<br />visitando con il browser http://192.168.5.1 avro&#39; accesso al pannello di<br />controllo del router.</p>
+<p>ATTENZIONE: da notare che per creare l&#39;interfaccia di rete virtuale occorrono i<br />permessi di root. Da notare inoltre che anche per effettuare il tunnel su una<br />porta riservata, come la 80, servano nuovamente i permessi di root (per la<br />porta 8888 dell&#39;esempio precedente, invece, non servono). Infine verificare che<br />non ci sia nessun demone che occupi la porta 80 (tipicamente un server web tipo<br />apache o nginx ...), e nel caso stopparlo.</p>
+<p>by gain</p>

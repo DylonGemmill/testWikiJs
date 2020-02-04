@@ -1,0 +1,15 @@
+<p><a href="http://hplipopensource.com/hplip-web/models/color_laserjet/hp_laserjet_400_colormfp_m475dn.html">La stampante</a> è supportata da HPLIP, ma la versione presente in <em>lucid</em> non è abbastanza recente, occorre usare quella dal sito <a href="http://hplipopensource.com/hplip-web/gethplip.html">hpopensource.com</a>.</p>
+<p>Installare le dipendenze dello script di installazione:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">apt-get -y install python-gobject</pre>
+<p>poi il sw di HP chiederà altre dipendenze.</p>
+<p>Verrà salvato un file <em>.run</em>, da lanciare con sh, ad esempio:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">sh hplip-3.12.11.run</pre>
+<p>Se ci si trova su un desktop fare pure l&#39;installazione automatica, altrimenti su un server scegliere quella manuale, per poter selezionare i componenti (sampa, scanner, fax).</p>
+<p>Il programma si occuperà di scaricare le dipendenze necessarie e compilare i software di HPLip.</p>
+<p> </p>
+<p>Se la stampante è via rete s<span style="font-size: 13px;">elezionare NO quando viene chiesto se installare la stampante, quindi lanciare invece il comando:</span></p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">hp-setup -i IP_STAMPANTE</pre>
+<p> </p>
+<p> </p>
+<p><span style="font-size: 13px;"><br /></span></p>
+<p>Che si occuperà di creare il dispositivo in CupS</p>

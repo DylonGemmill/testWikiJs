@@ -1,0 +1,26 @@
+<p>Per ridimensionare tutte le immagini di una cartella si usa il comando <strong><em>mogrify</em></strong>&nbsp;del pacchetto <strong>imagemagick</strong>.</p>
+<p>Il comando base per ridimensionare un&#39;immagine, o tutte le immagini di una cartella, ad una dimensione massima &egrave;:</p>
+<p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">mogrify -resize 100x100 *.jpg</pre>
+</p>
+<p> l&#39;opzione <em>-resize</em>&nbsp;considera le dimensioni massime per larghezza ed altezza. Quindi se un&#39;immagine &egrave; superiore a quelle dimensioni il lato maggiore verr&agrave; ridotto, mantenendo le proporzioni del lato minore. Se volessimo forzare la dimensione a 100x100, ignorando l&#39;aspetto attuale:</p>
+<p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">mogrify -resize 100x100! *.jpg</pre>
+</p>
+<p>Durante il processo potremmo voler cambiare il formato dell&#39;immagine:</p>
+<p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">mogrify -format jpg *.png</pre>
+</p>
+<p>Se volessimo preservare le originali, dovremmo aggiungere il parametro <em>-path</em></p>
+<p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">mkdir modificate
+mogrify -path modificate -resize 100x100 *.jpg</pre>
+</p>
+<p>per i formati che lo supportano, &egrave; possibile impostare la compressione</p>
+<p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">mogrify -size 100x100 -quality 80 -format jpg *.png</pre>
+</p>
+<p>Per ridimensionare tutte le immagini di una cartella e sottocartella, con find:</p>
+<p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">find . -iname *.jpg -exec nice -19 mogrify -resize 1500x1500 -quality 90 {} \;</pre>
+</p>
