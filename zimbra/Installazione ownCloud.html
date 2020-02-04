@@ -1,0 +1,78 @@
+<p>L&#39;ideale è installare ownCloud usando i vari pacchetti per le distribuzioni forniti dal sito ufficiale <a href="https://download.owncloud.org/download/repositories/stable/owncloud/">qui</a>. Di seguito i dettagli per l&#39;installazione in CentOS 7.</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">rpm --import https://download.owncloud.org/download/repositories/stable/CentOS_7/repodata/repomd.xml.key
+rpm -Uhv http://dl.fedoraproject.org/pub/epel/7/$(uname -i)/e/epel-release-7-5.noarch.rpm
+wget http://download.owncloud.org/download/repositories/stable/CentOS_7/ce:stable.repo -O /etc/yum.repos.d/ce:stable.repo
+yum clean expire-cache
+yum install owncloud mariadb-server php-mysql
+systemctl enable httpd
+systemctl enable mariadb
+systemctl start mariadb
+</pre>
+<p><a href="http://www.cyberciti.biz/faq/howto-install-linux-apache-mariadb-php-lamp-stack-on-centos7-rhel7/">Configuriamo</a> MariaDB:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">/usr/bin/mysql_secure_installation</pre>
+<p>Vanno bene tutti i parametri predefiniti, ovviamente impostare una nuova password per l&#39;utente <em>root</em>. </p>
+<p>Creiamo un utente e un DB per oC. Dopo esserci collegati alla shell di MariaDB:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">create database owncloud;
+GRANT ALL PRIVILEGES ON owncloud.* TO &#39;oc&#39;@&#39;localhost&#39; IDENTIFIED BY &#39;password&#39;;
+flush privileges;</pre>
+<p>Creare una directory, possibilmente al di fuori della <em>www-data</em>, dove memorizzare i dati di oC:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">mkdir /dati/ownCloud_DATA
+chown apache:apache /dati/ownCloud_DATA</pre>
+<p>Aumentare i limiti di upload di PHP. Creiamo il file /etc/php.d/yetopen.ini con questo contenuto:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">[PHP]
+upload_max_filesize = 20M
+post_max_size = 28M
+</pre>
+<p>Collegarsi quindi alla pagina principale di oC per completare la configurazione:</p>
+<p>http://sito/owncloud</p>
+<p>Comparirà una schermata simile a questa:</p>
+<p><img src="https://mail.ufficyo.com/kb/images/install-wizard-a1.png" alt="" width="374" height="558" /></p>
+<p>I parametri da impostare:</p>
+<ul>
+<li>utente: <em>ad esempio mettere </em>ocadmin</li>
+<li>password: <em>impostare una password sicura</em></li>
+<li>data folder: <em>mettere la directory creata sopra</em> /dati/ownCloud_DATA</li>
+<li>database: seleziona MySQL/MariaDB</li>
+<li>immettere i parametri di connessione</li>
+</ul>
+<p>ownCloud ha delle restrizioni sull&#39;url di accesso. Se si desidera abilitare url alternativi (ad esempio altre porte, o il login con IP invece che url) aprire /var/www/html/owncloud/config/config.php ed aggiungere una riga all&#39;array <em>trusted_domains</em>. </p>
+<h4>Integrazione con Zimbra</h4>
+<p>E&#39; possibile usare l&#39;LDAP di Zimbra per autenticare gli utenti di LDAP.</p>
+<p>Collegarsi ad oC, andare in <em>Applicazioni &gt; Non abilitate</em> ed abilitare <em>LDAP User and Group backend</em>. Quindi andare in <em>Admin </em>e nella sezione <em>LDAP</em> inserire questi parametri:</p>
+<ul>
+<li>IP server: hostname/IP di zimbra</li>
+<li>porta: 389</li>
+<li>bind dn: uid=zimbra,cn=admins,cn=zimbra</li>
+<li>password: <em>la password dell&#39;LDAP di Zimbra</em></li>
+<li>search base: ou=people,dc=<em>dominio</em>,dc=<em>it</em></li>
+</ul>
+<p>Andare poi nella scheda <em>Esperto</em> ed inserire questi parametri:</p>
+<ul>
+<li>Attributo nome utente interno: <strong>uid</strong></li>
+<li>Attributo UUID per gli utenti: <em>(deve essere vuoto)</em></li>
+<li><em>Premere il pulsante Cancella associazione Nome utente-LDAP</em></li>
+</ul>
+<p>Nella scheda <em>Attributi di accesso</em> abilitare <em>Indirizzo email LDAP/AD</em>. </p>
+<p>Per maggiori info <a href="https://github.com/Zimbra-Community/owncloud-zimlet/wiki/Connect-ownCloud-to-Zimbra-LDAP-for-accounts-and-credentials#owncloud-ldap-app-is-a-bit-unstable">vedere qui</a>.</p>
+<h4>Installazione della Zimlet</h4>
+<p>Aggiungere in /opt/zimbra/conf/nginx/templates/nginx.conf.web.https.default.template, prima dell&#39;ultima graffa chiusa, l&#39;inoltro all&#39;installazione di owncloud:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">location /owncloud/ {
+    proxy_pass https://owncloud.example.com/owncloud/;
+}</pre>
+<p> Procedere quidni con l&#39;installazione:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">yum install -y git 
+cd /dati/yetopen
+git clone https://github.com/Zimbra-Community/owncloud-zimlet
+cd owncloud-zimlet
+git checkout 0.2.1
+chmod +rx install-dev.sh
+./install-dev.sh
+su zimbra
+zmprov mc default zimbraPrefZimletTreeOpen TRUE
+zmcontrol restart</pre>
+<p>Infine per abilitare la condivisione dei link di oC da Zimbra:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">cd /var/www/html/owncloud/ocs/
+rm -f zcs.php
+wget https://raw.githubusercontent.com/Zimbra-Community/owncloud-zimlet/master/php/zcs.php</pre>
+<p> </p>
+<p> </p>

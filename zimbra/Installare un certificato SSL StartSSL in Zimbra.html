@@ -1,0 +1,34 @@
+<h2>Creazione del certificato</h2>
+<p>Registrarsi e accedere a <a href="https://auth.startssl.com">https://auth.startssl.com</a>.</p>
+<p>Effettuare la certificazione di proprietà di un dominio, andando in <em>Validations Wizards &gt; Domain name validation</em>. Immettere il nome dominio (TLD) e proseguire. Verranno offerti alcuni indirizzi email con cui sarà possibile confermare il possesso del dominio. Potrebbe essere necessario creare un indirizzo email per la verifica. Normalmente facciamo creare un alis <em>postmaster@</em>dominio.it che inoltra a <em>support@yetopen.it</em>. Richiesto l&#39;invio della mail arriverà a quell&#39;indirizzo un codice di verifica, da fornire al wizard di validazione.</p>
+<p>Validato il dominio potremo richiedere il certificato per il sito. Andare in <em>Certificates Wizard &gt; Web Server SSL/TSL Certificate</em>. Se non si è preparata una CSR, immettere una password di almeno 10 caratteri (e memorizzarla!), e proseguire. Copiare il contenuto della textbox ed incollarlo in un file sul server con li nome <em>ssl.key</em>, facendo attenzione a non copiare spazi o creare nuove linee non presenti nel riquadro originale. Decriptare la chiave con il comando seguente, usando la password creata prima:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">openssl rsa -in ssl.key -out ssl.key</pre>
+<p>Proseguire sul pannello web StartSSL e selezionare il dominio per cui si sta richiedendo il certificato. Proseguire ed inserire l&#39;<strong>hostname completo</strong> dell&#39;host da certificare (terzo livello), che è poi l&#39;indirizzo del sito web a cui si accede con Zimbra.</p>
+<p>Una volta che il certificato viene rilasciato, scaricarlo come <strong>ssl.crt</strong> sul server. <span style="text-decoration: underline;">Importante</span>! Verificare che nell&#39;ultima riga del file ci sia un <em>newline</em>, ovvero una riga vuota dopo -- END CERTIFICATE--, altrimenti il deploy in Zimbra 7 potrebbe fallire!</p>
+<p><span style="font-size: 19px; font-weight: bold;">Installazione del certificato</span></p>
+<p>Copiare ssl.crt e ssl.key in /tmp/.</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">cd /tmp
+wget http://www.startssl.com/certs/ca.pem
+wget http://www.startssl.com/certs/sub.class1.server.ca.pem
+cat ca.pem sub.class1.server.ca.pem &gt; ca_bundle.crt
+cp ssl.key /opt/zimbra/ssl/zimbra/commercial/commercial.key 
+cd /opt/zimbra/bin
+
+Deployamo il certificato:
+./zmcertmgr deploycrt comm /tmp/ssl.crt /tmp/ca_bundle.crt
+
+E poi lanciamo:
+/opt/zimbra/java/bin/keytool -import -alias new -keystore /opt/zimbra/java/jre/lib/security/cacerts -storepass changeit -file /opt/zimbra/ssl/zimbra/commercial/commercial.crt<br />
+
+su - zimbra
+zmcontrol restart
+</pre>
+<p>ref <a href="http://wiki.zimbra.com/wiki/Installing_a_StartSSL_SSL_Certificate_with_zmcertmgr">http://wiki.zimbra.com</a></p>
+<p> In caso si rinscontrassero problemi con l&#39;esistenza dell&#39; alias procedere all&#39;eliminazione con questo comando:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">keytool -delete -alias my_ca -keystore /opt/zimbra/java/jre/lib/security/cacerts -storepass changeit</pre>
+<p>Per apache2:</p>
+<p> </p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">SSLCertificateFile /dati/cert/mail.ufficyo.com/2012/ssl.crt
+SSLCertificateKeyFile /dati/cert/mail.ufficyo.com/2012/ssl.key
+SSLCACertificateFile /dati/cert/mail.ufficyo.com/2012/ca_bundle.crt
+</pre>

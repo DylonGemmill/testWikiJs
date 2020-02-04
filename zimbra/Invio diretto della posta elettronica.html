@@ -1,0 +1,35 @@
+<p>Per poter effettuare consegna diretta dela posta è indispensabile aver correttamente impostato i DNS del dominio che si andrà a gestire.</p>
+<p>Tre sono i parametri fondamentali:</p>
+<ul>
+<li>impostazione del <strong>reverse DNS</strong>, ovvero l&#39;IP da cui partono le mail deve essere risolvibile, e l&#39;hostname con cui si annuncia il mailserver deve risolversi con l&#39;IP da cui partono le mail. Nel caso di <strong>Zimbra</strong>, l&#39;hostname del server</li>
+<li>deve essere presente un <strong>record MX</strong> corrispondente all&#39;IP del server. In caso non sia prevista la consegna diretta presso questo IP, perché la posta viene prelevata con <em>fetchmail</em>, creare un record con priorità molto alta (50), in modo che non venga quasi mai usato</li>
+<li>impostare <a class="intfaqlink" href="index.php?action=artikel&amp;cat=2&amp;id=2&amp;artlang=it">SPF: Sender Policy Framework</a></li>
+<li>se possibile configurare DKIM (<a href="https://wiki.zimbra.com/wiki/Configuring_for_DKIM_Signing">qui per Zimbra</a>, <a href="https://help.ubuntu.com/community/Postfix/DKIM">qui per Postfix in generale</a>) </li>
+</ul>
+<p>Prima di tutto, è comunque importante accertarsi che l&#39;IP di consegna sia fisso, e non sia in nessuna blacklist, pena l&#39;impossibilità di consegna verso alcuni server.<br />Per testare lo stato delle blacklists esistono diversi siti ed è meglio verificarli tutti, in quanto anche se i primi due fanno interrogazioni multiple non tutti i mailserver si basano su quei database (ad esempio Libero usa <em>SenderScore</em>):</p>
+<ul>
+<li><a href="http://www.mxtoolbox.com/">mxtoolbox.com</a> con l&#39;opzione <strong>blacklist:</strong> è possibile interrogare diverse liste</li>
+<li><a href="http://multirbl.valli.org/">multirbl.valli.org</a></li>
+<li><a href="https://www.sophos.com/en-us/threat-center/ip-lookup.aspx">sophos</a></li>
+<li><a href="http://ipreputation.global.sonicwall.com/view">sonicwall</a></li>
+<li><a href="http://ipremoval.sms.symantec.com/lookup/#">symantec</a></li>
+<li><a href="https://ipcheck.proofpoint.com/">proofprint</a></li>
+<li><a href="https://www.senderscore.org/blacklistlookup/">senderscore.org</a> utile anche per verificare la reputazione del proprio IP</li>
+<li>per outlook.it/live ed altri vedere <a href="https://support.microsoft.com/en-us/getsupport?oaspworkflow=start_1.0.0.0&amp;wfname=capsub&amp;productkey=edfsmsbl3&amp;locale=en-us&amp;ccsid=636312171244693072">qui</a></li>
+<li>per la blacklist di <strong>Microsoft/Outlook.com/Office365</strong> non c&#39;è purtroppo un sito di test. <br />Per richiedere la rimozione seguire la procedura su <a href="https://sender.office.com/" target="_blank" rel="noopener">https://sender.office.com</a>.</li>
+<li>controllare la <a href="http://www.mail-abuse.com/cgi-bin/lookup">blacklist di TrendMicro</a>.</li>
+<li>Per problemi di consegna a Gmail (non blacklist) vedere <a href="https://support.google.com/mail/contact/msgdelivery">qui</a> o <a href="https://support.google.com/mail/contact/bulk_send_new">qui</a>.</li>
+<li>Registrare l&#39;IP su <em>dnswl.org</em>.</li>
+</ul>
+<p>Il primo sito, in particolare, è molto utile per fare debugging sull&#39;impostazione dei DNS.</p>
+<p>Una volta installato il mailserver è anche possibile verificare la reputazione e la configurazione del DNS (inclusi SPF e DKIM) inviando una mail a <a href="mailto:check-auth@verifier.port25.com">check-auth@verifier.port25.com</a>. Per ulteriori info <a href="http://www.port25.com/support/authentication-center/email-verification/">port25.com</a>. </p>
+<p>Un altro sito per fare le verifiche di reputazione è <a href="https://www.mail-tester.com/">https://www.mail-tester.com/</a>.</p>
+<p> </p>
+<h2>Limitazioni di Contabo</h2>
+<p>Da agosto 2018 Contabo limita a 5 connessioni al secondo per la porta 25 in uscita, terminando le altre con un <em>connection refused</em>. Per fare in modo che Postfix non apra più di cinque connessioni in uscita occorre limitare il numero di processi del demone <em>smtp</em>, andando nel file /etc/postfix/master.cf cambiando la riga</p>
+<pre class="language-markup"><code>smtp      unix  -       -       y       -       -       smtp</code></pre>
+<p>in</p>
+<pre class="language-markup"><code>smtp      unix  -       -       y       -       5       smtp</code></pre>
+<p>in questo modo la limitazione viene gestita da Postfix, assicurando la consegna con la massima velocità possibile.</p>
+<p><em>FIXME capire come modificare il parametro su Zimbra</em></p>
+<p> </p>

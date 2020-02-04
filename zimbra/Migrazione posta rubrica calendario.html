@@ -1,0 +1,36 @@
+<h2>Migrazione posta</h2>
+<p>Il metodo più semplice, ove possibile, è usare IMAP.</p>
+<p> </p>
+<h3>ImapSync</h3>
+<p>Con ImapSync è possibile copiare direttamente dal server di partenza a Zimbra.</p>
+<p>ImapSync è in grado di copiare le email tenendo traccia dei duplicati, ovvero è possibile eseguirlo più volte senza problemi.</p>
+<p>Per installare IS:</p>
+<pre class="language-markup"><code>git clone https://github.com/imapsync/imapsync.git /dati/yetopen/imapsync 
+cd /dati/yetopen/imapsync 
+apt-get install libmail-imapclient-perl libio-socket-inet6-perl libfile-tee-perl libunicode-string-perl libreadonly-perl libsys-meminfo-perl libregexp-common-perl libfile-tail-perl</code></pre>
+<p>non va compilato, è possibile eseguirlo direttamente dalla directory dove è stato eseguito il clone.</p>
+<p> </p>
+<p>L&#39;ideale per la migrazione della posta è prima fare un passaggio a caldo che porti il grosso delle email, quindi fermare lo scaricamento sul vecchio server e fare un nuovo sync a freddo, in modo da prelevare velocemente le ultime email scaricate. Ad operazione terminata si può far partire lo scaricamento sul nuovo server.</p>
+<p>I parametri ottimali per il primo passaggio di imapsync sono:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">--host1 OLDSERVER --port1 143 --host2 NEWSERVER --port2 143 --exclude user --syncinternaldates  --nofoldersizes --skipsize --fast --addheader --delete2</pre>
+<p>attenzione al parametro <strong>--delete2</strong>: questo fa si che le mail presenti sul server di destinazione ma NON su quello di partenza vengano cancellate. In questo modo se l&#39;utente ha lavorato sul primo server cancellando delle email queste verranno cancellate anche sul secondo. </p>
+<p>La <strong>--exclude</strong> invece esclude dalla migrazione tutte le cartelle di posta (e figlie) che iniziano con quel nome. In questo caso è utile per i mailserver cyrus, dove le mailbox condivise erano accessibili nelle sottocartelle <em>user/</em>.</p>
+<p>Oltre a queste opzioni vanno aggiunte quelle per l&#39;autenticazione:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">--user1 UTENTE_HOST1 --password1 PASSWORD_HOST1 --user2 UTENTE_HOST2 --password2 PASSWORD_HOST2</pre>
+<h2>Gmail</h2>
+<p>Nelle versioni più recenti Imapsync ha un&#39;opzione <em>--gmail1</em> (o 2, in caso si voglia migrare <span style="text-decoration: underline;">verso</span>) per indicare un server Gmail. Selezionando questo parametro si possono omettere host e port e gli altri parametri opzionali del server.</p>
+<p>Tra le altre include le opzioni per gestire la cartella <em>Tutti i messaggi</em> in modo che non duplichi email già migrate su altre cartelle (etichette). Nel caso della localizzazione italiana va aggiunto in fondo al comando il parametro:</p>
+<pre class="language-markup"><code>--folderlast "[Gmail]/Tutti i messaggi"</code></pre>
+<p>Vedere <a href="https://imapsync.lamiral.info/FAQ.d/FAQ.Gmail.txt">qui</a> per tutte le info.</p>
+<h2>Sincronizzazione in una sottocartella</h2>
+<p>Se vogliamo copiare l&#39;account1 in una sottocartella di account2 possiamo usare l&#39;opzione <em>--subfolder2 CARTELLA_DI_DESTINAZIONE</em>. In questo modo tutte le cartelle della sorgente verranno create sotto la cartella indicata sulla destinazione.</p>
+<p> </p>
+<h3>Thunderbird</h3>
+<p>Nel qual caso l&#39;utente abbia la posta su un client come thunderbird creare un nuovo account IMAP verso il server Zimbra e copiare tutte le cartelle usando il drag&amp;drop dalle cartelle locali a quelle di Zimbra. Lo svantaggio rispetto ad imapsync è che tiene impegnato il client.</p>
+<p> </p>
+<h3>Zimbra migration tool</h3>
+<p>Questo strumento ha funzionalità simili a quelle di imapsync ma risulta meno versatile. Conviene spesso usare la prima soluzione.</p>
+<p> </p>
+<h2>Migrazione contatti</h2>
+<p>Da Thunderbird era possibile usare Zindus, ma non è più mantenuta e non funziona con le versioni recenti di Thunderbird.</p>
+<p>E&#39; possibile però esportare i contatti come CSV e convertirli in un formato digeribile a Zimbra con uno script python presente sul <a href="http://www.zimbra.com/forums/administrators/16-importing-exsisting-folders-messages-address-books-4.html#post6988">forum Zimbra</a> (e in repo yo)</p>

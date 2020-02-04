@@ -1,0 +1,8 @@
+<p>Di default Postfix mantiene nella coda <em>active</em> fino a 10 (o 20) email contemporaneamente, quindi cerca di consegnare 10 email per volta. Questo può essere un problema per il traffico di rete e per gli smtp destinatari, che potrebbero rifiutare la ricezione.</p>
+<p> </p>
+<p>Per limitare il numero di consegne contemporanee modificare questi parametri in /etc/postfix/main.cf:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">qmgr_message_active_limit = 1
+default_destination_concurrency_limit = 1
+qmgr_clog_warn_time = 0</pre>
+<p> </p>
+<p>Questi parametri limitano ad UNO i messaggi contemporanei in consegna.</p>

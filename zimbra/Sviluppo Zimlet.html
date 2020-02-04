@@ -1,0 +1,66 @@
+<p>NOTE: la FAQ sarà da aggiornare costantemente ogni volta che si sviluppa su Zimbra e si scoprono cose nuove. </p>
+<p> </p>
+<h2>Inserire una voce di menu nell&#39;overview</h2>
+<p>Di seguito un esempio di codice da inserire nel file XML di definizione</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">  &lt;zimletPanelItem label="Docucross" icon="Knowledgetree-panelIcon"&gt;
+    &lt;toolTipText&gt;
+                 Drag n&#39; Drop per salvare un&#39;email in Docucross
+    &lt;/toolTipText&gt;
+    &lt;dragSource type="ZmMailMsg" /&gt;
+    &lt;dragSource type="ZmConv" /&gt;
+    &lt;contextMenu&gt;
+            &lt;menuItem label="Preferences" id="PREFERENCES" icon="KTPreferences"/&gt;
+            &lt;menuItem label="" id=""/&gt;
+            &lt;menuItem label="KT DMS"  id="WEB" icon="KTWebsearch"/&gt;
+    &lt;/contextMenu&gt;
+
+  &lt;/zimletPanelItem&gt;
+</pre>
+<p>Il <strong>contextMenu</strong> è il menu che compare col click destro sull&#39;icona.</p>
+<p> </p>
+<h2>Impostare Zimbra per ricaricare i file JSP ad ogni interrogazione</h2>
+<p>In caso di sviluppo di Zimlet che fanno uso della parte server JSP, è utile impostare Zimbra in modo che ricompili i file ad ogni interrogazione, altrimenti occorrerebbe un <em>zmmailboxdctl restart</em> dopo ogni modifica ad un file JSP.</p>
+<p>Per vare ciò occorre aprire il file <em>/opt/zimbra/jetty/etc/webdefault.xml</em> e modificare i valori di <em>development</em>, <em>checkInterval</em> e <em>reload-interval</em> da così</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">    &lt;init-param&gt;
+        &lt;param-name&gt;development&lt;/param-name&gt;
+        &lt;param-value&gt;false&lt;/param-value&gt;
+    &lt;/init-param&gt;
+    &lt;init-param&gt;
+        &lt;param-name&gt;checkInterval&lt;/param-name&gt;
+        &lt;param-value&gt;0&lt;/param-value&gt;
+    &lt;/init-param&gt;
+    &lt;init-param&gt;
+        &lt;param-name&gt;reload-interval&lt;/param-name&gt;
+        &lt;param-value&gt;-1&lt;/param-value&gt;
+    &lt;/init-param&gt;
+</pre>
+<p><span style="font-size: 13px;">a così</span></p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">    &lt;init-param&gt;
+        &lt;param-name&gt;development&lt;/param-name&gt;
+        &lt;param-value&gt;true&lt;/param-value&gt;
+    &lt;/init-param&gt;
+    &lt;init-param&gt;
+        &lt;param-name&gt;checkInterval&lt;/param-name&gt;
+        &lt;param-value&gt;1&lt;/param-value&gt;
+    &lt;/init-param&gt;
+    &lt;init-param&gt;
+        &lt;param-name&gt;reload-interval&lt;/param-name&gt;
+        &lt;param-value&gt;1&lt;/param-value&gt;
+    &lt;/init-param&gt;
+</pre>
+<p><span style="font-size: 13px;">Riavviare quindi jetty col comando</span></p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">$ zmmailboxdctl restart</pre>
+<p>da utente <em>zimbra</em></p>
+<p> </p>
+<p>Se dovessero esserci errori con i file JSP, jetty mostra l&#39;errore generico 500. Per ulteriori dettagli consultare il file di log <em>/opt/zimbra/log/zmmailboxd.out</em></p>
+<p> </p>
+<h2>Utilizzare i messaggi di sistema di Zimbra</h2>
+<p>Per visualizzare un messaggio di sistema per mezzo delle librerie di Zimbra utilizzare questa chiamata</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">appCtxt.getAppController().setStatusMsg(msg, ZmStatusView.LEVEL_INFO);</pre>
+<p> </p>
+<p>dove <em>msg</em> è una stringa contenente il messaggio da visualizzare ed i livelli di messaggio a disposizione sono:</p>
+<ul>
+<li><em>CRITICAL</em> - il messaggio è accompagnato da una X rossa, solitamente identifica un errore</li>
+<li><em>WARNING</em> - il messaggio è accompagnato da un&#39;icona con il triangolo giallo di pericolo, serve per richiamare l&#39;attenzione</li>
+<li><em>INFO</em> - il messaggio è accompagnato da una V verde, spesso identifica il successo di un&#39;azione</li>
+</ul>

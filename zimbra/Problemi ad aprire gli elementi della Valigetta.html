@@ -1,0 +1,18 @@
+<p>In alcuni casi (da capire, forse quando c&#39;&egrave; abilitato sia http che https) gli elementi della valigetta non si aprono correttamente, ad esempio usando un url <em>http</em> invece che <em>https</em>.</p>
+<p>Per correggere questa situazione occorre impostare tre parametri con <em>zmprov. </em>Verificare cosa occorre modificare con il comando:</p>
+<p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">zmprov gad -v |grep zimbraPublicService</pre>
+</p>
+<p> I tre parametri che servono sono&nbsp;</p>
+<ul>
+<li><em>zimbraPublicServiceHostname</em>: nome host (dns)</li>
+<li><em>zimbraPublicServiceProtocol</em>: deve essere <em>http</em> o <em>https</em>&nbsp;</li>
+<li><em>zimbraPublicServicePort</em>: tipicamente <em>80</em> per <em>http</em> e <em>443</em> per <em>https</em></li>
+</ul>
+<p>Se uno di questi manca impostarlo con questi comandi</p>
+<p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">zmprov md &lt;domain&gt; zimbraPublicServiceHostname mail.dominio.it
+zmprov md &lt;domain&gt; zimbraPublicServiceProtocol https
+zmprov md &lt;domain&gt; zimbraPublicServicePort 443</pre>
+</p>
+<p>ref: <a href="http://www.zimbra.com/forums/administrators/43864-solved-briefcase-not-linked-https.html#post204702">zimbra forum</a> | <a href="http://www.zimbra.com/forums/administrators/16410-solved-public-service-host-name-domain-creation.html#post106408">zimbra forum</a></p>

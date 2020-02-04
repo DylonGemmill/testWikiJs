@@ -1,0 +1,4 @@
+<p>Con zmmailbox si può svuotare una cartella.</p>
+<p>Per svuotare tutto ricorsivamente:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">for i in `zmmailbox -z -m ACCOUNT gaf |awk &#39;/\// {print $5}&#39;|sort|uniq` ; do zmmailbox -z -m ACCOUNT emptyFolder $i; done</pre>
+<p> </p>

@@ -1,0 +1,22 @@
+<p>La procedura è la stessa degli altri ma occorre preparare il certificato intermedio concatenando il ROOT CA e gli intermediate.</p>
+<p>Il Root Ca è da prelevare <a href="http://www.geotrust.com/resources/root-certificates/">qui</a> al punto 2 (formato .pem).</p>
+<p>Gli intermediate son <a href="https://knowledge.geotrust.com/support/knowledge-base/index?page=content&amp;actp=CROSSLINK&amp;id=SO24877">qui</a> (ma può variare a seconda del tipo di certificato, questi sono quelli di 3SSrl).</p>
+<p>Attenzione che il primo file ha i <em>newline</em> non corretti quindi va sistemato. Concatenare i due file e salvarlo come <em>commercial_ca.crt</em>.</p>
+<p>Di solito Fiorani ci fornisce il file pfx e il cer. Il secondo è il certificato vero e proprio, per estrarre la key dal primo:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">openssl pkcs12 -in Certificato2015.pfx -nocerts -nodes -out Certificato2015.key</pre>
+<p>o comunque per estrarre il key dal pfx:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">openssl pkcs12 -in domain.pfx -nocerts -nodes  -out domain.key</pre>
+<p> </p>
+<p>Copiare questo file, il file di chiave e il <em>crt</em> effettivo in /opt/zimbra/ssl/zimbra/commercial/. Verificare che i certificati siano ok:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">/opt/zimbra/bin/zmcertmgr verifycrt comm commercial.key commercial.crt</pre>
+<p><span>Per verificare la catena dei certificati:</span></p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">/opt/zimbra/bin/zmcertmgr verifycrtchain commercial_ca.crt  commercial.crt</pre>
+<p><span><br /></span></p>
+<p>Se tutto ok  eseguire</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">/opt/zimbra/bin/zmcertmgr deploycrt comm commercial.crt commercial_ca.crt</pre>
+<p>e riavviare zimbra</p>
+<p> </p>
+<p>Se l&#39;errore della verifica è questo</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">error 20 at 0 depth lookup:unable to get local issuer certificate
+</pre>
+<p>il certificato della CA è sbagliato. </p>
