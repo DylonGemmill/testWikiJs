@@ -1,0 +1,93 @@
+<h2>Login</h2>
+<p>Effettuare il login al server con:</p>
+<pre class="language-markup"><code>yossh termosama
+</code></pre>
+<h2>Troubleshooting</h2>
+<p>Accedere alla console di amministrazione con i parametri "-rvvvv" che servono per vedere anche gli errori in debug:</p>
+<pre class="language-markup"><code>rasterisk -rvvvv</code></pre>
+<p>Una vola effettuato l&#39;accesso (si vedrà che nella shell c&#39;è "posta*CLI"&gt;)  con il comando di seguito si possono vedere se i trunk o i telefoni sono registrati con:</p>
+<pre class="language-markup"><code>sip show peers</code></pre>
+<p>Per capire che la registrazione si corretta, controllare che lo Status sia OK e che abbia dei tempi inferiori ai 100ms ecco un esempio con l&#39;interno 112:</p>
+<pre class="language-markup"><code>112/112                    192.168.0.X                            D   N      5060     OK (37 ms) 
+</code></pre>
+<p>E per vedere lo stato di un trunk con:</p>
+<pre class="language-markup"><code>sip show registry</code></pre>
+<p>output simile:</p>
+<pre class="language-markup"><code>voip.eutelia.it:5060                    N      03411885728       3585 Registered           Wed, 31 Jul 2019 15:58:07
+</code></pre>
+<h2>Configurazione</h2>
+<p>Per aggiungere una nuova estensione/interno, andare in:</p>
+<pre class="language-markup"><code>vim /etc/asterisk/extensions.conf</code></pre>
+<p>Inserire in [globals] il nome operatore desiderato con il numero dell&#39;interno preceduto da SIP/N</p>
+<pre class="language-markup"><code>OPERATORE11 = SIP/111</code></pre>
+<p>Accedere al file sip.conf</p>
+<pre class="language-markup"><code>vim /etc/asterisk/sip.conf</code></pre>
+<p>E inserire l&#39;interno con i parametri seguenti, sostituendo la password nel campo secret ed il numero di interno desiderato tra le parentesi:</p>
+<pre class="language-markup"><code>[111]
+type=friend
+secret=3S1n111
+port=5060
+;nat=yes
+host=dynamic
+context=interno
+canreinvite=no
+qualify=yes</code></pre>
+<h2>Configurazione</h2>
+<p>La configurazione del centralino risiede nel file /etc/asterisk/extensions.conf </p>
+<p>Editiamo nuovamente il file con :</p>
+<pre class="language-markup"><code>vim /etc/asterisk/extensions.conf</code></pre>
+<p>Gestione coda:</p>
+<p>La prima parte della configurazione fa parte del controllo dei giorni di chiusura ed  è spiegata nel paragrafo " Cambio giorni di ferie" :</p>
+<pre class="language-markup"><code>exten =&gt; _X.,1,Wait(3)
+exten =&gt; _X.,n,GotoIfTime(*,*,22-26,Dec?interno,555,1)
+exten =&gt; _X.,n,GotoIfTime(*,*,12-16,Aug?interno,556,1)
+exten =&gt; _X.,n,GotoIfTime(*,*,3,Aug?interno,557,1)
+exten =&gt; _X.,n,GotoIfTime(*,*,10,Aug?interno,557,1)
+exten =&gt; _X.,n,GotoIfTime(*,*,17,Aug?interno,557,1)
+exten =&gt; _X.,n,GotoIfTime(*,*,24,Aug?interno,557,1)
+exten =&gt; _X.,n,GotoIfTime(*,*,31,Aug?interno,557,1)
+exten =&gt; _X.,n,Answer()
+</code></pre>
+<p>Successivamente la configurazione è composta dal controllo orario il controllo GoifTime inidica il range di apertura del centralino:</p>
+<pre class="language-markup"><code>exten =&gt; _X.,n,Background(00.Siete_in_linea1)
+exten =&gt; _X.,n,GotoIfTime(8:00-12:00,mon-fri,*,*?forward)
+exten =&gt; _X.,n,GotoIfTime(13:30-18:00,mon-fri,*,*?forward)
+exten =&gt; _X.,n,GotoIfTime(8:00-13:00,sat,*,*?forward)
+exten =&gt; _X.,n,Playback(05.fuori-orario3)
+exten =&gt; _X.,n,Goto(re)
+exten =&gt; _X.,n(forward),</code></pre>
+<p>L&#39;ultima parte è la configurazione dell&#39; IVR (interactive voice response system), qui vengono riprodotti i messaggi che indicano all&#39;utente quale numero scegliere per parlare con il reparto desiderato:</p>
+<pre class="language-markup"><code>exten =&gt; _X.,n(forward),Background(01.ordine-telefonico1)
+exten =&gt; _X.,n,Background(02.informazioni-spedizioni-fatture1)
+exten =&gt; _X.,n,Background(03.informazioni-tecniche1)
+exten =&gt; _X.,n,Background(04.ufficio-commerciale1)
+exten =&gt; _X.,n,Background(05.spedizioni)
+exten =&gt; _X.,n,Background(06.centralino)
+exten =&gt; _X.,n,WaitExten(3)
+exten =&gt; _X.,n,Goto(re)
+</code></pre>
+<p>infine c&#39;è la configurazione del singolo numero selezionato nell&#39; IVR, vediamo in esempio lo 0:</p>
+<pre class="language-markup"><code>exten =&gt; 0,1(busy),Wait(3)
+exten =&gt; 0,n,Dial(${OPERATORE1}&amp;${OPERATORE3}&amp;${OPERATORE2}&amp;${OPERATORE4}&amp;${OPERATORE8}&amp;${OPERATORE5}&amp;${OPERATORE7}&amp;${OPERATORE9}&amp;${OPERATORE11}&amp;${OPERATORE12},60,tm)
+;exten =&gt; 0,n,Playback(presegreteria)
+exten =&gt; 0,n,Playback(occupati1)
+;exten =&gt; 0,n,VoiceMail(03411885728@default,s)
+exten =&gt; 0,n,Hangup()
+</code></pre>
+<p>Premendo lo 0 con "Dial" si fanno squillare tutti gli interni, e successivamente vengono riprodotti due file audio.</p>
+<h3>Cambio dei giorni di ferie:</h3>
+<p>Per prima cosa andiamo nella sezione [incoming] dove è possibile vedere come è gestita la coda delle chiamate in ingresso.</p>
+<p>Con Goiftime possiamo definire i controlli temporali, ad esempio se vogliamo che dal 19 al 31 suoni l&#39;estensione 555 e risponda un messaggio mettiamo:</p>
+<pre class="language-markup"><code>exten =&gt; _X.,n,GotoIfTime(*,*,29-31,Aug?interno,555,1)
+
+</code></pre>
+<p>e nell&#39;estensione 555:</p>
+<pre class="language-markup"><code>exten =&gt; 555,1,Wait(3)
+exten =&gt; 555,n,Answer()
+exten =&gt; 555,n,Wait(1)
+exten =&gt; 555,n(ferie),Playback(ferie_invernali_2018)
+exten =&gt; 555,n,Goto(ferie)
+exten =&gt; 555,n,Hangup()</code></pre>
+<p>Tutti i messaggi vengono presi dal path  /usr/share/asterisk/sounds/it e vanno inseriti all&#39;interno dell&#39;espressione Playback() senza l&#39;estensione .gsm, in questo casolo il file inserito è ferie_invernali_2018.gsm</p>
+<p>Il file è configurabile con tantissime opzioni che si possono vedere qui:</p>
+<p>https://www.voip-info.org/asterisk-variables/</p>

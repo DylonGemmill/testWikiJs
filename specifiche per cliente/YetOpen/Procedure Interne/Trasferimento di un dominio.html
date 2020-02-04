@@ -1,0 +1,35 @@
+<p>In caso un cliente voglia trasferire un dominio.</p>
+<h2><a name="prima_di_cominciare"></a>Prima di cominciare</h2>
+<ol>
+<li>chiedere l&#39;<strong>authcode</strong> al provider attuale</li>
+<li>redigere/chiedere l&#39;elenco delle caselle di posta (eventualmente con password, altrimenti andranno modificate);</li>
+<li>redigere/chiedere l&#39;elenco dei record DNS: valutare se sono tutti record relativi al provider o se ci sono elementi specifici del cliente (webmail in casa...). Valutare quindi quali record andranno portati sul nuovo;</li>
+<li>scaricare/chiedere una copia del sito web (pagine+database).</li>
+</ol>
+<h2><a name="acquisto_del_nuovo_servizio"></a>Acquisto del nuovo servizio</h2>
+<p>Normalmente questa fase si fa fare al cliente. Se si utilizza Netsons fornire al cliente il link con il codice affiliato YetOpen presente in <em>info_rete</em>. Guidare il cliente nella procedura di acquisto del servizio scelt e fargli fare il pagamento.</p>
+<p>Una volta fatto farsi dare le credenziali del nuovo provider. Chiedere inoltre di farsi inoltrare tutte le mail di configurazione dei servizi che arriveranno.</p>
+<h2><a name="configurazione_nuovo_servizio"></a>Configurazione nuovo servizio</h2>
+<p>Con Netsons abbiamo la possibilità di configurare il nuovo dominio prima ancora che venga trasferito (alcune ore dopo l&#39;acquisto). <strong>È importante</strong> questa funzione perché consente di creare le caselle di posta sul nuovo provider, senza perdere nessuna email durante la fase di trasferimento del DNS.</p>
+<p>Quindi <span style="text-decoration: underline;">non appena saranno attivati i servizi sul nuovo hosting</span>:</p>
+<ol>
+<li>creare le caselle di posta;</li>
+<li>creare i record DNS specifici del cliente;</li>
+<li>ripristinare il sito (usando un&#39;override in <em>/etc/hosts</em> oppure tramite pannello hosting).</li>
+</ol>
+<h2><a name="fase_di_transizione"></a>Fase di transizione</h2>
+<p>Durante la fase di transizione del DNS dal vecchio al nuovo provider è fondamentale che i client di posta scarichino <em>forzatamente </em>dal vecchio server, non usando il record DNS che potrebbe nel frattempo cambiare. Dipendentemente dalla cache del DNS potrebbe essere che un&#39;email venga consegnata al vecchio hosting, ma non più scaricata dal client perché punta al nuovo.</p>
+<p>Identificare quale può essere un hostname pop3 <em>indipendente</em> dal dominio in fase di trasferimento (ad esempio <em>mail.nomeprovider.com </em>o <em>pop3.nomeprovider.com</em> o anche l&#39;indirizzo IP attuale) e procedere alla modifica del client di posta.</p>
+<h3>fetchmail</h3>
+<p>Se si sta trasferendo un dominio gestito da un mailserver dove c&#39;è quindi fetchmail attivo è possibile modificare il nome del server direttamente nel file di configurazione. <span style="text-decoration: underline;"><strong>Attenzione</strong></span> che se è presente l&#39;opzione <em>keep</em> (mantenimento della posta sul server) è indispensabile fare un <em>flush</em> del server, perché cambiando il nome host di scaricamento fetchmail perderebbe i riferimenti delle mail già scaricate, infatti gli <em>UUID</em> sono relativi al server.</p>
+<p>È possibile preparare già la configurazione del nuovo provider (commentata).</p>
+<h3>Client di posta</h3>
+<p>Istruire il cliente (o farlo noi) per modificare il client di posta in modo che usi l&#39;hostname identificato sopra.</p>
+<h2><a name="quando_il_dominio_e_stato_trasferito"></a>Quando il dominio è stato trasferito</h2>
+<p>Una volta che il dominio è passato in gestione al nuovo provider attendere qualche ora (per la completa propagazione dei DNS) poi procedere con:</p>
+<ol>
+<li>riconfigurazione dei client di posta;</li>
+<li>ripristino del sito web (se non è già stato fatto).</li>
+</ol>
+<p> </p>
+<p> </p>

@@ -1,0 +1,11 @@
+<p>Il comando da lanciare è:</p>
+<p> </p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">pkill -f -x /usr/lib/cgi-bin/php -P 1 -s 9</pre>
+<p> </p>
+<p>dove:</p>
+<ul>
+<li>-f : match del path completo invece che del solo process name;</li>
+<li>-x : match esatto della regexp</li>
+<li>-P : seleziona solo i processi con il PID padre</li>
+<li>-s : segnale da inviare</li>
+</ul>

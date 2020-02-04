@@ -1,0 +1,61 @@
+<p>Il repository git di VMInvoice di 3s è gestito con 2 branch principali:</p>
+<ul>
+<li>master</li>
+<li>3s</li>
+</ul>
+<p>Il branch master contiene la versione vanilla di VMInvoice. Ogni commit corrisponde agli aggiornamenti che arrivano da ARTIO.</p>
+<p>Il branch 3s contiene la versione modificata che viene utilizzata da TermoSama.</p>
+<p>Ogni volta che esce un aggiornamento da ARTIO, occorre posizionarsi nella directory del nostro repository ed assicurarsi di essere all&#39;ultima versione del branch master</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">$ git checkout master
+$ git pull</pre>
+<p>Quindi occorre scaricare l&#39;utlima versione di VMInvoice dal sito, scompattarla nella directory principale, aggiungere eventuali nuovi file e committare le modifiche con</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">$ git add *
+$ git commit -am "VMInvoice 2.0.24"</pre>
+<p>Una volta aggiornata la versione vanilla occorre spostarsi nel branch 3s ed assicurarsi di essere all&#39;ultimo commit disponibile</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">$ git checkout 3s
+$ git pull</pre>
+<p>E&#39; consigliato agire su un branch sperimentale, per esempio</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">$ git branch 3s_24test
+$ git checkout 3s_24test</pre>
+<p>Quindi importare il nuovo vanilla</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">$ git merge master</pre>
+<p>Git ci notificherà di eventuali conflitti, contrassegnati in questo modo</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">++&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD
+ +              OR LOWER(BT.`first_name`) LIKE &#39; . $filter . &#39; 
+ +              OR LOWER(BT.`company`) LIKE &#39; . $filter . &#39; 
+ +               ) 
+++=======
++               OR BT.`first_name` LIKE &#39; . $filter . &#39; 
++               OR U.`email` LIKE &#39; . $filter . &#39; 
++               OR BT.`company` LIKE &#39; . $filter . &#39; 
++               OR BT.`city` LIKE &#39; . $filter . &#39; 
++               OR ST.`address_type_name` LIKE &#39; . $filter . &#39; ) 
+++&gt;&gt;&gt;&gt;&gt;&gt;&gt; master
+</pre>
+<p>dove la parte contrassegnata da <em>HEAD</em> si riferisce alla nuova porzione di codice mentre <em>master</em> si riferisce alla vecchia. Modificare quindi la parte di codice tra <em>HEAD</em> e <em>master</em> in modo da risolvere il conflitto.</p>
+<p>Una volta sistemati eventuali conflitti, creare il pacchetto di installazione con il comando</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">zip -r ../vminvoice.zip *</pre>
+<p>Da lanciare all&#39;interno della directory del repository git.</p>
+<p>Una volta creato il pacchetto, installarlo nell&#39;ambiante di test da <em>Componenti</em> &gt; <em>ARTIO VM Invoice</em> &gt; <em>Aggiornamento</em>, e non dalla gestione estensioni di Joomla.</p>
+<p>Procedere quindi verificando il funzionamento delle varie funzionalità, nell&#39;elenco ordini di VMInvoice:</p>
+<ul>
+<li><span style="font-size: 13px;">pulsante per stampare le etichette dall&#39;elenco di VMInvoice</span></li>
+<li><span style="font-size: 13px;">pulsante per stampare le conferme d&#39;ordine dall&#39;elenco di VMInvoice </span></li>
+</ul>
+<p>Verificare nell&#39;editor ordine di VMInvoice:</p>
+<ul>
+<li>la presenza ed il funzionamento del campo "<span>Data e ora ritiro"</span></li>
+<li><span><span>la presenza ed il funzionamento del campo "</span><span><span>Peso/volume Kg.</span>"</span><br /></span></li>
+<li><span><span><span>la presenza ed il funzionamento del campo "</span><span><span>Colli</span>"</span><br /></span></span></li>
+<li><span><span><span><span><span>la presenza ed il funzionamento del campo "</span>Data pagamento"</span><br /></span></span></span></li>
+<li><span><span><span><span><span>la presenza ed il funzionamento del campo "Fattura NON accompagnatoria"</span><br /></span></span></span></span></li>
+<li><span><span><span><span><span><span>la presenza ed il funzionamento del campo "Duplica ordine"</span><br /></span></span></span></span></span></li>
+<li><span><span><span><span><span><span><span>la presenza ed il funzionamento della percentuale IVA per riga prodotto:<br />il campo è posto alla destra di ogni importo IVA per riga prodotto. Modificando il campo e spostando il focus (cliccando fuori), il valore monetario posto alla sua sinistra si deve aggiornare alla percentuale specificata.</span><br /></span></span></span></span></span></span></li>
+<li>il calcolo dei prezzi:<br /><span style="font-size: 13px;">per il controllo dei calcoli, sono stati fatti degli screenshot con un esempio in </span><em style="font-size: 13px;">ufficio/workarea/work-in-progress/termosama/supersamastore/problemi_di_calcolo_e_fattura/</em><span style="font-size: 13px;"> di nome </span><em style="font-size: 13px;">ordine_vminvoice.png</em><span style="font-size: 13px;"> e </span><em style="font-size: 13px;">ordine_virtuemart.png</em></li>
+</ul>
+<p>Nella stampa della fattura:</p>
+<ul>
+<li>verificare che i totali siano in fondo all&#39;ultima pagina e non vengano spezzati tra le ultime due</li>
+</ul>
+<p>Creare quindi un ordine simile a quello presente<span> negli screenshot </span>(con un utente installatore) e verificarne i calcoli.</p>
+<p>NB: Il "NETTO TOTALE NON SCONTATO" in <em>ordine_virtuemart.png</em> è stato corretto su VirtueMart con la patch <em>2013.03.01_subtotale_virtuemart.patch</em> presente in <span><em>ufficio/workarea/work-in-progress/termosama/supersamastore/patch_joomla/</em>. Un eventuale errore su questo campo non è quindi da imputare solo ed esclusivamente a VMInvoice.</span></p>

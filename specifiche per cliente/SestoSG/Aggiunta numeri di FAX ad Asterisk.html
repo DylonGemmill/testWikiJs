@@ -1,0 +1,112 @@
+<h2>Configurazione centralino Comune di Sesto San Giovanni</h2>
+<p>La configurazione prevede un centralino Asterisk che gestisce dei modem virtuali (IAX modem) necessari ad Hylafax per ricevere ed inviare i FAX. Il traffico in entrata viene servito da un altro centralino, autenticato su Aterisk per mezzo di un trunk SIP.</p>
+<p>Di seguito la configurazione del dialplan utilizzata in fase iniziale:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">[default]
+; tutto quello che arriva lo giro ai modem in cascata
+exten =&gt; _X.,1,Dial(IAX2/modem1/${EXTEN})
+exten =&gt; _X.,n,Dial(IAX2/modem2/${EXTEN})
+exten =&gt; _X.,n,Hangup()
+
+; OLD, modem dedicato
+;exten =&gt; 22496902,1,Dial(IAX2/modem1/${EXTEN})
+;exten =&gt; 22496902,n,Hangup()
+;exten =&gt; 22496903,1,Dial(IAX2/modem2/${EXTEN})
+;exten =&gt; 22496903,n,Hangup()
+
+[fax]
+; se invio ad un numero interno lo tengo e lo rigiro ai modem
+; (senza il primo zero, come arriva in origine)
+exten =&gt; 022496902,1,Goto(default,22496902,1)
+exten =&gt; 022496903,1,Goto(default,22496903,1)
+exten =&gt; 022496831,1,Goto(default,22496831,1)
+exten =&gt; 022496516,1,Goto(default,22496516,1)
+exten =&gt; 022496541,1,Goto(default,22496541,1)
+exten =&gt; 022496313,1,Goto(default,22496313,1)
+exten =&gt; 0224961001,1,Goto(default,224961001,1)
+exten =&gt; 0224966901,1,Goto(default,224966901,1)
+exten =&gt; 0224966902,1,Goto(default,224966902,1)
+
+; qualsiasi altro invio lo giro all&#39;esterno
+exten =&gt; _X.,1,Dial(SIP/centralino/${EXTEN})
+exten =&gt; _X.,n,Hangup()</pre>
+<p> </p>
+<p>Il traffico in entrata (context <em>default</em>) viene girato tutto, così come arriva, ai modem virtuali.</p>
+<p>Il traffico in uscita (context <em>fax</em>), invece, viene gestito differentemente a seconda che il destinatario sia un numero interno oppure esterno.</p>
+<p>Se il <strong>numero è interno</strong>, viene girato direttamente al context <em>default</em> in modo che venga trattato come un numero in entrata. Nel trasferimento viene omesso il primo zero per emulare il comportamento del context <em>default</em> (sembra infatti che in ricezione Asterisk perda il primo zero, ma ciò non ci crea problemi). <strong>ATTENZIONE!</strong> E&#39; essenziale che i numeri di lunghezza simile siano insieme in sequenza. Ad esempio se ci sono numeri di 7 e di 8 cifre, quelli di 7 devono essere tutti consecutivi e poi devono venire quelli di 8.</p>
+<p>Se il <strong>numero è esterno</strong> (non risulta tra quelli specificati) il traffico viene girato al centralino connesso al trunk SIP.</p>
+<h2> </h2>
+<h2>Gestione dei numeri interni</h2>
+<p>Per aggiungere un nuovo numero da gestire come interno occorre aggiungere una riga come questa:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">exten =&gt; 0224966902,1,Goto(default,224966902,1)</pre>
+<p>in coda alle regole simili presenti nel context <em>fax </em>nel file <em>/etc/asterisk/extensions.conf</em>. Nell&#39;esempio precedente <em>0224966902</em> rappresenta il numero gestito da Hylafax e con <em>224966902</em> si intende lo stesso numero privo dello zero iniziale.</p>
+<p>Per applicare le modifiche al programma, lanciare il comando</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">/etc/init.d/asterisk reload</pre>
+<h2> </h2>
+<h2>Aggiunta di un nuovo modem virtuale</h2>
+<p><span style="text-decoration: underline;">L&#39;aggiunta di un modem non è direttamente collegata all&#39;aggiunta di un numero</span>, ma serve ad aumentare la disponibilità delle linee. Un modem va aggiunto se ci sono spesso problemi di linea occupata, in uscita o in ingresso.</p>
+<p> </p>
+<p>Per aggiungere un nuovo modem virtuale, per esempio <em>modem3</em>, occorre creare il file <em>/etc/iaxmodem/ttyIAX3</em> con il seguente contenuto:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">device          /dev/ttyIAX3
+owner           uucp:uucp
+mode            660
+port            4573
+refresh         300
+server          127.0.0.1
+peername        modem3
+secret          pswmodem3
+cidname         Asterisk-it
+cidnumber       XXXXXXXXXX
+codec           alaw
+</pre>
+<p>modificando il parametro <em>port</em> con un numero che non sia già impiegato da un altro modem (o servizio sul sistema). Usare i numeri porte in modo progressivo.</p>
+<p>Quindi riavviare <em>iaxmodem</em> per rendere operative le modifiche, con il comando:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">/etc/init.d/iaxmodem restart</pre>
+<p>A questo punto occorre modificare la configurazione di Asterisk per permettergli di utilizzare il nuovo modem.</p>
+<p>Per prima cosa bisogna registrare il modem come device IAX, aggiungere quindi in fondo al file <em>/etc/asterisk/iax.conf</em> la seguente sezione:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">[modem3]
+type=friend 
+context=fax
+disallow=all 
+allow=alaw 
+;allow=all
+username=modem3
+secret=pswmodem3
+qualify=yes
+notransfer=yes
+host=dynamic
+callerid="Fax" &lt;XXXXXXXXXX&gt;
+requirecalltoken=no
+</pre>
+<p>dove i campi <em>username</em> e <em>secret</em> devono corrispondere ai campi <em>peername</em> e <em>secret</em> del modem creato precedentemente (<em>/etc/iaxmodem/ttyIAX3</em>).</p>
+<p>Infine occorre modificare il file <em>/etc/asterisk/extensions.conf</em> aggiungendo una riga per il modem. Il content <em>default</em> passerà quindi da così:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">[default]
+; tutto quello che arriva lo giro ai modem in cascata
+exten =&gt; _X.,1,Dial(IAX2/modem1/${EXTEN})
+exten =&gt; _X.,n,Dial(IAX2/modem2/${EXTEN}) 
+exten =&gt; _X.,n,Hangup()
+</pre>
+<p>a così:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">[default]
+; tutto quello che arriva lo giro ai modem in cascata
+exten =&gt; _X.,1,Dial(IAX2/modem1/${EXTEN})
+exten =&gt; _X.,n,Dial(IAX2/modem2/${EXTEN})
+exten =&gt; _X.,n,Dial(IAX2/modem3/${EXTEN}) 
+exten =&gt; _X.,n,Hangup()
+</pre>
+<h2> </h2>
+<h2>Aggiunta del modem in HylaFAX</h2>
+<p>I modem di HylaFAX sono definiti dai file di configurazione. Per aggiungere il modem3 eseguire questo comando:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">cp /etc/hylafax/config.ttyIAX1 /etc/hylafax/config.ttyIAX3</pre>
+<p>e riavviare il servizio per applicare la configurazione:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">/etc/init.d/hylafax restart</pre>
+<p>per verificare che ci sia il nuovo modem lanciare il comando:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">faxstat -as</pre>
+<p>che dopo alcuni secondi restituirà:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">HylaFAX scheduler on srv-faxserver.comune.local: Running
+Modem ttyIAX3 (+1.800.555.1212): Running and idle
+Modem ttyIAX2 (+1.800.555.1212): Running and idle
+Modem ttyIAX1 (+1.800.555.1212): Running and idle</pre>
+<p>importante che tutti i modem siano <em>Running and idle</em>. E&#39; possibile rilanciare faxstat più volte per verificare lo stato.</p>
+<p> </p>
+<h2>Aggiunta del modem in AvantFAX</h2>
+<p>Collegarsi ad AvantFAX con un utente amministrativo, andare nel pannello di configurazione quindi dal menu in alto selezionare <em>Configura modem</em>. Compilare solo i campi <strong>Dispositivo</strong> e <strong>Nome</strong>, entrambi con il nome del dispositivo aggiunto, ad esempio <em>ttyIAX3</em>.</p>

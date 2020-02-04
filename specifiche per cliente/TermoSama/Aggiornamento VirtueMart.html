@@ -1,0 +1,24 @@
+<p>Per aggiornare VirtueMart bisogna considerare, oltre alle patch di YetOpen, anche alle limitazioni di upload del server.</p>
+<p>Si consiglia quindi di caricare i pacchetti da installare nell&#39;apposita cartella tmp ed effettuare l&#39;installazione da lì.</p>
+<p>Trasferimento pacchetti</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">$ scp Joomla_2.5.x_to_2.5.9-Stable-Patch_Package.zip com_virtuemart.2.0.18a_extract_first.targz.zip it_it_virtuemart_language_pack.zip it-IT_joomla_lang_full_2.5.9v1.zip sss:/tmp</pre>
+<p>estrazione (sul server)</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; "># cd ~/web
+# unzip /tmp/Joomla_2.5.x_to_2.5.9-Stable-Patch_Package.zip -d tmp/Joomla_2.5.x_to_2.5.9-Stable-Patch_Package
+# unzip /tmp/it-IT_joomla_lang_full_2.5.9v1.zip -d tmp/it-IT_joomla_lang_full_2.5.9v1
+# unzip /tmp/com_virtuemart.2.0.18a_extract_first.targz.zip -d /tmp/com_virtuemart.2.0.18a_extract_first
+# mkdir tmp/com_virtuemart.2.0.18a
+# tar xf /tmp/com_virtuemart.2.0.18a_extract_first/com_virtuemart.2.0.18a.tar.gz -C tmp/com_virtuemart.2.0.18a
+# mkdir tmp/com_virtuemart.2.0.18a_ext_aio
+# tar xf /tmp/com_virtuemart.2.0.18a_extract_first/com_virtuemart.2.0.18a_ext_aio.tar.gz -C tmp/com_virtuemart.2.0.18a_ext_aio/
+# unzip /tmp/it_it_virtuemart_language_pack.zip -d tmp/it_it_virtuemart_language_pack</pre>
+<p>attribuire i permessi necessari alla directory</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; "># chown -R supersamastore:supersamastore tmp</pre>
+<p>Dalla console di amministrazione di Joomla, andare in <em>Estensioni</em> &gt; <em>Gestione estensioni</em> eseguire l&#39;installazione dalle seguenti cartelle</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">/var/www/supersamastore.it/htdocs/tmp/Joomla_2.5.x_to_2.5.9-Stable-Patch_Package
+/var/www/supersamastore.it/htdocs/tmp/it-IT_joomla_lang_full_2.5.9v1
+/var/www/supersamastore.it/htdocs/tmp/com_virtuemart.2.0.18a
+/var/www/supersamastore.it/htdocs/tmp/com_virtuemart.2.0.18a_ext_aio
+/var/www/supersamastore.it/htdocs/tmp/it_it_virtuemart_language_pack</pre>
+<p>Aggiornare quindi le tabelle dei plugin andando in <em>Componenti</em> &gt; <em>virtuemart-aio</em> per mezzo del pulsante <em>Aggiornamento tabelle plug-in VM</em></p>
+<p>Verificare che tutte le voci di menu che portano alla home page di VM abbiano <em>&amp;view=virtuemart</em>, altrimenti compare sempre un <em>warning</em></p>

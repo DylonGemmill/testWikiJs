@@ -1,0 +1,40 @@
+<p>Di seguito i prametri ed il loro significato nella configurazione degli utenti FAX del Comune di Sesto San Giovanni.</p>
+<p> </p>
+<h2>Categorie FAX</h2>
+<p>Le categorie servono a raggruppare i modem e le linee in ingresso. Prima di creare una nuova linea occorre crearne la categoria, che corrisponde al settore.</p>
+<p>Entrando come amministratore, Menu &gt; Categorie fax.</p>
+<p> </p>
+<h2>Configurazione linee in ingresso</h2>
+<p>Prima di effettuare questa configurazione, richiedere a YetOpen la configurazione del centralino per aggiungere il numero da gestire. Dopodiché e<span style="font-size: 13px;">ntrare come utente amministratore, quindi andare in Menu &gt; Configura DID/DTMF. I parametri da inserire sono i seguenti:</span></p>
+<ul>
+<li>Cifre DID/DTMF: il numero di fax escluso lo 0 iniziale;</li>
+<li>Nome: nome identificativo (settore);</li>
+<li>Contato (email): email a cui inviare i fax ricevuti;</li>
+<li>Categoria: settore.</li>
+</ul>
+<p> </p>
+<h2>Creazione utenti</h2>
+<p> </p>
+<ul>
+<li>Nome: nome visualizzato;</li>
+<li>Nome utente: nome utente di accesso (deve essere lo stesso di Active Directory);</li>
+<li><span style="font-size: 13px;">Indirizzo email: indirizzo email completo per ricevere le notifiche, verrà inoltre riportato nel pié di pagina della copertina;</span></li>
+<li><span style="font-size: 13px;">Nome azienda: Settore utente;</span></li>
+<li><span style="font-size: 13px;">Nome ufficio: Servizio utente;</span></li>
+<li><span style="font-size: 13px;">Numero telefono: numero telefonico di recapito dell&#39;utente, verrà riportato nel pié di pagina della copertina;</span></li>
+<li><span style="font-size: 13px;">Numero fax: numero fax gestito dall&#39;utente, da riportare in copertina;</span></li>
+<li><span style="font-size: 13px;">TSI ID: identificativo di trasmissione del fax. Predefinito è <em>Comune Sesto San Giovanni</em>;</span></li>
+<li><span style="font-size: 13px;">Seleziona una cover: SestoSG;</span></li>
+<li><span style="font-size: 13px;">L&#39;utente può inviare fax da qualsiasi modem: SI; </span></li>
+<li><span style="font-size: 13px;">Gruppi per DID/DTMF: selezionare la linea da assegnare all&#39;utente;</span></li>
+<li><span style="font-size: 13px;">Categorie di fax visibili: selezionare il settore dell&#39;utente.</span></li>
+</ul>
+<div>E&#39; stato richiesto di gestire un utente <em>speciale</em> a cui è consentito il solo invio dei fax, e quindi nessuna possibilità di vedere quelli in arrivo. Per questo scopo è stato creato il modem <em>ttyIAX99</em>. Rispetto ai parametri qui sopra occorrono le seguenti variazioni:</div>
+<div>
+<ul>
+<li><span style="font-size: 13px;">L&#39;utente può inviare da qualsiasi fax: NO</span></li>
+<li><span style="font-size: 13px;">Gruppi per DID/DTMF: nessuno</span></li>
+<li><span style="font-size: 13px;">Categorie di fax visibili: nessuno</span></li>
+<li><span style="font-size: 13px;">Linee di fax visibili: ttyIAX99</span></li>
+</ul>
+</div>

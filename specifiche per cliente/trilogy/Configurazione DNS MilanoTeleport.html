@@ -1,0 +1,66 @@
+<p>Le macchine di gestione del DNS di MilanoTeleport sono due Arch Linux su cui gira il server DNS Bind. </p>
+<p>Il server dns1 è il <em>master</em>, dns2 lo <em>slave</em>. Le modifiche fatte sul primo sono propagate automaticamente sul secondo.</p>
+<p>Il demone viene eseguito in modalità <em>chroot</em>, il che significa che le configurazioni vengono prese da <strong>/etc/bind/chroot/etc/bind</strong> (e non <em>/etc/bind</em>).</p>
+<p><strong>Attenzione:</strong> c&#39;è però uno script che gira giornalmente che copia le configurazioni presenti in <strong>/etc/bind</strong> in <strong>/etc/bind/chroot/etc/bind</strong>! Quindi <span style="text-decoration: underline;">le modifiche vanno fatte in entrambi i percorsi</span>: il primo per la persistenza ed il secondo per provarle.</p>
+<p>In data 2016.11.10 abbiamo però <span style="text-decoration: underline;">sospeso l&#39;esecuzione dello script schedulato</span>, perché riavviando bind azzerava le statistiche tutte le notti. Quindi per ora le configurazioni attive sono solo quelle della chroot. Dettagli sullo script <a href="#script-di-aggiornamento">in fondo alla pagina</a>.</p>
+<p>Per avviare, fermare e riavviare il demone si usa <em>systemctl, </em>per cui i comandi da lanciare sono rispettivamente:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">systemctl start bind-chroot
+systemctl stop bind-chroot
+systemctl restart bind-chroot</pre>
+<p>oppure ancora <em>status</em> per vederne lo stato.</p>
+<p> </p>
+<p><em>Se non specificato diversamente tutti i percorsi sono relativi alla directory di configurazione indicata sopra</em>.</p>
+<h3>Aggiunta di un record PTR ad una zona esistente</h3>
+<p>L&#39;elenco delle zone inverse (ptr) configurate è visibile con il comando:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">ls zones/master/reverse/</pre>
+<p>I file di zona sono specificati <em>al contrario</em>, con il suffisso <em>in-addr.arpa</em>. Il contenuto di una zona, ad esempio <em>111.29.46.in-addr.arpa</em>,  è il seguente:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">; Revision History: April 22, 1999 - admin@mail.openna.com
+; Zone file for 111.29.46.in-addr.arpa
+; (c) MilanoTeleport 2009
+; Start of Authority (SOA) records.
+$TTL 86400
+@  IN  SOA  dns1.milanoteleport.com. netnoc.milanoteleport.com.  (
+        2016110702      ; Serial
+        3600   ; Refresh
+        900    ; Retry
+        1209600 ; Expire
+        86400 ); Minimum
+
+; Name Server (NS) records.
+@       IN      NS   dns1.milanoteleport.com.
+@       IN      NS   dns2.milanoteleport.com.
+
+; only PTR records.
+
+53      IN    PTR  mailserver.mv-oceanatlantic.com.
+186     IN    PTR  mailserver.mv-victory.com.
+236     IN    PTR  mailserver.mv-seaadventurer.com.
+</pre>
+<p>In questo caso sono definiti tre record PTR per <em>46.29.111.53</em>, <em>.186</em> e <em>.236</em>. </p>
+<p>Per aggiungere un nuovo record ci sono due cose da fare: aggiungere il record e modificare il seriale del file di zona. <br />Apriamo il file con un editor (ad esempio <em>nano</em>, o <em>vim</em>), aggiungiamo una riga in fondo copiando il formato dalle esistente (quindi il primo campo rappresenta l&#39;ultimo ottetto dell&#39;IP, <em>IN </em>e<em> PTR </em>rimangono invariate, ed in fondo va messo l&#39;hostname. <strong>Attenzione</strong>: è importante che l&#39;hostname sia seguito dal punto).<br />La modifica del numero di serie serve a far sapere al server <em>slave</em> che c&#39;è stato un aggiornamento della zona. Se non viene modificato il seriale non avverrà alcun aggiornamento. Di norma si consiglia di <strong>usare come seriale la data odierna più un progressivo</strong>. Nell&#39;esempio sopra la zona è stata modificata due volte in data 2016/11/07.</p>
+<p>Fatte le modifiche al file basterà riavviare il servizio per applicare le modifiche. Come detto sopra quindi:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">systemctl restart bind-chroot</pre>
+<p>Non dovrebbe apparire nessun messaggio e comparirà immediatamente sotto la shell. Per verificare che il servizio sia attivo:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">systemctl status bind-chroot</pre>
+<p>e dovrebbe comparire la riga con <em>Active: active (running)</em> in verde.</p>
+<p><img src="https://mail.ufficyo.com/kb/images/milanoteleport/bind-status-dns1.milanoteleport.com.jpg" alt="" width="1455" height="342" /></p>
+<p>Non è necessario riavviare Bind sul server <em>slave</em> perché la configurazione viene replicata automaticamente.</p>
+<h3>Aggiunta di una nuova zona di risoluzione <em>inversa</em> (PTR)</h3>
+<p>In caso sia necessario aggiungere una nuova zona:</p>
+<ol>
+<li>modificare il file <em>reverse.conf</em>, copiando il blocco di una zona modificando la descrizione della zona e il nome del file;</li>
+<li>copiare il file di una zona esistente presente in <em>zones/master/reverse/</em> con il nuovo nome specificato in <em>reverse.conf</em>, facendo attenzione a rimuovere eventuali record PTR già presenti;</li>
+<li>riavviare <em>bind-chroot</em>.</li>
+</ol>
+<p> </p>
+<h3><a name="script-di-aggiornamento"></a>Script giornaliero di aggiornamento DNS</h3>
+<p>Lo script è schedulato sul crontab di root (<em>crontab -l root</em>), ed è in <em>/opt/create_zones/dns_master_zones_update.sh</em>. In riepilogo le operazioni che vengono eseguite sono:</p>
+<ol>
+<li>download da 195.120.182.203 (Ministero dell&#39;Interno) della lista dei siti pedopornografici censurati;</li>
+<li>download dei siti bloccati da AAMS;</li>
+<li>esecuzione dello script <em>/opt/create_zones/create_master_zones.py </em>per convertire i siti scaricati in zone per bind;</li>
+<li>copia dei file di config di bind da <em>/etc/bind</em> in <em>/etc/bind/chroot/etc</em>;</li>
+<li>riavvio bind;</li>
+<li>invio email a tommaso.pappagallo@milanoteleport.com, customercare@milanoteleport.com con le modifiche effettuate al DNS.</li>
+</ol>
+<p>I server DNS erano probabilmente originariamente concepiti per essere usati dai clienti di MT, per la risoluzione <em>normale</em>. Poi sono stati configurati anche per le zone inverse.</p>
