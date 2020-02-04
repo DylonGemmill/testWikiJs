@@ -1,0 +1,16 @@
+    <p>Per stampare le porte aperte in ascolto di un host usare il comando</p>
+<p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">netstat -l --inet</pre>
+</p>
+<p> Per vedere che programma &egrave; in ascolto su una determinata porta si pu&ograve; usare <em>netstat</em> o <em>lsof</em></p>
+<p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">netstat --tcp --udp --listening --program</pre>
+</p>
+<p> oppure in breve</p>
+<p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">netstat -tupl</pre>
+</p>
+<p>oppure usando <em>lsof</em></p>
+<p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">lsof -i -P</pre>
+</p>    

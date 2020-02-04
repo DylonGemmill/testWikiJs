@@ -1,0 +1,29 @@
+<h2>Accedere alla console di Asterisk</h2>
+<p>Per accedere alla console di asterisk eseguire il comando</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">asterisk -rvvvvvvvvvvvv</pre>
+<p><span style="font-size: 13px;">dove il numero delle v corrisponde al livello di verbosity desiderato.</span></p>
+<p>Per impostare il verbosity quando già nella console, utilizzare il comando</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">server*CLI&gt; core set verbose 9999999999999</pre>
+<p><span style="font-size: 13px;"> </span></p>
+<h2>Eseguire comandi della console direttamente da bash</h2>
+<p>Asterisk permette di eseguire i comandi della console anche da bash, utile se bisogna salvare l&#39;output o utilizzarlo in script bash. Per eseguire il comando utilizzare l&#39;opzione -x in questo modo:</p>
+<p><em>Asterisk 1.8</em></p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">asterisk -x "sip show peers"</pre>
+<p><em style="font-size: 13px;">Asterisk 1.6</em></p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">asterisk -rx "sip show peers"</pre>
+<p><span>dove "sip show peers" è il comando desiderato, messo tra apici.</span></p>
+<p> </p>
+<h2>Comandi dialplan</h2>
+<h1><span style="font-size: 13px; font-weight: normal;">Per visualizzare il dialplan caricato in memoria utilizzare il comando</span></h1>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">server*CLI&gt; dialplan show</pre>
+<p><span style="font-size: 13px;">Per ricaricare il dialplan, utile per rendere operative modifiche al dialplan (extensions.conf) senza riavviare asterisk, utilizzare il comando</span></p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">server*CLI&gt; dialplan reload</pre>
+<p><span style="font-size: 13px;"> </span></p>
+<h2>Comandi SIP</h2>
+<p>Per visualizzare le impostazioni SIP caricate in memoria (e quindi attualmente utilizzate) usare il comando</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">server*CLI&gt; sip show settings</pre>
+<p> </p>
+<h2>Troubleshooting</h2>
+<p>Se la chiamata cade dopo ~30sec con il seguente messaggio nei log</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">Packet timed out after 32000ms with no response</pre>
+<p>è probabilmente un problema di RTP. Oltre ai vari controlli che si possono fare sulle varie opzioni inerenti all&#39;RTP, si può anche provare a commentare i parametri <em>externhost </em>ed<em> externrefresh </em>nel file <em>sip.conf</em>, in questo modo viene disabilitata la funzionalità di <em>SIP address remapping</em>. Questa procedura è servita a risolvere il problema alle chiamate passando da un server con Asterisk 1.6 ad uno con Asterisk 1.8.</p>

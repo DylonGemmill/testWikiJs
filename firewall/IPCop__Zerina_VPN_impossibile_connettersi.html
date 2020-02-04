@@ -1,0 +1,13 @@
+<p><strong>Zerina</strong>&nbsp;&egrave; un addon per <strong>IPCop</strong>&nbsp;che aggiunge <strong>OpenVPN</strong>&nbsp;alle possibilit&agrave; di connessione remota del firewall. Purtroppo, in alcuni casi, nonostante la corretta configurazione del sistema e del router, la connessione non avviene, e sul client otteniamo il <em>solito</em>&nbsp;problema di connessione:</p>
+<p>&nbsp;</p>
+<div id="_mcePaste" style="position: absolute; left: -10000px; top: 0px; width: 1px; height: 1px; overflow-x: hidden; overflow-y: hidden;">May &nbsp;2 08:02:26 ariel ovpn-termosama[4332]: TLS Error: TLS key negotiation failed to occur within 60 seconds (check your network connectivity)</div>
+<div id="_mcePaste" style="position: absolute; left: -10000px; top: 0px; width: 1px; height: 1px; overflow-x: hidden; overflow-y: hidden;">May &nbsp;2 08:02:26 ariel ovpn-termosama[4332]: TLS Error: TLS handshake failed</div>
+<div id="_mcePaste" style="position: absolute; left: -10000px; top: 0px; width: 1px; height: 1px; overflow-x: hidden; overflow-y: hidden;">May &nbsp;2 08:02:26 ariel ovpn-termosama[4332]: TCP/UDP: Closing socket</div>
+<div id="_mcePaste" style="position: absolute; left: -10000px; top: 0px; width: 1px; height: 1px; overflow-x: hidden; overflow-y: hidden;">May &nbsp;2 08:02:26 ariel ovpn-termosama[4332]: SIGUSR1[soft,tls-error] received, process restarting</div>
+<div id="_mcePaste" style="position: absolute; left: -10000px; top: 0px; width: 1px; height: 1px; overflow-x: hidden; overflow-y: hidden;">May &nbsp;2 08:02:26 ariel ovpn-termosama[4332]: Restart pause, 2 second(s)</div>
+<p>TLS Error: TLS key negotiation failed to occur within 60 seconds (check your network connectivity)<br />TLS Error: TLS handshake failed<br />TCP/UDP: Closing socket<br />SIGUSR1[soft,tls-error] received, process restarting<br />Restart pause, 2 second(s)</p>
+<p>Abbiamo scoperto che &egrave; un problema di regole di <strong>iptables</strong>&nbsp;sul firewall, che non vengono create al riavvio del firewall. Per ovviare al problema, aggiungere in fondo al file&nbsp;</p>
+<p><code>/etc/rc.d/rc.local</code></p>
+<p>la riga&nbsp;</p>
+<p><code>/usr/local/bin/openvpnctrl --create-chains-and-rules</code></p>
+<p>&nbsp;</p>

@@ -1,0 +1,18 @@
+<p>Se avviando una VM compare il log con una serie di errori che finiscono con:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">- Traceback (most recent call last): 
+- File "/usr/bin/pygrub", line 850, in ? 
+- raise RuntimeError, "Unable to find partition containing kernel" 
+- RuntimeError: Unable to find partition containing kernel</pre>
+<p>al 99% è un problema di formattazione errata di <em>grub.cfg</em> della macchina virtuale. Per modificarlo identificare l&#39;UUID della VM con il comando:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">xe vm-list params=uuid name-label=&lt;nome della vm&gt; --minimal</pre>
+<p>e lanciare la modifica con:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">export EDITOR=vi
+xe-edit-bootloader -n UUID_DELLA_VM -p 1</pre>
+<p> Cercare la riga <em></em></p>
+<pre>submenu "Previous Linux versions" {</pre>
+<p>e scorrere fino a trovare la graffa di chiusura. Ce ne saranno due di fila.</p>
+<pre>}
+}</pre>
+<p>Cancellare o commentare una delle due, salvare ed uscire ed avviare la VM.</p>
+<p> </p>
+<p>Rif: <a href="http://jansipke.nl/fixing-unable-to-find-partition-containing-kernel-on-xenserver-with-ubuntu-vm/">http://jansipke.nl/fixing-unable-to-find-partition-containing-kernel-on-xenserver-with-ubuntu-vm/</a></p>

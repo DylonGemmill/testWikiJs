@@ -1,0 +1,282 @@
+<h2>Informazioni generali</h2>
+<p>Presso il datacenter di Deda sono state allestite due VM Ubuntu 18.04 con installato nginx. Lo scopo delle macchine è di fare da <em>frontend</em> per tutti i servizi http(s) interni all&#39;azienda, in modo da non esporre le macchine stesse direttamente su internet.</p>
+<p>I due server si trovano in una sottorete separata ed isolata, 172.24.88.240/28. Questa rete è accessibile unicamente da un&#39;altra rete in Deda, 172.20.101.0/24, quindi per salire su queste macchine bisogna obbligatoriamente passare da un host intermedio. Su Linux si usa l&#39;opzione <em>ProxyJump</em> di ssh.</p>
+<h2>Configurazione di sistema</h2>
+<p>Siccome nginx è sempre attivo su entrambi i nodi, anche quando l&#39;IP di bilanciamento non è sul nodo <em>corrente</em>, occorre consentire il <em>binding</em> anche su IP non ancora presenti. Per farlo in modo consistente anche al reboot creiamo il file /etc/sysctl.d/99-yetopen.conf con questo contenuto:</p>
+<pre class="language-markup"><code>net.ipv4.ip_nonlocal_bind = 1</code></pre>
+<p>ed applichiamo la configurazione con il comando</p>
+<pre class="language-markup"><code>sysctl -p</code></pre>
+<h2>Configurazione firewall</h2>
+<p>Per gestire le regole del firewall è stato installato <em>firewalld</em>.</p>
+<p>Sono state definite tre zone: internal, deda, public.<br />Per alcune zone sono stati rimossi dei servizi abilitati di default. Ad esempio:</p>
+<pre class="language-markup"><code>firewall-cmd --zone=public --remove-service=ssh
+firewall-cmd --zone=public --remove-service=dhcpv6-client</code></pre>
+<p>La zona predefinita del firewall è <em>block</em>, ovvero tutto il traffico in ingresso che non rientra in una zona specificata viene bloccato.</p>
+<pre class="language-markup"><code>firewall-cmd --set-default-zone=block</code></pre>
+<h3>Creazione gruppi di IP</h3>
+<p>Per comodità ed organizzazione è utile creare dei gruppi di IP, in modo da semplificarne la gestione. Sono chiamati <em>ipset</em>.</p>
+<p>Per Loader.io:</p>
+<pre class="language-markup"><code>firewall-cmd --new-ipset=loader_io --type=hash:ip --permanent
+firewall-cmd --permanent --ipset=loader_io --add-entry=100.24.116.18
+firewall-cmd --permanent --ipset=loader_io --add-entry=100.24.126.130
+firewall-cmd --permanent --ipset=loader_io --add-entry=100.26.55.39
+firewall-cmd --permanent --ipset=loader_io --add-entry=18.207.134.171
+firewall-cmd --permanent --ipset=loader_io --add-entry=18.207.137.56
+firewall-cmd --permanent --ipset=loader_io --add-entry=18.208.172.164
+firewall-cmd --permanent --ipset=loader_io --add-entry=18.213.246.177
+firewall-cmd --permanent --ipset=loader_io --add-entry=35.173.132.50
+firewall-cmd --permanent --ipset=loader_io --add-entry=35.175.184.64
+firewall-cmd --permanent --ipset=loader_io --add-entry=3.91.3.214
+firewall-cmd --permanent --ipset=loader_io --add-entry=3.95.133.89
+firewall-cmd --permanent --ipset=loader_io --add-entry=52.20.90.206
+firewall-cmd --permanent --ipset=loader_io --add-entry=52.3.231.197
+firewall-cmd --permanent --ipset=loader_io --add-entry=54.145.255.240
+firewall-cmd --permanent --ipset=loader_io --add-entry=54.196.22.200
+firewall-cmd --permanent --ipset=loader_io --add-entry=54.196.250.245
+firewall-cmd --permanent --ipset=loader_io --add-entry=54.84.218.101</code></pre>
+<p>Per SiWAF:</p>
+<pre class="language-markup"><code>firewall-cmd --new-ipset=siwaf --type=hash:ip --permanent
+firewall-cmd --permanent --ipset=siwaf --add-entry=138.68.86.68
+firewall-cmd --permanent --ipset=siwaf --add-entry=139.59.157.195
+firewall-cmd --permanent --ipset=siwaf --add-entry=207.154.219.48
+firewall-cmd --permanent --ipset=siwaf --add-entry=159.89.3.61
+firewall-cmd --permanent --ipset=siwaf --add-entry=138.68.105.174
+firewall-cmd --permanent --ipset=siwaf --add-entry=139.59.210.104
+firewall-cmd --permanent --ipset=siwaf --add-entry=165.227.141.17
+firewall-cmd --permanent --ipset=siwaf --add-entry=165.227.245.63
+firewall-cmd --permanent --ipset=siwaf --add-entry=159.89.214.207
+</code></pre>
+<p>Per Wafi:</p>
+<pre class="language-markup"><code>firewall-cmd --new-ipset=wafi --type=hash:ip --permanent
+firewall-cmd --permanent --ipset=wafi --add-entry=165.22.74.115</code></pre>
+<p>Per Sicuritalia:</p>
+<pre class="language-markup"><code>firewall-cmd --new-ipset=sicuritalia --type=hash:ip --permanent
+firewall-cmd --permanent --ipset=sicuritalia --add-entry=85.40.210.98
+</code></pre>
+<p>Per YetOpen:</p>
+<pre class="language-markup"><code>firewall-cmd --new-ipset=yetopen --type=hash:ip --permanent
+firewall-cmd --permanent --ipset=yetopen --add-entry=79.3.72.69
+</code></pre>
+<p>Per Sucuri:</p>
+<pre class="language-markup"><code>firewall-cmd --new-ipset=sucuri --type=hash:ip --permanent
+firewall-cmd --permanent --ipset=sucuri --add-entry=192.88.134.0/23
+firewall-cmd --permanent --ipset=sucuri --add-entry=185.93.228.0/22
+firewall-cmd --permanent --ipset=sucuri --add-entry=66.248.200.0/22
+</code></pre>
+<p> </p>
+<h3>Traffico keepalived</h3>
+<p>Per consentire il traffico di keepalived vanno inserite le seguenti regole:</p>
+<pre class="language-markup"><code>firewall-cmd --direct --permanent --add-rule ipv4 filter INPUT 0 --in-interface ens160 --destination 224.0.0.18 --protocol vrrp -j ACCEPT
+firewall-cmd --direct --permanent --add-rule ipv4 filter OUTPUT 0 --out-interface ens160 --destination 224.0.0.18 --protocol vrrp -j ACCEPT
+</code></pre>
+<h3>Zona <em>deda</em></h3>
+<p>Creata per consentire l&#39;esecuzione dei backup. Tutto il traffico è consentito ma solo dagli IP indicati.</p>
+<pre class="language-markup"><code>firewall-cmd --permanent --new-zone=deda
+firewall-cmd --permanent --zone=deda --add-source=172.18.232.240
+firewall-cmd --permanent --zone=deda --add-source=172.24.82.49
+firewall-cmd --permanent --zone=deda --set-target=ACCEPT
+</code></pre>
+<h3>Zona <em>internal</em></h3>
+<p>Definisce le regole di accesso alle VM dalla rete Sicuritalia. Sono aperti solo i servizi http/https/ssh.</p>
+<pre class="language-markup"><code>firewall-cmd --permanent --zone=internal --add-service=http
+firewall-cmd --permanent --zone=internal --add-service=https
+firewall-cmd --permanent --zone=internal --add-service=ssh
+firewall-cmd --permanent --zone=internal --add-port=10050/tcp
+firewall-cmd --permanent --zone=internal --add-source=172.24.88.244/28
+firewall-cmd --permanent --zone=internal --add-source=172.20.101.0/24
+</code></pre>
+<h3>Zona <em>public</em></h3>
+<p>È l&#39;accesso pubblico, ovvero dalle reti esterne. Solo i servizi http e https sono abilitati, esclusivamente dagli IP YetOpen, Sicuritalia, WAF Sicuritalia e Sucuri per evitare <em>WAF-evasion</em>. Dovessero cambiare vanno aggiornati manualmente.</p>
+<pre class="language-markup"><code>firewall-cmd --permanent --zone=public --set-target=DROP
+firewall-cmd --zone=public --add-service=http
+firewall-cmd --zone=public --add-service=https
+firewall-cmd --zone=public --add-source=ipset:sicuritalia
+firewall-cmd --zone=public --add-source=ipset:yetopen
+firewall-cmd --zone=public --add-source=ipset:siwaf
+firewall-cmd --zone=public --add-source=ipset:wafi
+firewall-cmd --zone=public --add-source=ipset:sucuri
+</code></pre>
+<h2>Configurazione rete</h2>
+<p>Keepalived è configurato in modalità <strong>master/slave</strong>, quindi l&#39;host SRVTN010 sarà sempre considerato primario e SRVTN011 secondario. L&#39;unico elemento in bilanciamento tra i due nodi è l&#39;indirizzo IP 172.24.88.242/28. Come indicato sopra per il corretto funzionamento del serivizio di HA è necessario abilitare il traffico per il protocollo <em>vrrp</em>.</p>
+<p>Per via di <strong>una incompatibilità tra netplan/systemd e keepalived</strong> (<a href="https://bugs.launchpad.net/ubuntu/+source/keepalived/+bug/1810583">lp#1810583</a>) è meglio tornare alla vecchia gestione della rete.</p>
+<p>Configurare la rete in <em>/etc/network/interfaces</em> incollando questo contenuto (per il nodo 010):</p>
+<pre class="language-markup"><code>auto lo
+iface lo inet loopback
+
+auto ens160
+allow-hotplug ens160
+iface ens160 inet static
+        address 172.24.88.244
+        netmask 255.255.255.240
+        gateway 172.24.88.254
+        broadcast 172.24.88.255
+        dns-nameservers 8.8.8.8 1.1.1.1</code></pre>
+<p>configurare il DNS /etc/systemd/resolved.conf decommentando la riga <em>DNS</em> e compilandola in questo modo:</p>
+<pre class="language-markup"><code>DNS=8.8.8.8 1.1.1.1</code></pre>
+<p>procedere quindi all&#39;attivazione del demone di networking con questi comandi:</p>
+<pre class="language-markup"><code>apt -y install ifupdown
+ifdown --force ens160 lo &amp;&amp; ifup -a
+systemctl unmask networking ; systemctl enable networking; systemctl restart networking
+systemctl stop systemd-networkd.socket systemd-networkd networkd-dispatcher systemd-networkd-wait-online
+systemctl disable systemd-networkd.socket systemd-networkd networkd-dispatcher systemd-networkd-wait-online
+systemctl mask systemd-networkd.socket systemd-networkd networkd-dispatcher systemd-networkd-wait-online
+apt -y remove nplan netplan.io</code></pre>
+<p>Effettuare la stessa configurazione sul secondo nodo cambiando l&#39;indirizzo IP alla riga <em>address </em>sopra. (<a href="https://askubuntu.com/a/1052023/259807">rif</a>)</p>
+<h2>Configurazione Keepalived</h2>
+<p>Installare con il comando</p>
+<pre class="language-markup"><code>apt install keepalived</code></pre>
+<p>La configurazione del demone è nel file <em>/etc/keepalived/keepalived.conf</em>:</p>
+<pre class="language-markup"><code>vrrp_instance VI_1 {
+    state MASTER
+    interface ens160
+    virtual_router_id 51
+    priority 150
+    advert_int 1
+    authentication {
+        auth_type PASS
+        auth_pass Y0Q5MwxzepkRM34v+OBGj/pCVEY
+    }
+    virtual_ipaddress {
+        172.24.88.242/28
+    }
+}</code></pre>
+<p>Quella sopra è la configurazione di SRVTN010, quindi del <strong>master</strong>. Sullo slave è tutto identico ad eccezione dei parametri</p>
+<pre class="language-markup"><code>vrrp_instance VI_1 {
+    state BACKUP
+    ...
+    priority 130
+    ...
+}</code></pre>
+<p>Fermando la <em>master</em> o <em>keepalived</em> sulla stessa l&#39;indirizzo in bilanciamento verrà preso in carico dalla <em>slave</em>.</p>
+<p> </p>
+<h2>Configurazione nginx</h2>
+<p>C&#39;è un file /etc/nginx/proxy-sicuritalia.conf con le configurazioni generali per tutti gli host da <em>proxare</em>. Contiene principalmente la definizione dei file del certificato ssl, le <em>listen</em> e la dimensione massima di un file caricato <em>(client_max_body_size</em>).</p>
+<pre class="language-markup"><code>listen 443 ssl;
+listen [::]:443 ssl;
+
+ssl_certificate /etc/ssl/ssl-sicuritalia/2018/wildcard_sicuritalia.crt;
+ssl_certificate_key /etc/ssl/ssl-sicuritalia/sicuritalia.key;
+
+ssl_ciphers         EECDH+AESGCM:EDH+AESGCM:AES256+EECDH:AES256+EDH;
+ssl_protocols       TLSv1 TLSv1.1 TLSv1.2;
+ssl_session_cache   shared:SSL:10m;
+ssl_session_timeout 10m;
+
+# Per le POST
+client_max_body_size 100M;
+
+include proxy_params;</code></pre>
+<p>Normalmente non va mai toccata, ma va inclusa poi in <em>/etc/nginx/sites-available/default</em>  che contiene la definizione dei <em>virtualhost</em> gestiti da nginx.</p>
+<h3>Configurazione generale</h3>
+<pre class="language-markup"><code>server {
+	listen 80 default_server;
+	listen [::]:80 default_server;
+	server_name _;
+	return 301 https://$host$request_uri;
+}
+
+server {
+        root /var/www/html;
+        index index.html;
+        server_name _;
+        include proxy-sicuritalia.conf;
+}</code></pre>
+<p>Questi due blocchi sono quelli che indicano il comportamento <em>generale</em> del webserver. Il primo rimanda tutte le connessioni http al relativo host https, mentre il secondo crea un virtualhost <em>generico</em> che contiene solo una pagina statica con l&#39;ID del server, da usare unicamente per debug per capire quale server sia effettivamente <em>attivo</em> in keepalived.</p>
+<h3>Configurazione nuovo virtualhost</h3>
+<p>Per ogni dominio da gestire va creato un nuovo file in /etc/nginx/sites-available/ copiandolo da uno esistente e personalizzandolo.</p>
+<pre class="language-markup"><code>server {
+        include proxy-sicuritalia.conf;
+
+        server_name prova001.sicuritalia.it;
+        access_log /var/log/nginx/prova.access.log;
+        error_log /var/log/nginx/prova.error.log;
+
+        # URL reale
+        location / {
+                proxy_pass https://10.1.2.3;
+        }
+}</code></pre>
+<p>A parte la prima riga di <em>include</em> il resto va adattato a seconda del servizio che si va a gestire.</p>
+<p> </p>
+<h3>Configurazione proxy per www.sicuritalia.it</h3>
+<p>Nel caso specifico ci sono due nodi che gestiscono il sito, uno primario di produzione ed un secondario di sviluppo, usato anche durante le fasi di upgrade per tenere online il sito <em>vecchio</em>.</p>
+<p>In questo caso la configurazione è la seguente:</p>
+<pre class="language-markup"><code># Server wordpress sicuritalia.it
+upstream si_wordpress {
+	server 172.20.101.86;
+	server 172.20.101.89 backup;
+	server 172.20.101.88 backup;
+}
+
+server {
+	server_name www.sicuritalia.it sicuritalia.it;
+        include proxy-sicuritalia.conf;
+
+        access_log /var/log/nginx/www.sicuritalia.access.log;
+        error_log /var/log/nginx/www.sicuritalia.error.log;
+
+        # Dopo quanto tempo considerare uno dei server web come fermo
+        proxy_connect_timeout 5s;
+        proxy_read_timeout 5s;
+        # URL reale
+        location / {
+        	proxy_pass https://si_wordpress;
+        }
+}</code></pre>
+<p>Si definisce un blocco <em>si_wordpress</em> con l&#39;elenco dei server che possono gestire la richiesta. Visto che il server di sviluppo è <em>secondario</em> lo indichiamo come <em>backup</em>, il che signiifca che verrà utilizzato solo nel caso il <em>.86</em> non risponda.</p>
+<p>Per discriminare se il server è online o offline vengono utilizzati i parametri <em>*_timeout</em> del <a href="http://nginx.org/en/docs/http/ngx_http_proxy_module.html">modulo proxy</a>.</p>
+<p>Purtroppo con nginx (open) non c&#39;è modo di definire dei controlli specifici per discriminare se un server upstream è offline oppure no, quindi per gestire l&#39;uso di produzione o sviluppo dovremo fare un blocco tramite iptables o qualcosa di simile direttamente sul <em>.86</em>.</p>
+<h2>Allineamento configurazioni</h2>
+<p>Per i servizi</p>
+<ol>
+<li>firewalld</li>
+<li>nginx</li>
+<li>script di sync</li>
+<li>certificati ssl</li>
+</ol>
+<p>è stata predisposta una sincronizzazione automatica delle configurazioni. In <em>/etc/cron.d/yetopen</em> di <em>SRVTN010</em> c&#39;è schedulata ogni dieci minuti l&#39;esecuzione dello script <em>/dati/yetopen/bin/sync_config.sh</em> che fa un test della configurazione di nginx, e se valida tutti i servizi indicati sopra vengono allineati.</p>
+<p>Lo script è molto semplice e comunque decisamente migliorabile, ma lo scopo princpiale è mantenere i due server allineati automaticamente evitando che una configurazione parziale venga propagata su entrambi i nodi.<br />Dopo la copia dei file lo script ricarica i servizi che hanno necessità di rileggere i nuovi file.</p>
+<p>La sincronizzazione dei file è affidata a csync2 con questa configurazione:</p>
+<pre class="language-markup"><code>group frontend-nginx
+{
+        host SRVTN010 SRVTN011;
+
+        key /etc/csync2.key;
+
+        include /etc/firewalld;
+        include /etc/nginx;
+        include /dati/yetopen/bin;
+        include /etc/ssl/ssl-sicuritalia;
+        exclude *~ .*;
+
+        action {
+                pattern /etc/nginx;
+                exec "nginx -s reload";
+                logfile "/var/log/csync2_nginx.log";
+                do-local;
+        }
+        action {
+                pattern /etc/firewalld;
+                exec "firewall-cmd --reload";
+                logfile "/var/log/csync2_firewalld.log";
+                do-local;
+        }
+
+        backup-directory /dati/backups/csync;
+        backup-generations 3;
+}</code></pre>
+<p>Anche se la sincronizzazione viene effettuata solo da uno dei due nodi il file (così come i certificati) deve essere uguale su entrambi.</p>
+<h2>Troubleshooting</h2>
+<h3>Visualizzare IP Virtuale</h3>
+<pre class="language-markup"><code>ip a show dev ens160</code></pre>
+<p>L&#39;output del nodo attivo è questo:</p>
+<pre>2: ens160: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc mq state UP group default qlen 1000<br /> link/ether 00:50:56:b8:50:5b brd ff:ff:ff:ff:ff:ff<br /> inet 172.24.88.244/28 brd 172.24.88.255 scope global ens160<br /> valid_lft forever preferred_lft forever<br /><strong> inet 172.24.88.242/28 scope global secondary ens160</strong><br /> valid_lft forever preferred_lft forever<br /> inet6 fe80::250:56ff:feb8:505b/64 scope link<br /> valid_lft forever preferred_lft forever</pre>
+<p>In evidenza l&#39;IP VIP. Se manca quella riga l&#39;indirizzo non è configurato su questo nodo.</p>
+<h3>Vedere lo stato di keepalived</h3>
+<p>Usare il comando:</p>
+<pre class="language-markup"><code>systemctl status keepalived</code></pre>
+<p>L&#39;output è questo:</p>
+<pre>* keepalived.service - Keepalive Daemon (LVS and VRRP)<br /> Loaded: loaded (/lib/systemd/system/keepalived.service; enabled; vendor preset: enabled)<br /> <strong>Active: active (running)</strong> since Tue 2019-04-09 11:19:46 CEST; 2 days ago<br /> Main PID: 1525 (keepalived)<br /> Tasks: 3 (limit: 4662)<br /> CGroup: /system.slice/keepalived.service<br />  \ 1525 /usr/sbin/keepalived<br />  \ 1526 /usr/sbin/keepalived<br />  \ 1527 /usr/sbin/keepalived</pre>
+<pre><strong>Apr 09 12:10:17 SRVTN011 Keepalived_vrrp[1527]: VRRP_Instance(VI_1) Entering BACKUP STATE</strong><br />Apr 09 12:12:30 SRVTN011 Keepalived_vrrp[1527]: VRRP_Instance(VI_1) Transition to MASTER STATE<br /><strong>Apr 09 12:12:31 SRVTN011 Keepalived_vrrp[1527]: VRRP_Instance(VI_1) Entering MASTER STATE</strong><br />Apr 09 12:12:31 SRVTN011 Keepalived_vrrp[1527]: VRRP_Instance(VI_1) Received advert with higher priority 150, ours 130<br /><strong>Apr 09 12:13:31 SRVTN011 Keepalived_vrrp[1527]: VRRP_Instance(VI_1) Transition to MASTER STATE</strong></pre>
+<p>I messaggi <em>interessanti </em> sono quelli che iniziano con <em>VRRP_Instance</em>, ed indicano i passaggi di stato tra master e slave.<br />L&#39;ultima riga con <em>Entering</em> o <em>Transition to</em> indica lo stato attuale del nodo corrente.</p>
+<p> </p>

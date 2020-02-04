@@ -1,0 +1,13 @@
+<p>Se non è possibile agire da virt-manager, installare pfSense da CLI con questo comando:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">virt-install \  
+  --name firewall \
+  --ram 1024 \
+  --vcpus=2 \
+  --os-variant freebsd10 \
+  --network=bridge:br0,model=e1000 \
+  --network=bridge:br1,model=e1000 \
+  --vnc \
+  --cdrom /var/lib/libvirt/images/pfSense-LiveCD-2.2.4-RELEASE-amd64.iso \
+  --disk path=/dev/drbd/by-res/firewall </pre>
+<p> </p>
+<p>Serve se si sta installando su un device che non è nella configurazione dei pooldi virt-manager </p>

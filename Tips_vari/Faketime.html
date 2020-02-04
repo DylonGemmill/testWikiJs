@@ -1,0 +1,21 @@
+<p>Faketime è una libreria che permette di modificare il tempo restituito dal sistema quando richiesto dai vari programmi, senza effettivamente modificare l&#39;ora di sistema.</p>
+<p>E&#39; disponibile qui: <a href="https://github.com/wolfcw/libfaketime/archive/master.zip">https://github.com/wolfcw/libfaketime/archive/master.zip</a>, scaricare come zip è caricare sul sistema desiderato</p>
+<p>Installazione:</p>
+<pre class="language-markup"><code>unzip libfaketime-master.zip
+cd libfaketime-master
+make
+sudo make install
+export LD_PRELOAD=/usr/local/lib/faketime/libfaketime.so.1</code></pre>
+<p>Modificare il tempo restituito quando si lanciano programmi dalla cli, ci sono due opzioni:</p>
+<ol>
+<li> Creare un file .faketimerc nella home e inserire l&#39;ora com &#39;@2012-12-21 12:12:12&#39;</li>
+<li>Creare una variabile d&#39;ambiente <span class="crayon-e">export </span><span class="crayon-v">FAKETIME</span><span class="crayon-o">= &#39;@2012-12-21 12:12:12&#39;</span></li>
+</ol>
+<p><span class="crayon-o">Modificare il tempo restituito in apache2, quindi per i siti web che girano sotto apache2:</span></p>
+<p><span class="crayon-o">Aggiungere in fondo al file /etc/apache2/envvars</span></p>
+<pre class="language-markup"><code>export FAKETIME="2008-01-01 00:00:00"
+export LD_PRELOAD=&#39;/usr/local/lib/faketime/libfaketime.so.1&#39;</code></pre>
+<p>Riavviare apache2:</p>
+<pre class="language-markup"><code>sudo /etc/init.d/apache2 restart</code></pre>
+<p> </p>
+<p>Discussione originale: <a href="http://nerdsdiscoveries.com/fake-php-time-on-your-ubuntu-server/">http://nerdsdiscoveries.com/fake-php-time-on-your-ubuntu-server/</a></p>

@@ -1,0 +1,21 @@
+<p>Da qualche versione a questa parte l&#39;estensione di un filesystem ext4/3 è fattibile anche <em>live</em>, ovvero con il sistema in esecuzione. Questo non è fattibile per la riduzione di spazio.</p>
+<p>Come prima cosa controllare lo spazio occupato dalla partizione, e decidere la nuova dimensione.</p>
+<p>La riduzione di una partizione <strong>non può essere fatto <em>live</em></strong>, quindi se bisogna ridurre la <em>/</em> occorre avviare una live o il CD di Ubuntu in modalità ripristino, senza montare la partizione che dobbiamo modificare.</p>
+<p>Come prima cosa dovremo fare un controllo del filesystem, quindi ridurne la dimensione, poi ridurre la partizione (in questo caso il volume LVM), eseguire nuovamente il controllo ed il resize.</p>
+<h2>Ubuntu 16.04+</h2>
+<p>Nelle ultime versioni <em>lvreduce</em> ha un&#39;opzione per ridimensionare automaticamente il filesystem (<a href="https://askubuntu.com/a/196134/259807" target="_blank">rif</a>).</p>
+<pre class="language-markup"><code>e2fsck -f /dev/VolGroup/lv_root
+lvreduce --resizefs -L 100G /dev/VolGroup/lv_root
+e2fsck -f /dev/VolGroup/lv_root
+</code></pre>
+<h2>Versioni precedenti</h2>
+<p>In questo caso ridimensioneremo la partizione <em>lv_root</em> nel gruppo lvm <em>VolGroup</em> a 100G.</p>
+<pre class="language-markup"><code>e2fsck -f /dev/VolGroup/lv_root
+resize2fs -p /dev/VolGroup/lv_root 100G
+lvreduce -L 100G /dev/VolGroup/lv_root
+e2fsck -f /dev/VolGroup/lv_root
+resize2fs -p /dev/VolGroup/lv_root</code></pre>
+<p>L&#39;ultimo resize senza specificare la dimensione serve ad estendere il filesystem alla dimensione della partizione. Questo perché potrebbero esserci delle discordanze tra il resize di ext4 e lvm. In caso venisse restituito un errore di spazio insufficiente è possibile estendere il volume di qualche giga ed eseguire nuovamente.</p>
+<p> </p>
+<p> </p>
+<p><span style="font-size: 13px;"><a href="http://linux-bsd-sharing.blogspot.it/2012/06/howto-shrink-size-of-ext4-lvm-logical.html">http://linux-bsd-sharing.blogspot.it/2012/06/howto-shrink-size-of-ext4-lvm-logical.html</a><br /></span></p>

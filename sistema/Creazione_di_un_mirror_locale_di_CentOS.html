@@ -1,0 +1,15 @@
+<p>Creare una directory su uno storage con capacità sufficiente per ospitare il mirror.</p>
+<p>Come prima cosa, se disponibile preleviamo i pacchetti disponibili nel DVD di installazione.</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">mkdir centos-mi.mirror.garr.it/x86_64
+mount -o loop CentOS-6.2-x86_64-bin-DVD1.iso /mnt/tmp
+rsync -avHPS /mnt/tmp/ centos-mi.mirror.garr.it/x86_64/</pre>
+<p> </p>
+<p>quindi lanciare un comando come il seguente:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">rsync -avrt rsync://mi.mirror.garr.it/CentOS/6.2/os/x86_64 destinazione/</pre>
+<p> </p>
+<p>in questo caso vogliamo creare il mirror per la versione 6.2 amd64. Una volta effettuato il primo clone provvediamo a schedulare con cron lo stesso comando giornalmente o settimanalmente.</p>
+<p> </p>
+<p> </p>
+<p>rif:</p>
+<p><a href="http://wiki.centos.org/HowTos/CreateLocalMirror">http://wiki.centos.org/HowTos/CreateLocalMirror</a></p>
+<p><a href="http://www.anlan.com/2010/07/yum-creare-un-repository-locale-per-centos/">http://www.anlan.com/2010/07/yum-creare-un-repository-locale-per-centos/</a></p>

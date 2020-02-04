@@ -1,0 +1,56 @@
+<p>PHP ha già al suo interno i driver di connessione ad un server SQL Server, qundi se si conosce già hostname e porta si può installare il pacchetto php5-sybase.</p>
+<p>Non sempre però questo è sufficiente, in alcuni casi (ad esempio nelle versioni recenti del server) MSSQL è configurato in modalità <strong><em>Dynamic Port Allocation</em></strong>, il che significa che ad ogni avvio del servizio verrà usata una porta potenzialmente diversa. Per connettersi in questa modalità è indispensabile passare attraverso ODBC.</p>
+<p><span style="font-size: 13px;"> </span></p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">apt-get install php5-sybase unixodbc tdsodbc</pre>
+<p> </p>
+<p>Aprire il file <em>/etc/odbcinst.ini</em> e scrivere le specifiche del driver:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">[TDS]
+Description = FreeTDS Driver
+Driver = /usr/lib/x86_64-linux-gnu/odbc/libtdsodbc.so
+Setup = /usr/lib/x86_64-linux-gnu/odbc/libtdsS.so
+</pre>
+<p>e poi in <em>/etc/odbc.ini</em> i dettagli di connessione: </p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">[SQLSRV01]
+Description = SQL Server test
+Driver = TDS
+Trace = No
+Server = IP_DEL_SERVER\NOME_ISTANZA
+TDS_Version = 9.0
+#Database = VGISystemVend001
+#ReadOnly = Yes
+</pre>
+<p>La sintassi <em>IP_DEL_SERVER\NOME_ISTANZA</em> è indispensabile per la modalità con porta dinamica (in alternativa mettere il solo IP e una nuova riga di config con <em>Port=xxx</em> funzionerebbe comunque).</p>
+<p>La versione TDS di solito va bene, si può provare con la versione 8 se ci sono problemi. Se entrambe non funzionano vedere qui sotto per avere informazioni sull&#39;istanza.</p>
+<p>La riga <em>Driver</em> fa riferimento alla stanza che abbiamo messo in <em>odbcinst.ini</em>. </p>
+<p> </p>
+<p>Scritte le configurazioni dobbiamo fare in modo che ODBC le <em>installi</em> con i comandi seguenti. Da notare che vanno eseguiti ogni volta che vengono modificati i rispettivi file! </p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">odbcinst -i -s -f /etc/odbc.ini</pre>
+<p> </p>
+<p>A questo punto possiamo fare un test di connessione con il comando:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">isql -v SQLSRV01 nome_utente password</pre>
+<p>dove <em>SQLSRV01</em> è il nome dell&#39;istanza che abbiamo specificato in <em>odbc.ini</em>. Se tutto ok in php possiamo stabilire una connessione con queste istruzioni:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">$db = new PDO("dblib:host=SQLSRV01;dbname=NOMEDB","USERNAME","PASSWORD");</pre>
+<p> </p>
+<p>Per PHP 5.5 occorre il pacchetto <em>php5-odbc</em> e la connessione deve essere modificata in questo modo:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">$db = new PDO("odbc:dsn=SQLSRV01;dbname=NOMEDB", "USERNAME","PASSWORD");</pre>
+<p> <strong>Attenzione</strong>: PHP utilizza le istanze configurate in <strong>freetds.conf</strong> e non quelle di odbc.ini.</p>
+<p> </p>
+<h4>Troubleshooting</h4>
+<p>Installare il pacchetto <em>freetds-bin</em> ed eseguire:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">tsql -H host_o_ip -L</pre>
+<p>Dovrebbe visualizzare alcune informazioni sul server SQL, ad esempio:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">     ServerName IT007410S00555
+   InstanceName VGISYSTEM
+    IsClustered No
+        Version 9.00.5000.00
+            tcp 1223
+             np \\IT007410S00555\pipe\MSSQL$VGISYSTEM\sql\query
+</pre>
+<p> </p>
+<p>Per un test di connessione eseguire (la porta è quella visualizzata con il comando precedente)</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">tsql -S server -p porta -U utente -P password</pre>
+<p> </p>
+<p>a</p>
+<p><a href="http://www.unixodbc.org/odbcinst.html">http://www.unixodbc.org/odbcinst.html</a></p>
+<p><a href="http://stackoverflow.com/a/20165384/738852">http://stackoverflow.com/a/20165384/738852</a></p>
+<p>Thread completo: <a href="http://mailman.unixodbc.org/pipermail/unixodbc-support/2014-April/003423.html">http://mailman.unixodbc.org/pipermail/unixodbc-support/2014-April/003423.html</a></p>

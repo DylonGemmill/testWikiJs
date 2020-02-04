@@ -1,0 +1,9 @@
+<p>PHPMyFAQ possiede gi&agrave; un plugin per l&#39;autenticazione HTTP, che per&ograve; funziona solo con il classico metodo username/password.</p>
+<p>A partire da quel plugin ne &egrave; stato scritto un&#39;altro che accetta anche l&#39;assenza della variabile contenente la password.</p>
+<p>Il file AuthShib.php in allegato a questo documento va copiato nella cartella /path-pmf/inc/PMF_Auth/.</p>
+<p>Per abilitare il metodo di autenticazione per&ograve;, bisogna modificare manualmente il file index.php in quanto non esiste ancora un modo per attivare le diverse autenticazioni in maniera meno invasiva. In allegato il file patch da applicare all&#39;originale, dopo averne fatto un backup</p>
+<p>&nbsp;</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">cd /path/di/pmf/
+cp index.php index.php.ORIG
+patch -i /dir/del/patch/file</pre>
+<p>&nbsp;</p>

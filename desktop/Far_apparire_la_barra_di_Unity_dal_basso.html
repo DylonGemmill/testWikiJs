@@ -1,0 +1,13 @@
+<p>Rimuoviamo il plugin se abbiamo provato l&#39;installazione manuale con il comando:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">rm ~/.compiz-1/plugins/libunityshell.so</pre>
+<p>Eseguire poi questi passaggi da terminale:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">sudo add-apt-repository ppa:paullo612/unityshell-rotated
+sudo apt-get update
+sudo apt-get install unityshell-rotated libnux-1.0-0 compizconfig-settings-manager</pre>
+<p>ATTENZIONE: da qui in poi unity potrebbe freezarsi. Se dovesse capitare, entrate in tty0 con CTRL + ALT + F1, loggatevi e riavviate unity con il comando</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">sudo service lightdm restart</pre>
+<p>Se la barra &egrave; ancora verticale, significa che unity &egrave; freezato prima di apportare le modifiche necessarie. Ripetere quindi i passi da qui in poi.</p>
+<p>&nbsp;</p>
+<p>Lanciare CompizConfig Settings Manager (comando <strong>ccsm</strong>) disabilitare la voce <strong>Ubuntu Unity Plugin</strong> ed abilitare&nbsp;<strong>Ubuntu Unity Plugin Rotated</strong>. Ubuntu ci segnaler&agrave; che il plugin va in conflitto con altre impostazione, selezionare di risolvere il problema e confermare di disabilitare i plugin che creano conflitto. Eseguire logout &amp; login, la barra dovrebbe comparire dal basso!</p>
+<p>&nbsp;</p>
+<p>http://www.webupd8.org/2011/11/install-ubuntu-unity-bottom-launcher.html</p>

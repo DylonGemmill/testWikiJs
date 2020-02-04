@@ -1,0 +1,5 @@
+<p>Collegarsi a MySQL come admin ed eseguire la seguente query:</p>
+<pre class="brush: sql;fontsize: 100; first-line: 1; ">grant select, lock tables, show view on *.* to &#39;backup-user&#39;@&#39;localhost&#39; identified by &#39;pwd&#39;;</pre>
+<p>importante impostare solo alcuni permessi all&#39;utente, in modo che sia in sola lettura, e da localhost.</p>
+<p>Quindi per effettuare il backup usare da shell il comando</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">mysqldump --user=backup-user --password=&#39;pwd&#39; --all-databases</pre>

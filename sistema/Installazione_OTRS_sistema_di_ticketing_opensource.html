@@ -1,0 +1,65 @@
+<div>In questo caso installeremo OTRS 3 anche se ancora in beta. Questo perchè è ritenuto abbastanza stabile (attualmente siamo già alla terza beta) e ci evita di dover effettuare un upgrade da una versione 2.x ad una versione 3.x quando la 3 diventerà stabile (è rinomato che passare da una versione ad un altra, per qualsiasi programma, non è una cosa facile).<br />Scaricare dal sito l&#39;archivio compresso: <em>http://otrs.org/download/</em> (la registrazione non è obbligatoria, in fondo alla pagina c&#39;è l&#39;opzione <em>Skip this step</em>).</div>
+<div>UPDATE 2013.11.14: a quel link non riesco più a trovare l&#39;archivio per l&#39;installazione. Andare quindi su <a href="https://www.otrs.com/try/">https://www.otrs.com/try/</a> e scaricare l&#39;ultima versione di OTRS Help Desk. A questo indirizzo sono comunque presenti tutte le versioni: <a href="ftp://ftp.otrs.org/pub/otrs/">ftp://ftp.otrs.org/pub/otrs/</a><br />Scompattarlo in <em>/opt</em> (o in una directory a piacere).<br />Installazione delle dipendenze necessarie.<br />installare apache con mod perl e mysql-server; su qualsiasi debian based:</div>
+<pre class="brush: bash;fontsize: 100; first-line: 1; "># aptitude install apache2 libapache2-mod-perl2 mysql-server</pre>
+<p>installare i moduli perl necessari:<br />a questo scopo, otrs mette a disposizione uno script che indica quali moduli sono installati e quali no: /opt/otrs/bin/otrs.CheckModules.pl (basta lanciarlo per ottenere l&#39;elenco). L&#39;elenco segna alcuni moduli come opzionali, noi cerchiamo di installarli tutti per completezza; l&#39;unico modulo che non riesco a trovare è Encode::HanExtra ma, oltre ad essere opzionale, la descrizione (<em>Required to handle mails with several Chinese character sets</em>) ci fa capire che a noi non serve. Con le distribuzioni debian based, i moduli perl sono presenti come normali pacchetti e il loro nome finisce per *-perl. Un altro modo per cercare i pacchetti corrispondenti ai moduli perl, è utilizzare apt-cache, es. apt-cache search GD::Text (dove GD::Text è il nome del modulo perl che ci interessa). Nel mio caso installo tutti i moduli mancanti con il comando:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">aptitude install  libgd-text-perl libgd-graph-perl libjson-xs-perl \<br />libio-socket-ssl-perl libnet-dns-perl libnet-imap-simple-ssl-perl \<br />libnet-smtp-ssl-perl libnet-ldap-server-perl libpdf-api2-perl \<br />libsoap-lite-perl libtext-csv-xs-perl libxml-parser-perl libmail-imapclient-perl</pre>
+<p>Se apache era già installato, riavviarlo per fargli trovare il mod_perl:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; "># /etc/init.d/apache2 restart</pre>
+<p>Creare un utente apposito per otrs sulla macchina</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; "># useradd -d /opt/otrs/ -c &#39;OTRS user&#39; otrs</pre>
+<p>Aggiungere l&#39;utente al gruppo del webserver</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; "># usermod -G www-data otrs</pre>
+<p>Copia dei file di configurazione; nell&#39;archivio i file di configurazione hanno nome *-dist e vanno quindi rinominati:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; "># cp /opt/otrs/Kernel/Config.pm.dist /opt/otrs/Kernel/Config.pm
+# cd /opt/otrs/Kernel/Config
+# for foo in *.dist; do cp $foo `basename $foo .dist`; done</pre>
+<p>NOTE: a me risulta che in quella dir ci sia solo un file *.dist, non so perchè faccia il for, l&#39;ho copiato dall&#39;INSTALL<br />Controllo che i moduli necessari siano installati:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; "># perl -cw /opt/otrs/bin/cgi-bin/index.pl
+# perl -cw /opt/otrs/bin/otrs.PostMaster.pl</pre>
+<p>entrambi questi comandi devono restituire: syntax OK<br />Impostazioni webserver; occorre impostare apache per interpretare la cartella di otrs con perl, creare il file <em>/etc/apache2/conf.d/otrs</em> con il seguente contenuto</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; "># agent, admin and customer frontend
+ScriptAlias /otrs/ "/opt/otrs/bin/cgi-bin/"
+Alias /otrs-web/ "/opt/otrs/var/httpd/htdocs/"
+ 
+# load all otrs modules
+Perlrequire /opt/otrs/scripts/apache2-perl-startup.pl
+ 
+# Apache::Reload - Reload Perl Modules when Changed on Disk
+PerlModule Apache2::Reload
+PerlInitHandler Apache2::Reload
+PerlModule Apache2::RequestRec
+ 
+# set mod_perl2 options
+&lt;Location /otrs&gt;
+    #ErrorDocument 403 /otrs/customer.pl
+    ErrorDocument 403 /otrs/index.pl
+    SetHandler  perl-script
+    PerlResponseHandler ModPerl::Registry
+    Options +ExecCGI
+    PerlOptions +ParseHeaders
+    PerlOptions +SetupEnv
+    Order allow,deny
+    Allow from all
+&lt;/Location&gt;</pre>
+<p>Riavviare apache in modo che legga le modifiche al file di configurazione.</p>
+<p>Settare i permessi sui file; otrs mette a disposizione uno script che si occupa di settare i permessi passando come parametri l&#39;utente otrs di sistema, il gruppo di tale utente (solitamente uguale al nome utente), l&#39;utente che esegue il webserver e il gruppo del webserver, nel nostro caso:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; "># /opt/otrs/bin/otrs.SetPermissions.pl --otrs-user=otrs \<br />--web-user=www-data --otrs-group=otrs --web-group=www-data /opt/otrs</pre>
+<p>Completamento dell&#39;installazione di otrs dall&#39;interfaccia web http://yourhost/otrs/installer.pl:<br />dopo aver accettato la licenza, compare la form per i dati del database. Nei primi campi vanno inseriti i dati amministrativi di mysql (root). Cliccando il pulsante “Check database settings”, il programma controlla che i dati siano corretti, e mostra un&#39;altra parte di form. Questa nuova parte permette di specificare i dati dell&#39;utente mysql che otrs utilizzerà per gestire i database (e avrà permessi limitati solo su di esso) e il nome del database. I campi sono già popolati con valori di default che a noi vanno bene.</p>
+<p>ATTENZIONE: si consiglia di cambiare la password di default (<em>hot</em>) in qualcosa d&#39;altro.</p>
+<p>Continuando, l&#39;installer crea utente e database coi dati specificati nella form.<br />Continuando si arriva ad un&#39;altra form che permette di impostare le ultime cose: <br />SystemID: va bene quello di default (10)<br />FQDN: Full qualified domain name (per ora, test, l&#39;ip?)<br />AdminEmail: la propria email<br />Organization: il nome dell&#39;azienda (YetOpen S.r.l.)<br />LogModule: va bene quello di default (syslog)<br />LogFile: va bene quello di default (/tmp/otrs.log)<br />Default language: Italiano<br />CheckRecordMX: Yes<br />Impostazioni email:<br />skip</p>
+<p> </p>
+<p>Per loggarsi la prima volta i dati saranno<br />user: root@localhost<br />pass: root</p>
+<p>Il sistema ci avvisa subito con un messaggio che è bene non lavorare con utenti amministrativi e che la password di default del programma non è sicura. Bisogna pertanto cambiare la password e creare nuovi utenti per l&#39;utilizzo dell&#39;applicazione.</p>
+<p> </p>
+<p>I cronjobs di otrs sono nella directory <em>var/cron</em> nella directory home dell&#39;utente otrs. Per prima cosa occorre rinominare tutti i file *.dist senza l&#39;estensione (cron ignora infatti i file di configurazione che contengono il carattere &#39;.&#39;) dopodiché occorre eseguire lo script <em>Cron.sh start</em> per caricare il cron dell&#39;utente. Di seguito i comandi per eseguire le operazioni appena descritte:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; "># cd /opt/otrs/var/cron
+# for foo in *.dist; do cp $foo `basename $foo .dist`; done
+# chown root:www-data *
+# su - otrs
+$ bin/Cron.sh start</pre>
+<p><span style="font-size: 13px;"><br /></span></p>
+<p><span style="font-size: 13px;">fonte: </span><a style="font-size: 13px;" href="http://doc.otrs.org/3.2/en/html/manual-installation-of-otrs.html#cronjobs">http://doc.otrs.org/3.2/en/html/manual-installation-of-otrs.html#cronjobs</a></p>
+<p> </p>
+<p>2013.11.14: Installazione per Deparia ~1h 10min. Hanno cambiato la pagina di download, mi sono iscritto al forum e chiesto in IRC. Aggiornata FAQ.</p>
+<p> </p>
+<p> </p>

@@ -1,0 +1,9 @@
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">[g41n@steel ~]$ mount ufficio/
+This program is not installed setuid root -  "user" CIFS mounts not supported.
+[g41n@steel ~]$ sudo chmod u+s /sbin/mount.cifs 
+[sudo] password for g41n: 
+[g41n@steel ~]$ mount ufficio/
+Password for gianni.fioretta@//10.22.22.190/ufficio:  **********
+[g41n@steel ~]$ 
+</pre>
+<p>Può essere che in caso di aggiornamento si perda la modifica e sia da rifare.</p>

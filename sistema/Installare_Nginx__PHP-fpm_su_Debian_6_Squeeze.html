@@ -1,0 +1,161 @@
+<p>Per il supporto PHP ad Nginx &egrave; meglio usare php-fpm, un processore php con una componente daemon che lo rende pi&ugrave; veloce, ma non &egrave; ancora disponibile dai repository ufficiali. Per questo ci si appoggia a <a href="http://www.dotdeb.org">dotdeb.org</a>.</p>
+<p>&nbsp;</p>
+<p>Eseguiamo questi comandi:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">echo "deb http://packages.dotdeb.org squeeze all" &gt;&gt; /etc/apt/sources.list.d/dotdeb.list
+echo "deb-src http://packages.dotdeb.org squeeze all" &gt;&gt; /etc/apt/sources.list.d/dotdeb.list
+wget http://www.dotdeb.org/dotdeb.gpg -O - | apt-key add -
+apt-get update
+apt-get install nginx php5-cli php5-common php5-suhosin php5-fpm php5-cgi
+sed -i &#39;s/^short_open_tag\ =\ Off/short_open_tag\ =\ On/g&#39; /etc/php5/fpm/php.ini&nbsp;</pre>
+<p>In caso si voglia il supporto sql aggiungere il pacchetto <em>php5-mysql</em>&nbsp;all&#39;ultimo comando.</p>
+<p>Quindi fare una copia di backup di /etc/nginx/sites-available/default e sostituire il contenuto con:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">server {
+    listen 80;
+    server_name  _;
+    access_log  /var/log/nginx/default.access.log;
+    root    /var/www;
+    client_max_body_size 20M;
+
+    ## Default location
+    location / {
+        root   /var/www;
+        index  index.php index.html;
+    }
+
+    location ~ .php$ {
+        fastcgi_split_path_info ^(.+\.php)(.*)$;
+        fastcgi_pass   backend;
+        fastcgi_index  index.php;
+        fastcgi_param  SCRIPT_FILENAME  $document_root$fastcgi_script_name;
+        include fastcgi_params;
+        fastcgi_param  QUERY_STRING     $query_string;
+        fastcgi_param  REQUEST_METHOD   $request_method;
+        fastcgi_param  CONTENT_TYPE     $content_type;
+        fastcgi_param  CONTENT_LENGTH   $content_length;
+        fastcgi_intercept_errors        on;
+        fastcgi_ignore_client_abort     off;
+        fastcgi_connect_timeout 60;
+        fastcgi_send_timeout 180;
+        fastcgi_read_timeout 180;
+        fastcgi_buffer_size 128k;
+        fastcgi_buffers 4 256k;
+        fastcgi_busy_buffers_size 256k;
+        fastcgi_temp_file_write_size 256k;
+    }
+
+    ## Disable viewing .htaccess &amp; .htpassword
+    location ~ /\.ht {
+        deny  all;
+    }
+
+    location = /favicon.ico {
+        log_not_found off;
+        access_log off;
+    }
+ 
+    location = /robots.txt {
+        allow all;
+        log_not_found off;
+        access_log off;
+    }
+}
+</pre>
+<p>Creare il file&nbsp;/etc/nginx/conf.d/php_upstream_backend.conf con questo contenuto:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">upstream backend {
+    server 127.0.0.1:9000;
+}
+</pre>
+<p>Se vogliamo un sito SSL come prima fase generiamo il certificato (self-signed):</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">openssl genrsa -des3 -out /etc/nginx/ssl.key 1024
+openssl req -new -key /etc/nginx/ssl.key -out /etc/nginx/ssl.csr
+openssl rsa -in /etc/nginx/ssl.key -out /etc/nginx/ssl.key 
+openssl x509 -req -days 365 -in /etc/nginx/ssl.csr -signkey /etc/nginx/ssl.key -out /etc/nginx/ssl.crt
+</pre>
+<p>Creare il sito relativo completando il file /etc/nginx/sites-available/ssl-default</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">server {
+        listen 443 default_server ssl;
+        server_name evo evo.internavigare.com;
+
+        ssl_certificate ssl.crt;
+        ssl_certificate_key ssl.key;
+
+        ssl_session_timeout 5m;
+        keepalive_timeout    70;
+
+        ssl_protocols SSLv3 TLSv1;
+        ssl_ciphers ALL:!ADH:!EXPORT56:RC4+RSA:+HIGH:+MEDIUM:+LOW:+SSLv3:+EXP;
+        ssl_prefer_server_ciphers on;
+        root /dati/www/management_site;
+
+        location / {
+                # First attempt to serve request as file, then
+                # as directory, then fall back to index.html
+                try_files $uri $uri/ /index.html;
+        index index.php index.html;
+            root /dati/www/management_site;
+        }
+
+    ## Images and static content is treated different
+    location ~* ^.+.(jpg|jpeg|gif|css|png|js|ico|xml)$ {
+        access_log        off;
+        expires           30d;
+        root /dati/www/management_site;
+    }
+
+    ## Parse all .php file in the /var/www directory
+    location ~ .php$ {
+        fastcgi_split_path_info ^(.+\.php)(.*)$;
+        fastcgi_pass   backend;
+        fastcgi_index  index.php;
+        fastcgi_param  SCRIPT_FILENAME  $document_root$fastcgi_script_name;
+
+        include fastcgi_params;
+        fastcgi_intercept_errors        on;
+        fastcgi_ignore_client_abort     off;
+        fastcgi_connect_timeout 60;
+        fastcgi_send_timeout 180;
+        fastcgi_read_timeout 180;
+        fastcgi_buffer_size 128k;
+        fastcgi_buffers 4 256k;
+        fastcgi_busy_buffers_size 256k;
+        fastcgi_temp_file_write_size 256k;
+        include /etc/nginx/fastcgi_params;
+    }
+
+        location ~ /\.ht {
+                deny all;
+        }
+
+    location = /pma { rewrite ^ /pma/ permanent; }
+    location /pma/ {
+        location /pma/(.*\.php)$ {
+            set $script_filename /usr/share/phpmyadmin/$1;
+            # testing file existence for security.
+            # sadly in this case we can&#39;t use try_files since we&#39;re testing against actual file on disk
+            # while try_files tries against uri
+            if (!-f $script_filename) { return 404; }
+            include fastcgi_params;
+            fastcgi_param SCRIPT_FILENAME $script_filename;
+            fastcgi_param HTTPS $fastcgi_https;
+            fastcgi_pass backend;
+        }
+        location ~ ^/pma(|/.*)$ {
+            alias /usr/share/phpmyadmin/$1;
+            index index.php;
+        }
+    }
+}</pre>
+<p>&nbsp;</p>
+<p>Se al riavvio abbiamo un errore aggiungere in nginx.conf, prima di Virtual Hosts Config</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">    ## Detect when HTTPS is used
+    map $scheme $fastcgi_https {
+        default off;
+        https on;
+    }       
+</pre>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>A questo punto riavviare sia nginx che php-fpm:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">service php5-fpm restart
+service nginx restart</pre>
+<p>rif: <a href="http://www.howtoforge.com/installing-php-5.3-nginx-and-php-fpm-on-ubuntu-debian">http://www.howtoforge.com/installing-php-5.3-nginx-and-php-fpm-on-ubuntu-debian</a></p>

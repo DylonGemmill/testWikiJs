@@ -1,0 +1,18 @@
+<p>Mi è capitato che utilizzando un tema per Joomla 1.6 in una versione più recente (da 1.7 in sù), il div dedicato agli errori di sistema comparisse sempre, anche in caso di nessun errore.</p>
+<p>Per risolvere, modificare la parte relativa a tale div nel vostro template (file index.php) che dovrebbe essere simile a</p>
+<pre class="brush: php;fontsize: 100; first-line: 1; ">&lt;?php if ($this-&gt;getBuffer(&#39;message&#39;)) : ?&gt;
+    &lt;div class="error"&gt;
+        &lt;jdoc:include type="message" /&gt;
+    &lt;/div&gt;
+&lt;?php endif; ?&gt;
+</pre>
+<p>in</p>
+<pre class="brush: php;fontsize: 100; first-line: 1; ">&lt;?php if (count (JFactory::getApplication ()-&gt;getMessageQueue ())) : ?&gt;
+    &lt;div class="error"&gt;
+        &lt;jdoc:include type="message" /&gt;
+    &lt;/div&gt;
+&lt;?php endif; ?&gt;</pre>
+<p> </p>
+<p>Il problema è dovuto al fatto che l&#39;istruzione <em>$this-&gt;getBuffer (&#39;message&#39;)</em> nelle versioni di Joomla &lt;= 1.6 ritorna una stringa vuota, che nell&#39;if viene interpretata come <em>false</em>, mentre nelle versioni di Joomla &gt; 1.6 ritorna un div vuoto.</p>
+<p> </p>
+<p><a href="http://forum.joomla.org/viewtopic.php?t=638689">http://forum.joomla.org/viewtopic.php?t=638689</a></p>

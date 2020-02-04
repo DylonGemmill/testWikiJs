@@ -1,0 +1,12 @@
+<p>In un ambiente cluster con diversi host che possono accedere ad uno storage condiviso l&#39;uso di LVM è più complesso, in quanto tutti i nodi devono essere aggiornati sullo stato dei volumi logici. Questa operazione è eseguita da <strong>cLVM</strong>, e richiede per forza l&#39;uso di un <em>cluster manager</em> che può essere <em>cman</em> o <em><strong>corosync</strong></em>. </p>
+<p> </p>
+<p>I passaggi, a grandi linee, sono:</p>
+<ol>
+<li>configurazione del device multipath</li>
+<li>creazione di una partizione sul device multipath</li>
+<li>configurazione del cluster</li>
+<li>configurazione di cLVM</li>
+<li>uso del volume group</li>
+</ol>
+<p><a href="http://www.mail-archive.com/redpill-linpro@lists.launchpad.net/msg00000.html">http://www.mail-archive.com/redpill-linpro@lists.launchpad.net/msg00000.html</a></p>
+<p> </p>

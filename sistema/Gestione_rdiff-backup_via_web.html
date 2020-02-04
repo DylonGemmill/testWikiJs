@@ -1,0 +1,17 @@
+<p>Scaricare da <a href="http://rdiffbackupweb.sourceforge.net">rdiffbackupweb.sourceforge.net</a> il tgz e scompattarlo in una directory accessibile via web.</p>
+<p>Sempre <span>sul server:</span></p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">apt-get install python-mysqldb</pre>
+<p>ciao</p>
+<p>collegarsi alla shell di mysql ed eseguire:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">create database rdiffdb;
+grant all on rdiffdb.* to rdiffuser@&#39;%&#39; identified by &#39;password&#39;;
+flush privileges;</pre>
+<p>quindi dalla directory scompattata</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">cat rdiff.sql  | mysql -u rdiffuser -p rdiffdb
+cp process_backups.py /etc/cron.daily/</pre>
+<p>aprire il file config.php, modificare i parametri di connessione mysql in fondo, ed i percorsi delle directory (BACKUP_STORE_DIR e vicine).</p>
+<p>Ora è possibile andare tramite web al sito dove si è installato il software ed effettuare le prime configurazioni. Entrare con admin/admin.</p>
+<p> </p>
+<p>//TODO finire la configurazione</p>
+<p> </p>
+<p>I</p>

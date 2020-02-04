@@ -1,0 +1,12 @@
+<p>Siccome in XS6 hanno implementato un discorso di HA molto complesso, hanno rimosso da XenCenter la possibilità di avviare una VM al boot in automatico. </p>
+<p> </p>
+<p>Abilitare la funzione sul pool con questo comando:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">xe pool-param-set uuid=`xe pool-list | grep uuid | cut -f 2 -d &#39;:&#39;| sed &#39;s/\ *//g&#39;` other-config:auto_poweron=true</pre>
+<p>(il comando funziona su un server Xen singolo, se ci sono diversi pool lanciare i comandi separatamente).</p>
+<p> </p>
+<p>Quindi per abilitare il boot di una VM:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">xe vm-param-set uuid=&lt;UUID&gt; other-config:auto_poweron=true</pre>
+<p>sostituendo <strong>&lt;UUID&gt;</strong> con l&#39;id della VM. Questo parametro si può ottenere da XenCenter oppure con il comando</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">xe vm-list</pre>
+<p> </p>
+<p>Rif: <a href="http://forums.citrix.com/thread.jspa?threadID=300865">http://forums.citrix.com/thread.jspa?threadID=300865</a></p>

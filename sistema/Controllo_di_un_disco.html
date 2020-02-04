@@ -1,0 +1,18 @@
+<p>Per controllare l&#39;integrit&agrave; di un disco fisso si possono usare diversi tool. In caso il filesystem sia nativo linux, fsck con l&#39;opzione -f far&agrave; una verifica del filesystem.</p>
+<p>Altrimenti &egrave; possibile fare dei test di lettura/scrittura non invasivi usando il comando <strong>badblocks</strong>, parte del pacchetto <em>e2fsprogs</em>.</p>
+<p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">badblocks -n -v /dev/sdb</pre>
+</p>
+<p> Se il disco supporta SMART &egrave; possibile interrogarne lo stato con il comando <em>smartctl</em> del pacchetto <em>smartmontools</em>:</p>
+<p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">smartctl -a /dev/HDD_DEVICE</pre>
+</p>
+<p>Per abilitare smart sul disco, se disabilitato, lanciare il comando precedente con l&#39;opzione <em>-s</em> al posto di <em>-a</em>. Per lanciare un test etensivo di SMART sul disco, eseguire il comando seguente. Siccome viene eseguito in background, &egrave; possibile verificarne lo stato con il secondo comando:</p>
+<p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">smartctl -t long /dev/HDD_DEVICE
+smartctl -l selftest /dev/HDD_DEVICE</pre>
+</p>
+<p>&nbsp;</p>
+<p><a href="http://www.linux.com/archive/feed/55366">http://www.linux.com/archive/feed/55366</a></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>

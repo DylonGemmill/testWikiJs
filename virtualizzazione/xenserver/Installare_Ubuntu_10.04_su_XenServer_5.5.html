@@ -1,0 +1,19 @@
+<p>In fase di installazione selezionare "Other install media", ed installare dal CD di Ubuntu 10.04.</p>
+<p>Al partizionamento, assicurarsi di selezionare il filesystem ext3 per /, oppure creare una partizione /boot in ext3.</p>
+<p>Al termine dell&#39;installazione collegarsi in ssh e creare una console per Xen:<span style="font-family: &#39;courier new&#39;, courier;">&nbsp;</span>
+</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">cp /etc/init/tty1.conf /etc/init/hvc0.conf
+vi /etc/init/hvc0.conf</pre>
+<p>e rimpiazzare tutte le occorrenze di tty1 con hvc0.</p>
+<p>Aprire quindi /boot/grub/grub.cfg e prendere nota di tutti i parametri del primo kernel di boot, in particolare delle righe <em>vmlinuz</em>, dell&#39;<em>UUID</em>, e <em>initrd.img</em>. Spegnere la VM di Ubuntu.</p>
+<p>Copiare lo script <strong><em>makepv.sh</em></strong> qui allegato sul server Xen, collegarsi via ssh, renderlo eseguibile e quindi lanciare:&nbsp;<br /><span style="font-family: &#39;courier new&#39;, courier;">
+</span></p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">./makepv.sh "nome VM"</pre>
+<p>verranno fatte delle domande. Fare attenzione e rispondere correttamente secondo i dati annotati da grub.cfg.&nbsp;</p>
+<p>Al termine avviare la VM. Andare poi in XenCenter, ed assegnare alla VM la iso <strong><em>xen-tools.iso</em></strong>. Collegarsi in ssh alla VM, montare il CDROM, ed eseguire:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">dpkg -i /mnt/Linux/xe-guest-utilities_5.5.0-466_amd64.deb
+update-rc.d -f xe-linux-distribution remove
+update-rc.d xe-linux-distribution defaults </pre>
+<p>
+<span style="font-family: &#39;courier new&#39;, courier;">&nbsp;</span></p>
+<p><a href="http://www.jansipke.nl/installing-xenserver-tools-on-ubuntu-10-04">http://www.jansipke.nl/installing-xenserver-tools-on-ubuntu-10-04</a></p>

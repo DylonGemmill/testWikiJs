@@ -1,0 +1,5 @@
+<p>Durante il ripristino di un dump sql dove sono presenti <em>foreign keys </em>è possibile che vengano restituiti degli errori in quanto il salvataggio viene effettuato in ordine alfabetico, senza quindi tener conto delle precedenze sulla creazione delle tabelle dipendenti. Per ovviare a questo problema è possibile disabilitare temporaneamente il controllo sulle chiavi esterne in modo da completare il ripristino senza errori. Aggiungere in cima allo script SQL questo comando:</p>
+<p> </p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">SET FOREIGN_KEY_CHECKS=0;</pre>
+<p> </p>
+<p>In questo modo per la sessione corrente di SQL verranno create le chiavi anche se le tabelle non esistono ancora.</p>

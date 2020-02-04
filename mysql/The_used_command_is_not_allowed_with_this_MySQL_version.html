@@ -1,0 +1,6 @@
+<p>Se capita l&#39;errore in oggetto significa che un determinato comando &egrave; stato bloccato nella nostra versione di mysql, probabilmente per questioni di sicurezza. Per poterlo comunque utilizzare occorre abilitarlo dal file di configurazione /etc/mysql/my.cnf</p>
+<p>Nel mio caso l&#39;errore viene generato dall&#39;istruzione LOAD DATA LOCAL INFILE, perci&ograve; occorre sbloccare l&#39;istruzione inserendo la riga</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">load-infile = 1</pre>
+<p>&nbsp;</p>
+<p>nella sezione [client] del file di configurazione. Una volta modificato il file, riavviare mysql con</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">/etc/init.d/mysql restart</pre>

@@ -1,0 +1,27 @@
+<p>A differenza dei normali aggiornamenti, il passaggio dalla 6 alla 7 richiede alcuni passaggi aggiuntivi.</p>
+<p>Effettuare l&#39;aggiornamento di Zimbra come di consueto, verificando l&#39;integrità del database quando richiesto.</p>
+<p> </p>
+<p>Al termine dell&#39;installazione eseguire:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">su - zimbra
+zmmailboxdctl stop
+/opt/zimbra/libexec/scripts/migrate20100913-Mysql51.pl
+zmmailboxdctl start</pre>
+<p> </p>
+<p>Reinstallare le eventuali zimlet non standard presenti sul sistema (samba, posix...).</p>
+<p>Se si sta installando la versione FOSS zimbra non installa automaticamente la zimlet view_mail. Prelevarla da uno Zimbra NE (talento, cia) ed installarla.</p>
+<p> </p>
+<p>Nel caso della zimlet samba, assicurarsi di reimpostare il <em>password changer listener</em>:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">zmprov md DOMINIO.it zimbraPasswordChangeListener 
+sambapassword</pre>
+<p> </p>
+<p>Se si desidera abilitare le funzioni aggiuntive (invio posticipato, recupero dal cestino):</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">zmprov mc default zimbraDumpsterEnabled TRUE<br /><span>zmprov mc yetopen zimbraFeatureMailSendLaterEnabled TRUE</span></pre>
+<p> </p>
+<h3>Zimbra Connector for Blackberry</h3>
+<p> </p>
+<p>In caso di presenza del connettore per Blackberry procedere come di seguito, sul server windows:</p>
+<ol>
+<li>Fermare il BES Controller</li>
+<li>Eseguire l&#39;installer del connettore ZCB</li>
+<li>Avviare il BES Controller</li>
+</ol>

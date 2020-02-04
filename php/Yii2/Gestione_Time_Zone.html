@@ -1,0 +1,64 @@
+<h2>Parametro configurazione timeZone Yii2</h2>
+<p><a href="https://www.yiiframework.com/doc/guide/2.0/en/structure-applications#timeZone">https://www.yiiframework.com/doc/guide/2.0/en/structure-applications#timeZone</a><br /> <br /> Equivale ad impostare il timeZone di PHP, infatti esegue la funzione date_default_timezone_set(). Questo significa che le funzioni php date() e DateTime restituiranno risultati relativi alla timeZone specificata. La cosa non è valida per la funzione time() dato che lo Unix Time Stamp è per definizione indipendente dalla timeZone.</p>
+<h2>Parametri configurazione formatter Yii2</h2>
+<p><a href="https://www.yiiframework.com/doc/guide/2.0/en/output-formatting#time-zones">https://www.yiiframework.com/doc/guide/2.0/en/output-formatting#time-zones</a></p>
+<p>Solitamente in fase di visualizzazione le date vengono gestite attraverso il formatter di Yii2. Questo presenta due parametri fondamentali:</p>
+<ul>
+<li><a href="https://www.yiiframework.com/doc/api/2.0/yii-i18n-formatter#$defaultTimeZone-detail">defaultTimeZone</a>: indica la timeZone del dato da formattare. Default a &#39;UTC&#39;, non viene influenzato dal parametro principale timeZone di Yii2</li>
+<li><a href="https://www.yiiframework.com/doc/api/2.0/yii-i18n-formatter#$timeZone-detail">timeZone</a>: indica la timeZone nella quale dev&#39;essere visualizzato il risultato. Come default prende il valore del parametro principale dell&#39;applicazione Yii2</li>
+</ul>
+<h2>Parametri configurazione estensione Datecontrol</h2>
+<p><a href="https://demos.krajee.com/datecontrol#params">https://demos.krajee.com/datecontrol#params</a></p>
+<ul>
+<li>dateControlDisplayTimezone:  indica la timeZone nella quale dev&#39;essere visualizzata la data. Se non specificato la data viene visualizzata cosi come salvata</li>
+<li>dateControlSaveTimezone: indica la timeZone nella quale dev&#39;essere salvata la data. Se non specificato la data viene salvata cosi come inserita</li>
+</ul>
+<h2>timeZone MySQL</h2>
+<p><a href="https://www.yiiframework.com/doc/guide/2.0/en/db-dao#creating-db-connections">https://www.yiiframework.com/doc/guide/2.0/en/db-dao#creating-db-connections</a></p>
+<p>Di default il server MySQL assume la timeZone del server dove viene istallato. Se nelle query viene utilizzata la funzione MySQL NOW() questa restituisce il risultato in funzione del timeZone MySQL. Anche in caso di aggiornamento di un campo nella forma `data_intervento` = NOW() la data memorizzata sarà sfalsata secondo il timeZone di MySQL.</p>
+<p>Se si desidera forzare l&#39;allineamento della timeZone di MySQL con quella dell&#39;applicativo Yii2 e possibile farlo nel file di configurazione della connessione al DB:</p>
+<pre class="language-php"><code>&#39;db&#39; =&gt; [
+    // ...
+    &#39;on afterOpen&#39; =&gt; function($event) {
+        // $event-&gt;sender refers to the DB connection
+        $event-&gt;sender-&gt;createCommand("SET time_zone = &#39;UTC&#39;")-&gt;execute();
+    }
+],
+</code></pre>
+<h2>Approcci di configurazione software</h2>
+<h3>Salvataggio e visualizzazione in timeZone locale</h3>
+<p>Questo approccio è quello standard. La configurazione da adottare in questo caso è:</p>
+<ul>
+<li>timeZone Yii2: timeZone desiderata</li>
+<li>formatter Yii2
+<ul>
+<li>defaultTimeZone: timeZone desiderata</li>
+<li>timeZone: timeZone desiderata</li>
+</ul>
+</li>
+<li>estensione Datecontrol
+<ul>
+<li>dateControlDisplayTimezone: timeZone desiderata</li>
+<li>dateControlSaveTimezone: timeZone desiderata</li>
+</ul>
+</li>
+<li>timeZone MySQL: timeZone desiderata</li>
+</ul>
+<h3>Salvataggio sempre UTC e visualizzazione in timeZone locale</h3>
+<p>Questo approccio è utile, se non essenziale, principalmente in due casi: si ha la necessità di visualizzare in timeZone differenti in funzione dell&#39;utente loggato o altri criteri; si vuole mantenere la coerenza dei dati salvati con quelli salvati da un altro applicativo che salva in UTC (come ad esempio Joomla). La configurazione da adottare in questo caso è:</p>
+<ul>
+<li>timeZone Yii2: UTC</li>
+<li>formatter Yii2
+<ul>
+<li>defaultTimeZone: UTC</li>
+<li>timeZone: timeZone desiderata in visualizzazione (eventualmente da gestire a runtime)</li>
+</ul>
+</li>
+<li>estensione Datecontrol
+<ul>
+<li>dateControlDisplayTimezone: uguale a formatter Yii2 - timeZone</li>
+<li>dateControlSaveTimezone: uguale a timeZone Yii2</li>
+</ul>
+</li>
+<li>timeZone MySQL: UTC</li>
+</ul>

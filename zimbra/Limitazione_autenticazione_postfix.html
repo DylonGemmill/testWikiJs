@@ -1,0 +1,24 @@
+<p>Aggiungere il parametro in /etc/postfix/main.cf:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">smtpd_discard_ehlo_keyword_address_maps = cidr:/etc/postfix/esmtp_access
+</pre>
+<p>Editare il nuovo file scelto come cidr:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">vim /etc/postfix/esmtp_access</pre>
+<p>I servizi che possiamo disabilitare sono i seguenti:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">250-PIPELINING
+250-SIZE 10240000
+250-VRFY
+250-ETRN
+250-STARTTLS
+250-AUTH PLAIN LOGIN
+250-AUTH=PLAIN LOGIN
+250-ENHANCEDSTATUSCODES
+250-8BITMIME
+250 DSN
+</pre>
+<p>quindi se per esempio vogliamo limitare l&#39;accesso all&#39;autenticazione all &#39;ip 10.22.22.1 iseriremo nel file le seguenti stringhe:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">10.22.22.1/32       silent-discard
+0.0.0.0/0           silent-discard, auth plain login
+::/0                silent-discard, auth plain login
+</pre>
+<p>Il primo parametro gli dice che nessun servizio è bloccato per l&#39;indirizzo IP 10.22.22.1 il secondo e il terzo parametro nega a tutti gli altri indirizzi ip di effettuare l&#39;autenticazione.</p>
+<p> </p>

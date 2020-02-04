@@ -1,0 +1,15 @@
+<p>Installando le distribuzioni da rete (come nel caso di virtual machines) viene spesso impostato il <em>locale</em> inglese <em>en_US</em>.&nbsp;</p>
+<p>Per impostare lingua e caratteri italiani eseguire</p>
+<p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">locale-gen it_IT.UTF-8
+dpkg-reconfigure locales</pre>
+poi&nbsp;aggiungere in <em>/etc/environment</em></p>
+<p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">LANG=it_IT.UTF-8
+LC_ALL=it_IT.UTF-8
+</pre>
+</p>
+<p> e in <em>/etc/default/locale</em> modificare la riga <em>LANG</em> come segue</p>
+<p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">LANG="it_IT.UTF-8"</pre>
+</p>

@@ -1,0 +1,51 @@
+<p lang="it-IT">BACKUP SINGOLI CLIENT DEI COLLABORATORI</p>
+<p lang="it-IT">Script di backup che memorizza i seguenti dati sulla home del collaboratore creata sul server:</p>
+<ul>
+<li>
+<p lang="it-IT">/home/collaboratore/Documenti (cfr directory standard ubuntu)</p>
+</li>
+<li>
+<p lang="it-IT">/home/collaboratore/.gpg</p>
+</li>
+<li>
+<p lang="it-IT">/home/collaboratore/.ssh</p>
+</li>
+<li>
+<p lang="it-IT">/home/collaboratore/.vim</p>
+</li>
+<li>
+<p lang="it-IT">/etc/openvpn</p>
+</li>
+</ul>
+<p lang="it-IT">Dettagli dello script:<a class="intfaqlink" href="index.php?action=artikel&amp;cat=42&amp;id=91&amp;artlang=it"> Script di backup PC operatori</a></p>
+<p lang="it-IT">&nbsp;</p>
+<p lang="it-IT">BACKUP SUL SERVER</p>
+<ul>
+<li>
+<p lang="it-IT">cestino di rete</p>
+</li>
+<li>
+<p lang="it-IT">rdiff-backup con strico di 15gg</p>
+</li>
+</ul>
+<p lang="it-IT">BACKUP LOCALE</p>
+<p lang="it-IT">A) Viene eseguito 6 volte al giorno (alle 24.00, 10.00, 13.00, 16.00, 19.00 e 21.00) e memorizzato su disco USB in <em>/mnt/usb/backup-quaglia</em>. Vengono salvati i seguenti dati:</p>
+<ul>
+<li>
+<p lang="it-IT">cartella /home</p>
+</li>
+<li>
+<p lang="it-IT">dump di mysql</p>
+</li>
+<li>
+<p lang="it-IT">/var/www + /opt/otrs (spostate nella /home )</p>
+</li>
+<li>
+<p lang="it-IT">macchina asterisk</p>
+</li>
+</ul>
+<p lang="it-IT">B) Viene eseguito 4 volte al giorno (alle 07.00, 13.00, 21.00 e 24.00) e fa un backup di zimbra a caldo prima e a freddo dopo, su disco USB.</p>
+<p lang="it-IT">BACKUP REMOTO</p>
+<p lang="it-IT">Viene eseguito 3 volte al giorno (alle 06.00, 21.00 e 24.00) ed effettua un rsync verso un server xen remoto (altro edificio)</p>
+<p lang="it-IT">BACKUP FIREWALL</p>
+<p lang="it-IT">Una volta a settimana il firewall invia una mail con un backup della configurazione a support@yetopen.it.</p>

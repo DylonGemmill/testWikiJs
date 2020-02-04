@@ -1,0 +1,12 @@
+<p>Configurazione principale: /etc/gitlab/gitlab.rb</p>
+<p>Per applicare la configurazione: gitlab-ctl reconfigure</p>
+<p>Per testare la configurazione di LDAP: gitlab-rake gitlab:ldap:check</p>
+<p> </p>
+<p>Configurazione avanzata gruppi: <a href="http://stackoverflow.com/a/25183748/738852">http://stackoverflow.com/a/25183748/738852</a></p>
+<h2>Gestione runners</h2>
+<p>Servono per i test automatici di CI/CD.</p>
+<p>Sono installati tramite Docker sulla VM code.ufficyo.com.</p>
+<p>L&#39;installazione è stata fatta con <a href="https://docs.gitlab.com/runner/install/docker.html#docker-image-installation-and-configuration" target="_blank" rel="noopener">questa guida</a>. La registrazione è stata fatta con questo comando:</p>
+<pre class="language-markup"><code>docker exec gitlab-runner gitlab-runner register --url https://code.ufficyo.com --registration-token TOKEN --non-interactive --name code-docker-01 --executor shell</code></pre>
+<p>per creare il runner <em>code-docker-01</em>.</p>
+<p> </p>

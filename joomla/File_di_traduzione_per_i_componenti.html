@@ -1,0 +1,20 @@
+<p>Ogni estensione di Joomla (sia essa plugin, tema, modulo, ecc...) può avere dei file lingua associati. In Joomla questi file si trovano nei path<em> language</em> e <em>administrator/language</em> (rispettivamente i file di traduzione per <em>front end</em> e <em>back end</em>). In questi due percorsi si trovano quindi diverse cartelle, ognuna con la sigla della lingua interessata (it-IT, en-GB, ecc... le prime due lettere sono in codice <em>ISO 639</em> minuscolo mentre le ultime due in <em>ISO 3166 </em>maiuscolo, ma sempre della stessa lingua). All&#39;interno di queste cartelle ci sono infine i file con le traduzioni. Ogni file ha nome composto come segue:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">it-IT.tpl_h2raise_template.ini</pre>
+<p>dove <em>it-IT</em> è il codice della lingua, <em>tpl_</em> identifica il tipo di estensione (in questo caso un template) e <em>h2raise_template</em> è il nome dell&#39;estensione.</p>
+<p>La sintassi del file è del tipo:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">ESTENSIONE_DESCRIZIONE=Descrizione a video</pre>
+<p>Il valore chiave non deve contenere spazi e dev&#39;essere univoco in tutto Joomla, per cui si antepone sempre il nome dell&#39;estensione, esempio:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">TPL_H2RAISE_DESCRIZIONE=Descrizione del tema h2raise</pre>
+<p>Nel pacchetto di installazione dell&#39;estensione, i file di traduzione possono essere messi dove si vuole: l&#39;importante è referenziarli correttamente nel file XML di installazione. Per esempio nel caso di un template, avremo la sezione relativa alla lingua nel file <em>templateDetails.xml</em>, che sarà di questo tipo:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">&lt;languages folder="language"&gt;<br />  &lt;language tag="en-GB"&gt;en-GB/en-GB.tpl_h2raise_template.ini&lt;/language&gt;<br />  &lt;language tag="it-IT"&gt;it-IT/it-IT.tpl_h2raise_template.ini&lt;/language&gt;
+&lt;/languages&gt;
+</pre>
+<p>La sezione <em>languages</em> ci dice che i file di traduzione sono presenti nell&#39;archivio secondo questo schema:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">language/
+language/it-IT/
+language/it-IT/it-IT.tpl_h2raise_template.ini
+language/en-GB/
+language/en-GB/en-GB.tpl_h2raise_template.ini</pre>
+<p>Sarà quindi poi possibile richiamare le stringhe di traduzione all&#39;interno delle pagine PHP dell&#39;estensione in questo modo:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">echo JText::_(&#39;TPL_H2RAISE_DESCRIZIONE&#39;);</pre>
+<p> </p>

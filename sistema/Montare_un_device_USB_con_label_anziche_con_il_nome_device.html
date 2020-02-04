@@ -1,0 +1,30 @@
+<p>I dischi USB possono ricevere un nome device diverso ogni volta che vengono collegati al sistema (sde, sdf...). Questo pu&ograve; creare problemi se si desidera configurare fstab per il montaggio automatico.</p>
+<p>Siccome per questi dispositivi non &egrave; possibile usare l&#39;<strong>UUID</strong>, esiste l&#39;alternativa <strong>LABEL</strong>, che permette di montare un device usando la sua etichetta.</p>
+<p>A seconda del tipo di filesystem ci sono diversi modi per etichettare una partizione.</p>
+<ul>
+<li><strong>ext2/3</strong><br />Usare il comando <br /><span style="font-family: &#39;courier new&#39;, courier;">
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">e2label /dev/sdc1 etichetta</pre>
+</span>oppure un fase di creazione filesystem<br /><span style="font-family: &#39;courier new&#39;, courier;">
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">mkfs.ext2 -L etichetta /dev/sdc1 </pre>
+</span>oppure ancora con tune2fs<br /><span style="font-family: &#39;courier new&#39;, courier;">
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">tune2fs -L etichetta /dev/sdc1</pre>
+</span></li>
+<li><strong>fat32&nbsp;</strong><br /><span style="font-family: &#39;courier new&#39;, courier;"></span>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">aptitude install mtools
+cp /etc/mtools.conf ~/.mtoolsrc</pre>
+in fondo al file inserire una riga come da questo esempio<br /><span style="font-family: &#39;courier new&#39;, courier;">
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">drive i: file="/dev/sdc1"</pre>
+</span>quindi<br /><span style="font-family: &#39;courier new&#39;, courier;">
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">mcd i:</pre>
+</span>verificare l&#39;etichetta attuale con il comando<br /><span style="font-family: &#39;courier new&#39;, courier;">
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">mlabel -s i:</pre>
+</span>impostare una nuova etichetta con il comando&nbsp;<br /><span style="font-family: &#39;courier new&#39;, courier;">
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">mlabel -s i:etichetta</pre>
+</span></li>
+</ul>
+<p>In fstab aggiungere la riga in questo modo:</p>
+<p><span style="font-family: &#39;courier new&#39;, courier;"></span></p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">LABEL=etichetta   /mountpoint  vfat    auto           0       0
+</pre>
+<p>&nbsp;</p>
+<p>ref:<br /><a href="http://embraceubuntu.com/2006/03/01/editing-fat32-partition-labels-using-mtools/">http://embraceubuntu.com/2006/03/01/editing-fat32-partition-labels-using-mtools/<br /></a><a href="http://www.tldp.org/HOWTO/html_single/Partition/#volumelabels">http://www.tldp.org/HOWTO/html_single/Partition/#volumelabels</a>&nbsp;</p>

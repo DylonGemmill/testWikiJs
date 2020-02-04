@@ -1,0 +1,125 @@
+<p> </p>
+<p>Firewalld è una soluzione completa fornita da Centos 7.</p>
+<p>Il demone firewalld gestisce gruppi di regole usando delle zone.</p>
+<p>Le zone sono  fondamentalemente un insieme di regole che definiscono vari livelli di sicurezza che si possono scegliere a seconda di dove viene posizionato il sever.</p>
+<p> </p>
+<p>In elenco le diverse Zone:</p>
+<ul>
+<li><strong>drop: </strong>Il livello più basso di fiducia, dove tutte le connessioni sono scartate e solo le connessioni in uscita sono possibili</li>
+<li><strong>block:</strong> Simile alla precedente ma le richieste vengono scartate con i messaggi  <strong>icmp-host-prohibited ,icmp6-adm-prohibited.</strong></li>
+<li><strong>public:</strong> Rappresenta, reti non sicure pubbiche, in questa zona si possono definire connessioni in entrata a piacimento</li>
+<li><strong>external: </strong>Da utilizzare nel caso in cui si utilizza il firewall come gateway, in modo che la rete interna rimane privata, ma non raggiungibile</li>
+<li><strong>internal:</strong> utilizzata per una lan interna coperta da un firewall esterno.</li>
+<li><strong>dmz:</strong>Utilizzarte quando il server si trova in reti DMZ</li>
+<li><strong>work: </strong>Con  Centos utilizzato come client di lavoro</li>
+<li><strong>home</strong>: con Centos utilizzato come client da casa.</li>
+<li><strong>trusted: </strong>Totale affidabilità verso tutta le rete</li>
+</ul>
+<p>Comandi utili per la configurazione del firewall:</p>
+<p>Start del firewall </p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">systemctl start firewalld.service</pre>
+<p>Verifica dello stato del firewall:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">firewall-cmd --state
+output
+running</pre>
+<p>Verifica della zona abilitata di deafault:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">firewall-cmd --get-default-zone</pre>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">output
+public</pre>
+<p>Controllare su quali interfacce è attivo il firewall:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">firewall-cmd --get-active-zones
+output
+public
+  interfaces: eth0 eth1</pre>
+<p> Con il parametro seguente è possibile visualizzare tutte le regole attive nella zona su cui abbiamo configurato il firewall:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">firewall-cmd --list-all
+output
+public (default, active)
+  interfaces: eth0 eth1
+  sources: 
+  services: dhcpv6-client ssh
+  ports: 
+  masquerade: no
+  forward-ports: 
+  icmp-blocks: 
+  rich rules:</pre>
+<p> </p>
+<p>Per la giusta configurazione del firewall è utile riuscire a risalire a tutte le regole di ogni zona in modo da campire quale fa al caso nostro:</p>
+<p>Per visualizzare tutte le zone disponibili eseguire:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">firewall-cmd --get-zones
+output
+block dmz drop external home internal public trusted work</pre>
+<p>Per visualizzare le regole presenti in una singola zona è possibile usare:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">firewall-cmd --zone=home --list-all
+output
+home
+  interfaces: 
+  sources: 
+  services: dhcpv6-client ipp-client mdns samba-client ssh
+  ports: 
+  masquerade: no
+  forward-ports: 
+  icmp-blocks: 
+  rich rules:</pre>
+<p> E&#39; possibile inoltre verificare tutte le regole di tutte le zone con questo comando:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">firewall-cmd --list-all-zones | less</pre>
+<p> Con firewalld è possibile cambiare impostare la zona specificando l&#39;interfaccia da utilizzare:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">sudo firewall-cmd --zone=home --change-interface=eth0</pre>
+<p> così è possibile inserire zone diverse su interfacce differenti</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">firewall-cmd --get-active-zones</pre>
+<p><strong>Queste modifiche non sono però permanenti infatti un riavvio del firewall farebbe ritornare le impostazioni</strong> <strong>come prima</strong></p>
+<p>Per effettuare il cambio in  modo permanente delle della zona sulla interfaccia bisogna inserire il parametro ZONE=</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">vim etc/sysconfig/network-scripts/ifcfg-eth0
+ZONE=home</pre>
+<p>oppure si può usare il comando</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">firewall-cmd --zone=home --add-interface=eth0</pre>
+<p>Adesso riavviamo l&#39;interfaccia network e il firewall</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">systemctl restart network.service
+systemctl restart firewalld.service</pre>
+<p>E controlliamo che l&#39;interfaccia di rete che abbiamo configurato sia nella zona desiderata</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">firewall-cmd --get-active-zones
+output
+home
+  interfaces: eth0
+public
+  interfaces: eth1</pre>
+<h4>Inserire le regole per Servizio o Porta dedicata</h4>
+<p>Ci sono molti metodi per aggiungere le porte o i servizi alle zone</p>
+<p>Per vedere quali sono le zone configurate :</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">firewall-cmd --get-services</pre>
+<p>è inoltre possibile vedere le impostazioni dei singoli prefissi in:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">/usr/lib/firewalld/service</pre>
+<p> Per aggiungere un servizio alle regole (modo non permanente):</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">firewall-cmd --zone=public --add-service=http</pre>
+<p>Adesso verifichiamo che il servizio sia stato aggiunto:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">firewall-cmd --zone=public --list-services</pre>
+<p>Una volta verificato il funzionamento possiamo aggiungerlo in modo permanente con :</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">firewall-cmd --zone=public --permanent --add-service=http</pre>
+<p>Ed effettiuiamo come prima una verifica con :</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">firewall-cmd --zone=public --permanent --list-services</pre>
+<p>Invece se vogliamo aggiungere un porta alle regole della nostra zone possiamo usare(non permanente):</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">firewall-cmd --zone=public --add-port=5000/tcp</pre>
+<p>e verifichiamo con :</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">firewall-cmd --list-ports</pre>
+<p>Se invece vogliamo aggiungere un range di porte (non permanente) :</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">firewall-cmd --zone=public --add-port=4990-4999/udp</pre>
+<p>Per effettuare tutte le modifiche in modo permanenete:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">firewall-cmd --zone=public --permanent --add-port=5000/tcp
+firewall-cmd --zone=public --permanent --add-port=4990-4999/udp
+firewall-cmd --zone=public --permanent --list-ports</pre>
+<p>Se  si desidera effettuare una configurazione creando una nuova zona è possile effettuarne la creazione con:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">firewall-cmd --permanent --new-zone=publicweb</pre>
+<p>Infine abilitare l&#39;avvio del firewall al boot:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">systemctl enable firewalld</pre>
+<p>Per aggiungere una regola per singolo IP (ad esempio per Zabbix YetOpen):</p>
+<pre class="language-markup"><code>firewall-cmd --add-rich-rule=&#39;rule source port port=10050 accept&#39; --zone=public --permanent
+firewall-cmd --add-rich-rule=&#39;rule source port port=10050 accept&#39; --zone=public --permanent</code></pre>
+<p>Per consentire l&#39;accesso libero ad una serie di IP <em>speciali </em>creiamo una zona omonima con gli IP interessati:</p>
+<pre class="language-markup"><code>firewall-cmd --new-zone=speciali --permanent
+firewall-cmd --zone=speciali --add-source=79.3.72.69 --permanent
+firewall-cmd --zone=speciali --add-rich-rule=&#39;rule source accept&#39; --permanent
+</code></pre>
+<p> </p>
+<p>rif link: https://www.digitalocean.com/community/tutorials/how-to-set-up-a-firewall-using-firewalld-on-centos-7</p>
+<p> </p>
+<p> </p>

@@ -1,0 +1,17 @@
+<p>Knowledgetree permette di impostare l&#39;autenticazione LDAP direttamente da interfaccia. Dopo aver effettuato l&#39;installazione, loggarsi nel sistema come admin/admin.</p>
+<p>Andiamo nella gestione estensioni da <em>Preferenze</em> &gt; <em>Amministrazione</em> &gt; <em>Varie</em> &gt; <em>Gestione estensioni</em> e verifichiamo che</p>
+<p>la voce <em>LDAP Authentication Plugin</em> sia selezionata.</p>
+<p>Andiamo ora nella gestione utenti da <em>Amministrazione</em> &gt; <em>Utenti e Gruppi</em> &gt; <em>Autenticazione</em>. Selezionando la voce&nbsp;<em>Aggiungi una nuova fonte di autenticazione</em>&nbsp;si aprir&agrave; una pagina dalla quale &egrave; possibile inserire il nostro server LDAP.</p>
+<p>Dare un nome alla nuova fonte inserita (i.e. <em>Zimbra</em>), selezionare come tipo <em>Autenticazione LDAP</em> e cliccare su <em>Aggiungi una nuova fonte</em>. Inserire ora i dati del server LDAP, nel nostro caso:</p>
+<p>Nome del server: <strong>10.22.22.142</strong></p>
+<p>Porta del server: <strong>389</strong></p>
+<p>Utilizza il Transacion Layer Security (TLS): <strong>No</strong></p>
+<p>Base DN: <strong>ou=people,dc=aio,dc=ufficyo,dc=com</strong></p>
+<p>Cerca un utente: <strong>uid=zimbra,cn=admins,cn=zimbra</strong></p>
+<p>Cerca password: <strong>&lt;password LDAP&gt;</strong></p>
+<p>Attributi di Ricerca:</p>
+<p style="padding-left: 30px;"><strong>cn</strong></p>
+<p style="padding-left: 30px;"><strong>mail</strong></p>
+<p>Classi Oggetti:</p>
+<p style="padding-left: 30px;"><strong>OrganizationalPerson</strong></p>
+<p style="padding-left: 30px;"><strong>posixAccount</strong></p>

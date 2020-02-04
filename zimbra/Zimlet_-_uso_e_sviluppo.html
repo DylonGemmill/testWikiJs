@@ -1,0 +1,77 @@
+<p>Le Zimlet sono dei plugin o <strong>estensioni</strong> per <strong>Zimbra</strong>, che servono ad estendere l&#39;interfaccia web con nuove funzioni. Ce ne sono di due tipi, uno per estendere l&#39;interfaccia di amministrazione e l&#39;altro per l&#39;interfaccia utente.</p>
+<p>Le prime sono usate anche da <strong>Zimbra</strong> stessa per fornire alcune funzionalità base (gestione del backup, controllo disponibilità di nuove versioni...).</p>
+<p>Quelle lato utente possono avere i più disparati scopi, ma principalmente consentono di integrare servizi esterni dentro l&#39;interfaccia web di <strong>Zimbra</strong>, permettendo quindi di svolgere diverse funzioni senza allontanarsi dal groupware. Un esempio è <a href="http://gallery.zimbra.com/type/zimlet/google-translator">GTranslator zimlet</a>, che usando le API di Google Translator permette di tradurre una mail in diverse lingue. Altre zilmet visualizzano le Yahoo Maps cercando un indirizzo nel testo della mail, altre permettono di evidenziare un numero di telefono sempre nel corpo del messaggio e di inviare la richiesta di chiamata ad un centralino Asterisk, o Skype.<br />Questi ultimi esempi citati fanno uso di espressioni regolari per identificare un possibile pattern, e lo trasformano in un collegamento cliccabile. Un altro esempio di questo parsing è la zimlet per bugzilla, che identificato un possibile numero di bug ottiene da bugzilla.zimbra.com lo stato dello stesso. Un elenco di cosa si pò estendere sul <a href="http://wiki.zimbra.com/wiki/Zimlets">wiki</a>.</p>
+<h3>Disponibilità</h3>
+<p>Alcune zilmet vengono installate di default, altre sono presenti nella directory di Zimbra, altre sono disponibili solo sulla <a href="http://gallery.zimbra.com">Gallery</a>, uno spazio di sviluppo aperto a tutti. Possono essere molto utili per prendere esempio.</p>
+<p>Quelle presenti in /opt/zimbra sono installabili facilmente da linea di comando, come si vede nel paragrafo successivo.</p>
+<h3>Installazione</h3>
+<p>L&#39;installazione può avvenire in due modi: tramite l&#39;interfaccia di amministrazione oppure da linea di comando.</p>
+<ol>
+<li>Collegarsi all&#39;interfaccia di amministrazione all&#39;indirizzo https://ZIMBRA_IP:7071<br />Andare in Zimlet o Estensioni amministrazione (a seconda del tipo di Zimlet che si sta installando)<br />Selezionare il file <em>zip</em> dell&#39;estensione e premere <strong><em>Implementa</em></strong>. E&#39; sempre utile spuntare l&#39;opzione per effettuare il flish della cache delle zimlet</li>
+<li>Se non già presente, copiare il file <em>zip</em> della zimlet sul server in /tmp o in /opt/zimbra<br />Collegarsi via ssh al server<br />Diventare utente zimbra (su - zimbra)<br />Eseguire il comando <em>zmzimletctl deploy </em>nomefile.zip<br />Verificare il corretto deployment in /opt/zimbra/log/mailbox.log</li>
+</ol>
+<p>Una volta installate, il file scompattato viene posizionato in <em>/opt/zimbra/zimlets-deployed/</em>nomezimlet<em>.</em></p>
+<h3>Sviluppo e risorse</h3>
+<p>Le Zimlet vengono distribuite sotto forma di file .zip. Il contenuto può variare a seconda delle funzioni che esegue. Come minimo sono presenti un file xml di configurazione, un file javascript con il codice, ed eventualmente un file jar se sono richieste funzioni/chiamate aggiuntive lato server.</p>
+<p>Gran parte del codice è appunto scritto in Javascript. In molti casi questo codice farà delle chiamate SOAP/Ajax verso il server Zimbra. La documentazione delle API è presente nell&#39;installazione, in <em>/opt/zimbra/docs/soap*</em>.</p>
+<p>Una guida comprensiva sullo sviluppo delle Zimlet è presente su <a href="http://wiki.zimbra.com/wiki/ZCS_6.0:Zimlet_Developers_Guide:Introduction">wiki.zimbra.com</a>.<br />Tutti gli articoli di sviluppo sempre sul <a href="http://wiki.zimbra.com/wiki/Category:Zimlets">wiki</a>. </p>
+<p><a href="https://itarch.stanford.edu/confluence/display/ZIMLET/Stanford+Zimbra+Toolkit">Stanford Zimbra Toolkit</a> è una base per aiutare lo sviluppo di estensioni. Valutare se vale la pena basarsi su quello.</p>
+<p>E&#39; sicuramente citato nella documentazione, ma in fase di sviluppo occorre fare attenzione alla cache di Zimbra. Per velocizzare il caricamento dell&#39;interfaccia web, molti file tra cui gli elementi JS sono cachati, e compressi insieme per ridurre il traffico e le richieste al server. Per accedere all&#39;interfaccia web ignorando la cache occorre aggiungere ?dev=1 all&#39;url di Zimbra, che diventerà quindi <em>http://ZIMBRA_IP/zimbra/?dev=1</em>. I file JS sono anche gzippati, ed esiste un parametro (FIXME che ora non trovo) per forzare l&#39;invio dei file singoli, per facilitare il debug.</p>
+<p>Se il codice della Zimlet deve effettuare chiamate ad altri siti web, occorre passare dal proxy di <strong>Zimbra</strong>, e quindi configurarlo opportunamente. Tutte le informazioni necessarie sul <a href="http://wiki.zimbra.com/wiki/ZCS_6.0:Zimlet_Developers_Guide:Proxy_Servlet_Setup">wiki</a>.</p>
+<h4>Modifica zimlet già caricate</h4>
+<p>In caso di modifiche di zimlet di cui si era già effettuato il deploy in produzione, ad ogni modifica effettuata ricordarsi di ricaricare il file .zip in</p>
+<p><code>/opt/zimbra/zimlets</code></p>
+<p>Questo è necessario perché se si dovesse aggiornare Zimbra viene rifatto automaticamente il deploy dagli zip.</p>
+<h3>Comandi utili</h3>
+<p>Per pulire la cache delle zimlet (da utente zimbra) lanciare:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">$ zmprov fc zimlet</pre>
+<p>In alternativa, utilizzare la pagina aggiungendo <em>?dev=1</em> all&#39;URL, in modo che carichi ex novo ogni volta tutti i file JS.</p>
+<p>Per visualizzare invece le modifiche apportate ai file JSP, occorre lanciare il comando</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">$ zmmailboxdctl restart </pre>
+<p> </p>
+<h3>Implementare una zimlet in locale con zdesktop</h3>
+<p>Scaricare ZImbra Desktop da <a href="http://www.zimbra.com/products/desktop.html">http://www.zimbra.com/products/desktop.html</a> nel mio caso <em>zdesktop_7_1_2_ga_b10978_linux_i686.tgz</em></p>
+<p>Estraiamolo in una directory a piacere</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">tar xf zdesktop_7_1_2_ga_b10978_linux_i686.tgz -C /tmp</pre>
+<p>Eseguiamo lo script di installazione</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">cd /tmp/zdesktop_7_1_2_ga_b10978_linux_i686/
+./install.pl</pre>
+<p>Dopo aver accettato i termini di licenza, il programma chiede dove vanno installati i file generali. Solitamente viene proposto <em>/opt/zimbra/zdesktop</em> (se non si hanno i permessi viene proposto un path relativo alla home dell&#39;utente che ha eseguito lo script). La seconda parte dell&#39;installazione serve per i file dell&#39;utente, che andranno in <em>/home/user/zdesktop</em>. Infine viene chiesto dove posizionare l&#39;icona per il Desktop: lo script propone <em>/home/user/Desktop</em>, che su alcuni sistemi Linux in italiano sara&#39; da cambiare con <em>/home/user/Scrivania</em>, come nel mio caso (Ubuntu). Con un doppio click sull&#39;icona e&#39; ora possibile far partire il programma.</p>
+<p> </p>
+<p>Per lo sviluppo, posizionare le zimlet in <em>/home/user/zdesktop/zimlets-deployed/_dev</em> (se la cartella non esiste, crearla). Tutte le zimlet presenti in questa cartella verranno caricate da zdesktop senza bisogno di installazione e senza utilizzare la cache (modifiche ai file verranno rese disponibile con il refresh successivo, senza bisogno di cancellare la cash).</p>
+<p> </p>
+<p>Per utilizzare strumenti di debug come firebug, o gli strumenti di chrome, selezionare &#39;Impoosta&#39; da zdesktop. Dalla finestra che si apre, utilizzare l&#39;ultimo link in basso a destra (apri in un browser web) e scegliere il browser che si desidera utilizzare. Zdesktop si aprira&#39; nel browser selezionato.</p>
+<p> </p>
+<p>troubleshooting</p>
+<p>In caso di errore</p>
+<h2>HTTP ERROR 403</h2>
+<p>Problem accessing /service/proxy. Reason:</p>
+<pre>    FORBIDDEN</pre>
+<p> controllare che il dominio che ci interessa sia accessibile dal proxy di zimbra con il comando</p>
+<p>zmprov gc yourCOS | grep zimbraProxyAllowedDomains</p>
+<p>nel caso in cui non compaia, aggiungerlo con il comando</p>
+<p>zmprov mc yourCOS +zimbraProxyAllowedDomains YOURDOMAIN</p>
+<p>(solitamente yourCOS (Class Of Service) è default)</p>
+<p> </p>
+<h3>Altre risorse</h3>
+<p><a href="http://blog.zimbra.com/blog/archives/tag/zimlets">Zimbra Blog</a>, in particolare <a href="http://blog.zimbra.com/blog/archives/2010/01/adding-tab-applications-to-the-zimbra-web-client.html">come aggiungere un tab</a> (anche sul <a href="http://wiki.zimbra.com/wiki/ZCS_6.0:Zimlet_Developers_Guide:Zimlet_Tab">wiki</a>).</p>
+<p>Cambiamenti in Zimbra 8 che possono influenzare le Zimlet <a href="http://www.zimbra.com/forums/zimlets/59311-zimbra-8-changes-may-affect-zimlets-print.html">http://www.zimbra.com/forums/zimlets/59311-zimbra-8-changes-may-affect-zimlets-print.html</a></p>
+<p> </p>
+<h3>Da fare</h3>
+<p>Un documento dettagliato su come sviluppare <em>passo passo</em> una Zimlet, almeno per le parti generiche ed iniziali.</p>
+<p> </p>
+<h2>identifier is a reserved word</h2>
+<p>se vi capita l&#39;errore in oggetto nel in mailbox.log relativo ad un errore di compressione del js, può darsi che abbiate dimenticato un <em>debugger</em> nel codice (istruzione <em>debugger</em> per bloccare l&#39;esecuzione su Chrome).</p>
+<p> </p>
+<h2>Error in template, template not found</h2>
+<p>se vi capita questo errore dopo aver appena creato un nuovo file di template (i.e. <em>templates/miotemplate.template</em>) assicurarsi che il file JS relativo sia incluso nell&#39;XML di definizione della zimlet (<em>&lt;include&gt;templates/miotemplate.template.js&lt;/include&gt;</em>) e cancellare la cache delle zimlet col comando</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">zmprov fc zimlet</pre>
+<p> </p>
+<h2>Non vedo la Zimlet</h2>
+<p>Nel caso in cui non si veda la Zimlet interessata:</p>
+<ul>
+<li>verificare i permessi da console di amministrazione andando in <em>Gestisci</em> &gt; <em>Account</em> &gt; "<em>Account interessato</em>" &gt; <em>Zimlet</em></li>
+<li>se al punto precedente era selezionata l&#39;opzione "<em>Usa impostazioni COS</em>", verificare tali impostazioni in <em>Configura</em> &gt; <em>Classe di servizio</em> &gt; "<em>Classe di servizio interessata</em>"  &gt; <em>Zimlet</em></li>
+<li>verificare le impostazioni delle zimlet dal pannello dell&#39;utente andando in <em>Preferenze</em> &gt; <em>Zimlet</em></li>
+<li>resettare la cache con il comando<em> zmprov fc zimlet</em></li>
+</ul>

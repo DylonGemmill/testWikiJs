@@ -1,0 +1,35 @@
+<p>OTRS supporta già nativamente il login tramite HTTP_AUTH, anche senza password.</p>
+<p>Abilitare il supporto ad HTTP AUTH aggiungendo nel file /path/di/otrs/Kernel/Config.pm la riga</p>
+<pre class="brush">$Self-&gt;{&#39;AuthModule&#39;} =&#39;Kernel::System::Auth::HTTPBasicAuth&#39;;
+</pre>
+<p>sopra al commento che recita "end of your own config options".</p>
+<p>Per quanto riguarda invece il logout bisogna modificare il template della pagina degli agenti.</p>
+<p>Per prima cosa spostarsi nella directory in cui si trova il file in questione e farne una copia di backup</p>
+<pre class="brush">cd /path/di/otrs/Kernel/Output/HTML/Standard/
+cp Header.dtl Header.dtl.ORIG
+</pre>
+<p>dopo di che incollare il seguente contenuto in un file, per creare la nostra patch (per esempio /tmp/mypatch)</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">--- Header.dtl.orig     2013-11-14 15:24:11.487635000 +0100
++++ Header.dtl  2013-11-14 15:28:06.695635000 +0100
+@@ -97,7 +97,9 @@
+             $Text{"You are logged in as"} $QEnv{"UserFullname"}
+ &lt;!-- dtl:block:LoginWithoutLink --&gt;
+ &lt;!-- dtl:block:Logout --&gt;
+-            &lt;a class="LogoutButton" id="LogoutButton" href="$Env{"Baselink"}Action=Logout;$QEnv{"ChallengeTokenParam"}" title="$Text{"Logout"}"&gt;
++            &lt;!-- &lt;a class="LogoutButton" id="LogoutButton" href="$Env{"Baselink"}Action=Logout;$QEnv{"ChallengeTokenParam"}" title="$Text{"Logout"}"&gt; --&gt;
++            &lt;!-- Codice modificato per il logout tramite Shibboleth - Guerrisi Antonio 2011-05-02 --&gt;
++            &lt;a class="LogoutButton" id="LogoutButton" href="https://$Env{"HTTP_HOST"}/Shibboleth.sso/Logout" title="$Text{"Logout"}"&gt;
+                 &lt;i class="icon-off"&gt;&lt;/i&gt;
+             &lt;/a&gt;
+ &lt;!-- dtl:block:Logout --&gt;
+</pre>
+<p>Quindi, senza spostarsi dalla directory, applucare la patch</p>
+<pre class="brush">patch -i /tmp/mypatch </pre>
+<p>E&#39; importante che la patch venga applicata dalla cartella in cui si trova il file da patchare.</p>
+<p>Infine impostare l&#39;accesso con Shibboleth da apache inserendo in /etc/apache2/sites-enabled/default-ssl</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">&lt;Location "/otrs"&gt;
+AuthType shibboleth
+  ShibRequireSession On
+  require valid-user
+&lt;/Location&gt;
+</pre>

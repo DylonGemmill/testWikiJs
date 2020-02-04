@@ -1,0 +1,13 @@
+<p>Per permettere a Zimbra di autenticarsi attraverso Shibboleth, sfrutteremo il servizio di pre-autenticazione messo a disposizione da Zimbra stesso. Modificare come indicato nel file stesso, lo script PHP per il preauth, allegato a questo documento e caricarlo in una locazione accessibile dall&#39;esterno (non è importante dove venga messo, l&#39;importante è che sia accessibile pubblicamente e all&#39;interno della rete di Shibboleth). Dopo di che dare i seguenti comandi per istruire Zimbra ad utilizzare lo script di preauth per il login e l&#39;url di logout di Shibboleth per terminare la sessione.</p>
+<pre class="brush">zmprov mcf zimbraWebClientLoginURL http://zimbra.domain.tld/preauth-url.php
+zmprov mcf zimbraWebClientLogoutURL http://zimbra.domain.tld/Shibboleth.sso/Logout</pre>
+<p>L&#39;ultima versione dello script si trova sempre su git, git+ssh://gitosis@mail.ufficyo.com/web_sso_plugins.git</p>
+<p> </p>
+<p>Mettere quindi il file sotto l&#39;autenticazione di Shibboleth aggiungendo alla configurazione di apache il seguente codice</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">&lt;Location /zimbra_preauth.php&gt;
+        AuthType shibboleth
+        ShibRequireSession On
+        require valid-user
+&lt;/Location&gt;
+</pre>
+<p> </p>

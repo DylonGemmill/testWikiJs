@@ -1,0 +1,10 @@
+<p>Qui maggiori informazioni su come importare ed esportare via REST</p>
+<p><a href="http://wiki.zimbra.com/wiki/Calendar_and_Contacts_Migration#REST_file_formats">http://wiki.zimbra.com/wiki/Calendar_and_Contacts_Migration#REST_file_formats</a></p>
+<p> </p>
+<p><span style="font-size: 13px;">Un esempio pratico con Zimbra 8, per importare i contatti:</span></p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">curl --insecure -u stefano.rusconi:&lt;password&gt; --upload-file /tmp/contatti_stefano.vcf https://mail.technion.it/service/home/stefano.rusconi/contacts?fmt=vcf</pre>
+<p><span style="font-size: 13px;">Per scaricarli</span></p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">wget --no-check-certificate --user=stefano.rusconi --password=&lt;password&gt; https://mail.technion.it/service/home/stefano.rusconi/contacts</pre>
+<p><span>Naturalmente sostituire a </span><em>&lt;password&gt;</em><span>la password dell&#39;utente specificato.</span> </p>
+<p><span style="font-size: 13px;">Nell&#39;esempio il certificato del server non era stato ancora validato (fase di prova). </span></p>
+<p>Il comando <em>curl</em> non restituisce nessun messaggio, per verificare che l&#39;importazione sia stata conclusa con successo occorre verificare scaricando i contatti col secondo comando, oppure verificandone l&#39;effettiva presenza da web.</p>

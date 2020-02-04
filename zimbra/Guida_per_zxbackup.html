@@ -1,0 +1,43 @@
+<h1>Effettuare un backup incrementale</h1>
+<p>Per far si che si abbia un backup incrementale ed aggiornato degli account bisogna configurare la zimlet in modo da effettuare un Real Time Scanner.</p>
+<p>Quindi andare nel pannello di gestione delle zimlet zxsuite in zxbackup:</p>
+<p><img src="https://apps.ufficyo.com/kb/images/800px-Zimlet_Panel_b (1).png" width="700" height="128" /></p>
+<p>ed abilitarlo:</p>
+<p><img src="https://apps.ufficyo.com/kb/images/800px-RTS_01_b.png" width="700" height="202" /></p>
+<p>senza scomodarsi ed andare da web è possibile anche utilizzare il comando:</p>
+<pre class="language-markup"><code>zxsuite backup setProperty ZxBackup_RealTimeScanner TRUE
+
+</code></pre>
+<p>In questa parte del menù è possibile scegliere a piacimento quando pulire lo spazio dei backup, e selezionando dopo quanti giorni cancellarli.</p>
+<h1>Effettuare il ripristino di un account</h1>
+<p>Andare in Home-&gt;Manage-&gt;Accounts e selezionare l&#39;account che si desidera ripristinare:</p>
+<p><img src="https://apps.ufficyo.com/kb/images/800px-RONA_01_b.png" width="700" height="200" /></p>
+<p>Poi selezionare dal menù a destra con l&#39;immagine della rotella l&#39;opzione restore</p>
+<p><img src="https://apps.ufficyo.com/kb/images/800px-RONA_03_b.png" width="700" height="360" /></p>
+<p>Per ragioni di sicurezza e <strong>DAVVERO IMPORTANTE </strong>che durante la fase di riprisitno si effettui il restore su un altro account, quindi nella sezione restore type va selezionata l&#39;opzione Restore on New Account, ed aggiugere il prefisso restored_ all&#39;account.</p>
+<p><img src="https://apps.ufficyo.com/kb/images/800px-RONA_04_b.png" width="700" height="361" /></p>
+<p>una volta selezionata questa opzione, procediamo a scegliere la data a cui vogliamo ripristinare l&#39;account:</p>
+<p><img src="https://apps.ufficyo.com/kb/images/800px-RONA_05_b.png" width="700" height="363" /></p>
+<p>E aggiungiamo <a href="mailto:support@yetopen.it">support@yetopen.it</a> come indirizzo aggiuntivo delle notifiche (nel caso non ci sia già l&#39;inoltro da admin):</p>
+<p><img src="https://apps.ufficyo.com/kb/images/800px-RONA_06_b.png" width="700" height="361" /></p>
+<p>Una volta finito arriverà la notifca via mail dell&#39;avvenuto restore.</p>
+<p>E&#39; inoltre possibile gestire un restore anche da linea di comando:</p>
+<pre class="language-markup"><code>Sintaxis:
+   zxsuite backup doRestoreOnNewAccount {source_account} {destination_account} {"dd/MM/yyyy HH:mm:ss"|last} [attr1 value1 [attr2 value2...]]
+
+LISTA DE PARÁMETROS
+
+NOMBRE                       TIPO                 VALORES ESPERADOS
+source_account(M)          Account Name                                        
+destination_account(M)     Account Name/ID                                     
+date(M)                    Date                  "dd/MM/yyyy HH:mm:ss"|last    
+restore_chat_buddies(O)    Boolean               true|false                    
+notifications(O)           Email Address[,..]                                  
+
+(M) == parámetro obligatorio, (O) == parámetro opcional
+
+Ejemplo de uso:
+
+zxsuite backup dorestoreonnewaccount John NewJohn "28/09/2012 10:15:10"
+Recupera la cuenta John en una nueva llamada NewJohn</code></pre>
+<p>Rif. https://wiki.zextras.com/wiki/Zx_Backup:_Restore_on_New_Account</p>

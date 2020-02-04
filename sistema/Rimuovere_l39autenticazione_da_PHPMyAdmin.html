@@ -1,0 +1,13 @@
+<p>Creare un file /etc/phpmyadmin/conf.d/localhost.php con questo contenuto:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">&lt;?php
+
+$cfg[&#39;Servers&#39;][1][&#39;auth_type&#39;] = &#39;config&#39;;
+$cfg[&#39;Servers&#39;][1][&#39;host&#39;] = &#39;localhost&#39;;
+$cfg[&#39;Servers&#39;][1][&#39;connect_type&#39;] = &#39;tcp&#39;;
+$cfg[&#39;Servers&#39;][1][&#39;compress&#39;] = false;
+$cfg[&#39;Servers&#39;][1][&#39;extension&#39;] = &#39;mysql&#39;;
+$cfg[&#39;Servers&#39;][1][&#39;user&#39;] = &#39;root&#39;; // MODIFICARE
+$cfg[&#39;Servers&#39;][1][&#39;password&#39;] = &#39;&#39;; // MODIFICARE
+</pre>
+<p> </p>
+<p>http://stackoverflow.com/questions/3216009/phpmyadmin-disable-admin-login</p>

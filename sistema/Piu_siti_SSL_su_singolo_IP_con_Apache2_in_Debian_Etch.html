@@ -1,0 +1,7 @@
+<p>Con Apache configurato predefinito, non &egrave; possibile configurare pi&ugrave; siti SSL (https) sullo stesso indirizzo IP. In realt&agrave; esiste gi&agrave; da tempo una patch che fa quanto richiesto.</p>
+<p>Seguire i passaggi a questo url:</p>
+<p><a href="http://www.howtoforge.com/enable-multiple-https-sites-on-one-ip-using-tls-extensions-on-debian-etch">http://www.howtoforge.com/enable-multiple-https-sites-on-one-ip-using-tls-extensions-on-debian-etch</a></p>
+<p>Due varianti all&#39;howto:</p>
+<p><strong>PRIMA eseguire la compilazione di OpenSSL</strong>.</p>
+<p>Quindi, seguendo questo howto <a href="http://wiki.debian.org/PbuilderTricks#Howtoincludelocalpackagesinthebuild">wiki.debian.org</a> impostare la directory /var/cache/pbuilder/result come OTHERMIRROR e BINDMOUNTS.</p>
+<p>In seguito eseguire il build di <strong>apache2</strong>.</p>

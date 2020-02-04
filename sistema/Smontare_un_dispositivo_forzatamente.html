@@ -1,0 +1,14 @@
+<p>Per smontare un dispositivo forzatamente usare l&#39;opzione <em>-f</em>.&nbsp;</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">umount -f /mnt/</pre>
+<p>In alcuni casi anche se con <em>lsof</em> non risulta nessun processo che impegni il device viene comunque rifiutata l&#39;operazione. In questi casi, l&#39;opzione <em>-l</em>&nbsp;potrebbe funzionare</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">umount -l /mnt</pre>
+<p>che fa un <em>lazy umount</em>.</p>
+<p>&nbsp;</p>
+<p>Per vedere quale processo sta occupando un device usare il comando:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">fuser -u /dev/sda1</pre>
+<p>Per terminare (kill) tutti i processi che usano un determinato device:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">fuser -k /dev/sda1</pre>
+<p>In alcuni casi anche la <em>fuser</em>&nbsp;non ritorna processi ma il device risulta bloccato. In queste occasioni potrebbe invece tornare informazioni il comando</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">lsof | grep MOUNTPOINT</pre>
+<p>&nbsp;</p>
+<p>&nbsp;</p>

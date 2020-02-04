@@ -1,0 +1,25 @@
+<p>Questo manuale racchiude le principali funzioni e la loro configurazione.</p>
+<p> </p>
+<h4>Gestire alcuni prodotti che non sono spedibili</h4>
+<p>Almeno nella fase iniziale si è deciso che alcuni prodotti troppo ingombranti non verranno spediti. E&#39; possibile limitare lo spedizioniere in diversi modi:</p>
+<ul>
+<li>impostando i limiti di dimensione nel corriere, ed impostando le dimensioni dell&#39;oggetto nella scheda prodotto (tab <em>Spedizione</em>);</li>
+<li>impostando una restrizione sul corriere nella scheda prodotto (tab <em>Spedizione</em>). In questo modo è possibile forzare l&#39;uso di uno specifico metodo di spedizione per un determinato prodotto, senza passare per le <em>regole di spedizione</em>.</li>
+</ul>
+<h4>Aggiunta lingue</h4>
+<p>Andare nel <em>backend &gt; Localizzazioni &gt; Traduzione &gt; Import/export traduzioni</em>. Selezionare la lingua e premere il pulsante <em>Aggiungere o aggiornare la lingua</em>.</p>
+<p> </p>
+<h4>Informazioni aggiuntive nel carrello </h4>
+<p>Di default è abilitata la visualizzazione di un pulsante PayPal sotto il riepilogo del carrello. E&#39; un modulo installato nella posizione <span>displayShoppingCart (<em>Moduli &gt; Posizioni</em>), rimosso quello non viene più visualizzato. </span></p>
+<p> </p>
+<h4>Modifica campi di registrazione</h4>
+<p>La modifica dei campi visualizzati va fatta direttamente nel template. I file da modificare sono themes/pt_marris/authentication.tpl, identity.tpl, order-opc-new-account.tpl (quest&#39;ultimo solo se si utilizza one-page-checkout).</p>
+<p> </p>
+<h4>Backup</h4>
+<p>Non esiste una soluzione completa ed automatica di backup di file e database insieme.</p>
+<p>Il salvataggio del DB si può fare da <em>Parametri Avanzati &gt; Backup DB</em> oppure da PhpMyAdmin, avendo cura poi di scaricare e salvare il backup da qualche parte.</p>
+<p>Il salvataggio dei file si può fare tramite FTP.</p>
+<p>In caso di server dedicato si possono prevedere operazioni schedulate automaticamente.</p>
+<p> </p>
+<h4>Mettere l&#39;ordine in attesa se si sceglie il ritiro in negozio</h4>
+<p>Sembra non sia un&#39;opzione presente nelle configurazioni standard. Non è indispensabile ma sarebbe utile. Ho chiesto sul <a href="http://www.prestashop.com/forums/topic/321956-mettere-lordine-in-attesa-per-un-tipo-di-spedizione/">forum italiano</a> se è fattibile, vediamo cosa rispondono.</p>

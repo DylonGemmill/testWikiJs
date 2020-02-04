@@ -1,0 +1,25 @@
+<p>È possibile creare l&#39;immagine di un sistema in esecuzione con <em>dd</em>. L&#39;immagine non sarà consistente al 100% perché i file sono aperti e ad esempio sistemi come database o altri potrebbero risultare corrotti (<a href="https://borgbackup.readthedocs.io/en/stable/deployment/image-backup.html" target="_blank" rel="noopener">rif</a>). Per questo motivo questo tipo di soluzione può essere usata per creare un&#39;immagine di DR, ma i dati devono essere salvati in altro modo.</p>
+<h2>Creazione immagine</h2>
+<p>Il comando <span style="text-decoration: underline;">iniziale</span> (da completare) per creare l&#39;immagine con dd è</p>
+<pre class="language-markup"><code>dd if=/dev/sda conv=sync,noerror status=progress</code></pre>
+<p>(il parametro <em>status=progress</em> potrebbe non essere disponibile per le versioni più vecchie di Ubuntu, ad esempio la 14.04 non ce l&#39;ha).</p>
+<p>Visto che il disco avrà molti settori vuoti è inutile copiarlo così com&#39;è, quindi conviene sempre (sia per la memorizzazione che per il trasferimento remoto) passarlo attraverso <strong>gzip</strong> (oppure, installandolo, con pigz che supporta la parallelizzazione su più processi):</p>
+<pre class="language-markup"><code>dd if=/dev/sda conv=sync,noerror status=progress | gzip</code></pre>
+<h2>Salvataggio in un file immagine locale</h2>
+<p>Per memorizzare l&#39;immagine su un mountpoint <em>locale</em> al sistema (ovviamente su un disco diverso da quell sorgente!) aggiungere semplicemente il redirect su file</p>
+<pre class="language-markup"><code>dd if=/dev/sda conv=sync,noerror status=progress | gzip &gt; /mnt/backup/host01-sda.img.gz</code></pre>
+<h2>Trasferimento su un host remoto in LAN con netcat</h2>
+<p>Per trasferire l&#39;immagine su un altro sistema e salvarla in remoto si può usare netcat, che trasferisce i dati così come sono. Sulla macchina di destinazione avviamo netcat su una porta qualunque:</p>
+<pre class="language-markup"><code>nc -l -p 44444 &gt; /destinazione/host01-sda.img.gz</code></pre>
+<p>Sulla macchina sorgente:</p>
+<pre class="language-markup"><code>dd if=/dev/sda conv=sync,noerror status=progress | gzip | nc IP_DESTINAZIONE 44444</code></pre>
+<h2>Trasferimento su un host remoto con ssh</h2>
+<p>Nel caso di un trasferimento remoto dove si vogliano cifrare i dati meglio usare ssh:</p>
+<pre class="language-markup"><code>dd if=/dev/sda conv=sync,noerror status=progress | gzip | ssh HOST_DESTINAZIONE "dd of=/mnt/backup/host01-sda.img.gz"</code></pre>
+<p> </p>
+<h2>Ripristino immagine</h2>
+<p>Avviare il sistema di destinazione con una distribuzione live e fare l&#39;inverso. Ad esempio nel caso di netcat sulla live:</p>
+<pre class="language-markup"><code>nc -l -p 44444 | gunzip | dd of=/dev/sda</code></pre>
+<p>e dal <em>client</em>:</p>
+<pre class="language-markup"><code>cat /mnt/export/host01-sda.img.gz | nc IP_DISTRO_LIVE 44444</code></pre>
+<p><a href="https://www.linux.com/tutorials/full-metal-backup-using-dd-command/">Rif</a>.</p>

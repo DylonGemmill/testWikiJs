@@ -1,0 +1,18 @@
+<p>Se si è già installato il sistema senza il supporto LVM, eseguire questi comandi:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">apt-get install lvm2</pre>
+<p> </p>
+<p>Poniamo di voler creare il gruppo LVM <em>LVGroup1</em>, composto dalla sola partizione <em>/dev/sdb1</em>, contenente la partizione <em>dati</em>:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">pvcreate /dev/sdb1
+vgcreate LVGroup1 /dev/sdb1
+lvcreate -L 20G -n dati LVGroup1</pre>
+<p><span style="font-size: 13px;">quindi avremo creato il device /dev/mapper/lvgroup1-dati da usare come una partizione normale.</span></p>
+<p> </p>
+<p>Rif: <a href="http://www.thegeekstuff.com/2010/08/how-to-create-lvm/">http://www.thegeekstuff.com/2010/08/how-to-create-lvm/</a></p>
+<p> </p>
+<h4>Rimozione di un disco fisico dal gruppo LVM</h4>
+<p>Come prima cosa occorre rimuovere i dati del volume logico presenti sul disco fisico, quindi si riduce il gruppo rimuovendo il disco, infine si rimuove la partizione dall&#39;LVM. L&#39;elenco dei comandi che esegue questi passaggi è il seguente:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">pvmove -v /dev/sdX1
+vgreduce vg0 /dev/sdX1
+pvremove /dev/sdX1</pre>
+<p> </p>
+<p>Altri comandi utili a <a href="http://wiki.gentoo.org/wiki/LVM">http://wiki.gentoo.org/wiki/LVM</a></p>

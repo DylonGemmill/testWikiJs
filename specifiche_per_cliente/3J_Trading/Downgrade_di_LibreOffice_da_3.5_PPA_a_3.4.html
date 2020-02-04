@@ -1,0 +1,7 @@
+<p>I MiniPC di G&amp;V non gestiscono il carico di CPU richiesto da LibreOffice 3.5.x per disegnare l&#39;UI, mentre con la 3.4 va molto meglio.</p>
+<p>C&#39;era installato LO 3.5 dai PPA, per rimuoverlo ed installare una versione precedente prelevata da libreoffice.org scaricare i .deb dal <a href="http://www.libreoffice.org/download/?type=deb-x86&amp;lang=it&amp;version=3.4.6">sito</a>, estrarli&nbsp;ed eseguire questi comandi:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">apt-get purge -y libreoffice-base-core libreoffice-common libreoffice-core libreoffice-emailmerge libreoffice-gnome libreoffice-gtk libreoffice-help-it libreoffice-l10n-it libreoffice-math libreoffice-style-human libreoffice-writer libreoffice 
+apt-get -y autoremove
+dpkg -i /home/LibO_3.4.6rc2_Linux_x86_install-deb_en-US/DEBS/*.deb
+dpkg -i /home/LibO_3.4.6rc2_Linux_x86_install-deb_en-US/DEBS/desktop-integration/*.deb</pre>
+<p>(correggere il path /home con quello dove si sono estratti i tgz scaricati dal sito).</p>

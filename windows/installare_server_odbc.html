@@ -1,0 +1,16 @@
+<p>scaricare ed installare sql server express</p>
+<p>aprire la configurazione di sql quindi andare in configurazione di rete &gt; protocolli, abilitare il tcp/ip e riavviare il servizio</p>
+<p>andare in servizi &gt; sql server browser ed abilitare l&#39;avvio automatico</p>
+<p> </p>
+<p>il server risponde ma non è ancora possibile connettersi dall&#39;esterno con l&#39;utente perché è stata selezionata l&#39;autenticazione di windows come unico metodo di autenticazione disponibile</p>
+<p> </p>
+<p>abilitare l&#39;autenticazione mista (sql e windows) da sql studio selezionando il proprio server e andando in proprietà &gt; sicurezza, da qui selezionare il metodo di autenticazione "Autentivazione di SQL Server e di Windows"</p>
+<p>http://stackoverflow.com/questions/8075784/error-message-provider-shared-memory-provider-error-0-no-process-is-on-th</p>
+<p> </p>
+<p>per aggiungere un&#39;utenza da utilizzare per la connessione dall&#39;esterno https://chartio.com/docs/datasources/connections/details/sqluser</p>
+<p> </p>
+<p> </p>
+<p>info</p>
+<p>http://blog.citrix24.com/configure-sql-express-to-accept-remote-connections/</p>
+<p>http://blog.sqlauthority.com/2009/05/21/sql-server-fix-error-provider-named-pipes-provider-error-40-could-not-open-a-connection-to-sql-server-microsoft-sql-server-error/</p>
+<p>http://blogs.msdn.com/b/walzenbach/archive/2010/04/14/how-to-enable-remote-connections-in-sql-server-2008.aspx</p>

@@ -1,0 +1,13 @@
+<p>Di default le mail spostate nel cestino o nella cartella di spam vengono cancellate dopo un tempo predefinito di 30 giorni. Questo tempo viene condizionato dai parametri <em><strong>zimbraMailSpamLifetime</strong></em> e <em><strong>zimbraMailTrashLifetime</strong></em>. Questi parametri possono essere definiti sia per utente che a livello di <em>cos</em>.</p>
+<p>Pu&ograve; essere utile per quegli utenti che sono abituati a svuotare il cestino all&#39;uscita dal client.</p>
+<p>Per vedere l&#39;impostazione attuale usare il comando</p>
+<p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">zmprov gc default|grep -i Lifetime</pre>
+</p>
+<p> sostituire <em>gc default </em>con <em>ga nomeutente</em> per ottenere i parametri relativi ad un singolo account.</p>
+<p>Per modificare questi valori </p>
+<p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">zmprov mc default zimbraMailTrashLifetime 15d</pre>
+per ridurre il tempo di vita delle mail nel cestino a 15gg. Analogamente, sostituire <em>mc default</em> con <em>ma nomeutente</em> per un singolo account.</p>
+<p>&nbsp;</p>
+<p>ref: <a href="http://wiki.zimbra.com/wiki/Mailbox_Purge">wiki.zimbra.com</a> | <a href="http://www.zimbra.com/forums/administrators/37691-trash-purge.html">zimbra forum</a></p>

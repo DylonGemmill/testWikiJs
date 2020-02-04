@@ -1,0 +1,50 @@
+<p>Dopo uno spegnimento scorretto (mancanza di corrente, fortunatamente su una macchina virtuale di test) zimbra non riparte, provando a riavviarlo manualmente esce l&#39;errore:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">zimbra@gainz7:~$ zmcontrol start
+Host gainz7.ufficyo.com
+        Starting ldap...Done.
+Failed.
+Failed to start slapd.  Attempting debug start to determine error.
+50c5afa5 hdb_db_open: database "": db_open(/opt/zimbra/data/ldap/hdb/db/id2entry.bdb) failed: Cannot allocate memory (12).
+50c5afa5 backend_startup_one (type=hdb, suffix=""): bi_db_open failed! (12)
+50c5afa5 bdb_db_close: database "": alock_close failed</pre>
+<p> </p>
+<p>Stoppare completamente zimbra, riparare con i seguenti comandi e riavviare in questo modo:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">zimbra@gainz7:~$ zmcontrol stop
+Host gainz7.ufficyo.com
+        Stopping zmconfigd...Done.
+        Stopping stats...Done.
+        Stopping mta...Done.
+        Stopping spell...Done.
+        Stopping snmp...Done.
+        Stopping cbpolicyd...Done.
+        Stopping archiving...Done.
+        Stopping antivirus...Done.
+        Stopping antispam...Done.
+        Stopping imapproxy...Done.
+        Stopping memcached...Done.
+        Stopping mailbox...Done.
+        Stopping logger...Done.
+        Stopping ldap...Done.
+zimbra@gainz7:~$ cd /opt/zimbra/data/ldap/hdb/db
+zimbra@gainz7:~/data/ldap/hdb/db$ /opt/zimbra/bdb
+bdb/          bdb-4.7.25.4/
+zimbra@gainz7:~/data/ldap/hdb/db$ /opt/zimbra/bdb
+bdb/          bdb-4.7.25.4/
+zimbra@gainz7:~/data/ldap/hdb/db$ /opt/zimbra/bdb/bin/db_recover
+zimbra@gainz7:~/data/ldap/hdb/db$ zmcontrol start
+Host gainz7.ufficyo.com
+        Starting ldap...Done.
+        Starting zmconfigd...Done.
+        Starting logger...Done.
+        Starting mailbox...Done.
+        Starting antispam...Done.
+        Starting antivirus...Done.
+        Starting snmp...Done.
+        Starting spell...Done.
+        Starting mta...Done.
+        Starting stats...Done.
+zimbra@gainz7:~/data/ldap/hdb/db$ 
+</pre>
+<p> </p>
+<p>fonte:</p>
+<p><a href="http://wiki.zimbra.com/wiki/Ajcody-Server-Topics">http://wiki.zimbra.com/wiki/Ajcody-Server-Topics</a></p>

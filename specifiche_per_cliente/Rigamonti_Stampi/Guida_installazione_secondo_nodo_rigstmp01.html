@@ -1,0 +1,140 @@
+<p>Servizi esistenti su rigstmp02:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">Online: [ rigstmp02 ]
+
+Full list of resources:
+
+ Master/Slave Set: drbd_dati_sync [drbd_dati] [ok]
+     Masters: [ rigstmp02 ]
+ dati_fs	(ocf::heartbeat:Filesystem):	Started rigstmp02 [
+ Resource Group: grp_zimbra
+     zimbra_fs	(ocf::heartbeat:Filesystem):	Started rigstmp02 [OK]
+     zimbra	(ocf::btactic:zimbra):	Started rigstmp02 [OK]
+     zimbra-cron	(lsb:zimbra-crontab):	Started rigstmp02 [OK]
+ Resource Group: grp_servizi
+     ldap	(ocf::heartbeat:slapd):	Started rigstmp02 [OK]
+     dnsmasq	(systemd:dnsmasq):	Started rigstmp02 [OK]
+     rpcbind	(systemd:rpcbind):	Started rigstmp02 [OK[
+     nfsserver	(ocf::heartbeat:nfsserver):	Started rigstmp02 [OK]
+     pcnfsd	(lsb:pcnfsd):	Started rigstmp02 [OK]
+     smb	(systemd:smb):	Started rigstmp02 [OK]
+     nmb	(systemd:nmb):	Started rigstmp02 [OK]
+     vsftpd	(systemd:vsftpd):	Started rigstmp02 [OK]
+     dropbox	(lsb:dropbox):	Started rigstmp02 
+ Master/Slave Set: firewall_drbd_sync [firewall_drbd]
+     Masters: [ rigstmp02 ]
+ firewall_vm	(ocf::heartbeat:VirtualDomain):	Started rigstmp02 
+ Resource Group: grp_ip
+     virtual_ip	(ocf::heartbeat:IPaddr2):	Started rigstmp02 
+     virtual_ip_br1	(ocf::heartbeat:IPaddr2):	Started rigstmp02 
+     virtual_ip_br2	(ocf::heartbeat:IPaddr2):	Started rigstmp02 
+ Resource Group: grp_cron
+     Cron_chkown	(ocf::heartbeat:symlink):	Started rigstmp02 
+     Cron_pulizia	(ocf::heartbeat:symlink):	Started rigstmp02 
+Cron_yetopen	(ocf::heartbeat:symlink):	Started rigstmp02 </pre>
+<p> </p>
+<p>Il gruppo di volumi è stato nominato lvgrg.</p>
+<p>I volumi logici usati come risorse DRBD presentano la stessa dimensione:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">/dev/lvgrg/dati 	472,53 GiB
+/dev/lvgrg/firewall   9,31 GiB</pre>
+<h3>Procedure di installazione ed allineamento</h3>
+<p> </p>
+<p>Copia utenti e password:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">scp /etc/passwd nodo01:/etc/
+scp /etc/group nodo01:/etc/
+scp /etc/shadow nodo01:/etc/</pre>
+<h4> Installazione pacchetti HA</h4>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">yum install corosync pcs pacemaker</pre>
+<h4> Installazione DRBD</h4>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">yum install drbd84-utils kmod-drbd84 [OK]
+Copiare la configurazione  di drbd:[OK]
+Creazione del meta data sulle risorse [OK]
+Esecuzione della connect sulle risorse DRBD [OK]
+chmod 777 /var/lib/pacemaker/cores
+wget "http://git.linbit.com/gitweb.cgi?p=drbd-utils.git;a=blob_plain;f=scripts/drbd.ocf;h=cf6b966341377a993d1bf5f585a5b9fe72eaa5f2;hb=HEAD" -O /usr/lib/ocf/resource.d/linbit/drbd
+chmod +x /usr/lib/ocf/resource.d/linbit/drbd</pre>
+<h4 class="western">Installazione LDAP, SAMBA e dnsmasq</h4>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">yum install -y openldap-clients nss-pam-ldapd openldap-servers openldap [OK]
+yum install epel-release [OK]
+yum install -y samba smbldap-tools samba-common samba-client [OK]
+eliminiamo la vecchia configurazione del nodo rigstmp01[OK]
+rm -rf /etc/openldap/slapd.d/* [OK]
+ed effettuiamo la copia  di tutta la configurazione di ldap e samba sul secondo nodo:[OK]
+scp -r /etc/openldap/* rigstmp01:/etc/openldap/[OK]
+	scp -r /etc/samba/* rigstmp01:/etc/samba/[OK]
+	scp -r /var/lib/samba/* rigstmp01:/var/lib/samba[Ok]
+scp -r /etc/smbldap-tools/* galasrv02:/etc/smbldap-tools/[OK]
+copia della configurazione di dnsmasq:
+scp -r /etc/dnsmasq.d/* rigstmp01:/etc/dnsmasq.d/</pre>
+<h4 class="western">Installazione NFS</h4>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">yum install nfs-utils nfs-utils-lib
+scp -r /etc/sysconfig/nfs rigstmp01:/etc/sysconfig/
+scp /etc/exports rigstmp0</pre>
+<h4> Installazione pcnfsd</h4>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">Installazione pcnfsd come da guida con installazione script d&#39;avvio start-stop demon</pre>
+<h4 class="western">Installazione vsftpd</h4>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">yum -y install vsftpd
+scp -r /etc/vsftpd/* rigstmp01:/etc/vsft</pre>
+<h4>Installazione Zimbra</h4>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">Effetuare la modifica del file hosts(modifica temporanea):
+vim /etc/hosts
+127.0.0.1   localhost
+10.22.22.5 zimbra.yetopen.it zimbra
+Installazione dei pacchetti dei prerequisiti di zimbra:
+yum install perl perl-core ntpl nmap-ncat libidn gmp libaio libstdc++ unzip sysstat sqlite  -y
+ Installazione dei pacchetti di Zimbra con la solo parte software, quindi andiamo a scompattare il pacchetto scaricato di Zimbra ed effettuiamo:
+./install.sh -s
+Rinominare la directory zimbra in opt:
+mv /opt/zimbra{,_OLD}
+mkdir /opt/zimbra
+Effettuare la copia dello script del cron di zimbra:
+scp zimbra-crontab rigstmp01:/etc/init.d/
+Copia dello script btactic necessario per pacemaker zimbra
+scp -r /usr/lib/ocf/resource.d/btactic/ rigstmp01:/usr/lib/ocf/resource.d/</pre>
+<h4>Installazione macchina virtuale</h4>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">- Creazione directory yetopen e copia del file .xml della macchina
+scp firewall.xml rigstmp01:/etc/yetopen/
+-Installazione kvm
+yum -y install qemu-kvm libvirt virt-install bridge-utils virt-install
+systemctl start libvirtd
+systemctl enable libvirtd
+La configurazione del bridge è già stata modificata in fase di installazione.
+Correzione bug versione bacata VirtualDomain per Centos:
+mv /usr/lib/ocf/resource.d/heartbeat/VirtualDomain{,_centos}
+wget https://github.com/ClusterLabs/resource-agents/raw/master/heartbeat/VirtualDomain -O /usr/lib/ocf/resource.d/heartbeat/VirtualDomain
+chmod +x /usr/lib/ocf/resource.d/heartbeat/VirtualDomain</pre>
+<h4>Installazione Zabbix</h4>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">nstallazione dei pacchetti zabbix :
+zabbix-agent-2.2.10-1.el7.x86_64
+zabbix-release-2.2-1.el7.noarch
+zabbix-2.2.10-1.el7.x86_64
+zabbix-proxy-sqlite3-2.2.10-1.el7.x86_64
+zabbix-proxy-2.2.10-1.el7.x86_64</pre>
+<h4>Installazione software aggiuntivi</h4>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">yum install xorg-x11-apps-7.7-6.el7.x86_64
+Prelevare il pacchetto gtfp dal server (smb://10.22.22.190/ufficio/workarea/rpm)
+ed effettuare l&#39;installazione del pacchetto con yum.
+I pacchetti wodim e growisofs  sono già presenti nell&#39;installazione di centos.
+Yum install tkinter-2.7.5-18.el7_1.1.x86_64</pre>
+<h4>Backup con rsnapshot:</h4>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">yum install rsnapshot
+scp /etc/rsnapshot.conf rigstmp01:/etc/</pre>
+<h4>Procedure da effettuare dal cliente</h4>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">Modifica del file di configurazione globale  di drbd:
+-Configurazione del cluster come da guida sulla KB:
+systemctl start pcsd
+systemctl enable pcsd
+Sul primo nodo installato aggiungere il secondo nodo:
+
+pcs cluster auth galasrv02
+pcs cluster node add node02
+pcs cluster auth galasrv01 galasrv02
+Adesso andiamo ad attivare il cluster sul secondo nodo:
+pcs cluster start
+pcs cluster enable
+Sul primo nodo dovremmo visualizzare lo stato online di entrambi i nodi
+Online: [ galasrv01 galasrv02 ]
+-Effettuare il restart della macchina così da attivare l&#39;interfaccia grafica Gnome
+
+- Installare VNC (poiché non è possibile testarlo senza interfaccia grafica)
+
+- Effettuare il riavvio di xinetd.service e fare ulteriori prove csync2 (csync2 -xv , csync2 -f )</pre>

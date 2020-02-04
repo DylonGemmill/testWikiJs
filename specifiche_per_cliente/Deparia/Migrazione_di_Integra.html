@@ -1,0 +1,40 @@
+<p>Integra è un software di Agomir (GR) per la gestione documentale. Gira su Apache Tomcat e PostgreSQL, quindi richiede delle configurazioni particolari. </p>
+<p>Attualmente viene effettuato un backup giornaliero sia del database che dei file necessari in /home/backup/primula/. In particolare servono le directory: <em>/var/docintegra/ /home/primula/ /var/lib/tomcat5.5/webapps/integra* /etc/gxbin/ /root</em><br /><em>/agomir /root/bin /etc/tomcat5</em>.</p>
+<p> </p>
+<p>Dopo aver trasferito sul nuovo server i due file di salvataggio, installare i software necessari:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">apt-get install tomcat6 postgresql</pre>
+<p>Nel frattempo prelevare dal sito <a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">oracle.com</a> il pacchetto autoestraente per JDK 6 (l&#39;ultimo test di migrazione è stato effettuato con JDK 6update27 su Ubuntu 10.04 64-bit), scompattarlo in <em>/opt </em>e creare un link di nome <em>java</em> alla directory:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">cd /opt
+wget http://download.oracle.com/otn-pub/java/jdk/6u27-b07/jdk-6u27-linux-x64.bin 
+sh jdk-6u27-linux-x64.bin
+ln -s jdk1.6.0_27/ java</pre>
+<p>Posizionare il dump di PostgreSQL in /tmp rendendolo leggibile anche all&#39;utente <em>postgres</em>, quindi lanciare il comando di ripristino</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">su - postgres -c "psql -f /tmp/primula-4.pgsql "</pre>
+<p>che ripristinerà dati ed utenti dal vecchio archivio. <br />Modificare il file di configurazione di PostgreSQL <em>/etc/postgresql/8.4/main/pg_hba.conf</em> per consentire connessioni TCP/IP dalla macchina locale. Commentare le ultime tre righe attive ed aggiungerne due nuove, il contenuto finale del file sarà:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">local all postgres ident
+local all all trust
+host all all 127.0.0.1 255.255.255.255 trust</pre>
+<p>Riavviare Postgresql, verificare che la porta 5432/TCP sia aperta. In caso di problemi controllare <em>/var/log/postgresql/postgresql-8.4-main.log</em>. </p>
+<p> </p>
+<p>Ripristinare le directory dal backup compresso nella posizione originale, <strong>ad esclusione della <em>/etc/tomcat5 </em>e della /var/lib/tomcat5.5</strong>. Da /etc/tomcat5 occorre copiare solo <em>web.xml</em> e <em>context.xml</em>, nella nuova directory <em>/etc/tomcat6</em>. Nell&#39;ultimo file modificare il tag di apertura <em>&lt;Context&gt;</em> con <strong><em>&lt;Context privileged="true"&gt;</em></strong>, altrimenti potrebbero verificarsi errori con <em>org.apache.catalina.servlets.InvokerServlet</em>. Modificare <em>server.xml</em> il tag <em>Connector port</em> da <em>8080</em> a <em><strong>8180</strong></em>. Da <em>/var/lib/tomcat5.5</em> copiare <em>integra*</em> in <em>/var/lib/tomcat6/webapps/</em>.</p>
+<p>Tomcat deve essere avviato con parametri particolari, quindi rimuoverlo dall&#39;avvio automatico (<em>update-rc.d -f tomcat6 remove</em>) ed usare invece <em>/root/bin/rungx</em> in <em>/etc/rc.local</em>, verificando che il parametro <strong>CATALINA_HOME</strong> sia impostato correttamente.</p>
+<p>Andare in /usr/share/tomcat6 e creare dei link per integra:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">ln -s /etc/tomcat6/ conf
+ln -s /var/lib/tomcat6/logs
+ln -s /var/lib/tomcat6/server
+ln -s /var/lib/tomcat6/shared
+ln -s /var/lib/tomcat6/webapps
+ln -s /var/lib/tomcat6/temp</pre>
+<p>(l&#39;origine di logs o temp potrebbe non esistere, va creata e tomcat deve avere i permessi di scrittura).</p>
+<p> </p>
+<p>Riavviare Tomcat con il comando</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">/root/bin/rungx</pre>
+<p>Potrebbe dare un&#39;eccezione per lo stop, ma lo start dovrebbe andare. L&#39;output dello start dovrebbe essere come questo:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">Using CATALINA_BASE:   /usr/share/tomcat6
+Using CATALINA_HOME:   /usr/share/tomcat6
+Using CATALINA_TMPDIR: /usr/share/tomcat6/temp
+Using JRE_HOME:        /opt/java
+Using CLASSPATH:       /usr/share/tomcat6/bin/bootstrap.jar
+</pre>
+<p>Collegarsi quindi a <strong>http://ip:8180/integra/servlet/hlogin</strong> per vedere la webapp. In caso di problemi vedere <em>/usr/share/tomcat6/logs/catalina.out</em>, e verificare i permessi delle directory ripristinate.</p>
+<p> </p>

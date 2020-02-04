@@ -1,0 +1,75 @@
+<p>Rsnapshot ha il vantaggio di effettuare backup molto velocemente appoggiandosi ad rsync, usare pochissimo spazio grazie allo sfruttamento degli hardlinks, consentire un ripristino veloce ed automatico da parte degli utenti.</p>
+<p> </p>
+<p>Per via del suo funzionamento la cosa migliore sarebbe avere a disposizione uno storage su cui sono memorizzabili utente e password del sistema, quindi ad esempio uno spazio iSCSI su cui creare un filesystem ext3/4.</p>
+<p>In alternativa è possibile usare NFS e Cifs, perdendo però uid/gid originali. Nella maggior parte dei casi questo non è un problema. Nel caso di NFS è possibile mantenere le proprietà del file se sul server si può abilitare la <em>no_root_squash</em>.</p>
+<p>Dopo aver identificato un percorso per la memorizzazione dei salvataggi, installare con:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">apt-get install rsnapshot liblchown-perl</pre>
+<p> </p>
+<p>Nella modifica del file di configurazione fare <span style="text-decoration: underline;">molta attenzione</span> perché il nome del parametro ed il suo valore deve essere separato da un tab, non da spazio.</p>
+<p>Aprire il file /etc/rsnapshot.conf e modificare i parametri come segue:</p>
+<ul>
+<li>snapshot_root: directory di destinazione dei backup</li>
+<li>no_create_root: impostare ad 1, in questo modo se la destinazione non è disponibile viene restituito un errore all&#39;esecuzione</li>
+<li>backup_script: parametro opzionale, serve ad eseguire uno script primadi lanciare il backup.<br /><span style="text-decoration: underline;">Vedere in fondo</span> per i backup aggiuntivi (MySQL, PostgreSQL, LDAP, pfSense) </li>
+<li>interval: questi sono i parametri più importanti in quanto specificano il numero di backup da conservare, suddivisi per tipo. E&#39; possibile commentare e decommentare a seconda delle esigenze. Essendo rsnapshot molto veloce e poco invasivo è possibile eseguire anche dei backup durante il giorno (hourly). C&#39;è da tenere in considerazione il funzionamento di rsnapshot: per il backup di intervallo successivo, usa l&#39;ultimo del precedente: il backup del giorno sarà l&#39;ultimo <br />L&#39;esempio tipico è il seguente<br />
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">interval        hourly  2
+interval        daily   7
+interval        weekly  4
+interval        monthly 3</pre>
+in questo modo si effettuano due backup al giorno, sette giornalieri e quattro settimanali.</li>
+<li>logfile: /var/log/rsnapshot.log</li>
+<li>rsync_short_args: se si usa un filesystem CIFS/NFS (no_root_squash) modificare in <em>-rltD</em></li>
+<li>link_dest: decommentare ed impostare ad 1 per i sistemi CIFS/NFS (no_root_squash)</li>
+<li>exclude: se si desidera escludere alcuni percorsi dal backup, aggiungerli qui con il percorso completo dalla root</li>
+<li>backup: elenco delle directory da salvare. Il primo parametro è il percorso, il secondo è un percorso relativo nella directory di backup. Ad esempio per salvare /etc e /dati in una sottodir server1, inserire:<br />
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">backup  /dati/          server1/
+backup  /etc/           server1/</pre>
+ricordarsi di separare i parametri con la tabulazione e non con lo spazio.</li>
+</ul>
+<div>Verifichiamo la configurazione effettuata con li comando:</div>
+<div>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">rsnapshot configtest</pre>
+</div>
+<div>Se è tutto ok possiamo passare alla schedulazione. Il pacchetto debian crea di default<em> /etc/cron.d/rsnapshot</em> che possiamo prendere come ispirazione oppure decommentare direttamente. Nel caso di server gestiti da YetOpen meglio mettere tutte le schedulazioni in un punto unico in <em>/etc/cron.d/yetopen</em>.</div>
+<div>Ogni backup <em>meno</em> frequente deve essere lanciato <em>prima</em> del precedente, ovvero prima deve essere lanciato il <em>monthly</em>, poi <em>daily</em> e così via. Ad esempio una schedulazione di esempio:</div>
+<div>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">40 13,22        * * *   root    /dati/yetopen/bin/rsnapshot.wrapper hourly
+10 22           * * *   root    /dati/yetopen/bin/rsnapshot.wrapper daily
+40 21           * * sat root    /dati/yetopen/bin/rsnapshot.wrapper weekly
+00 21           1 * *   root    /dati/yetopen/bin/rsnapshot.wrapper monthly
+</pre>
+</div>
+<div>Riga 1: tutti i giorni vengono eseguiti 2 backup di tipo <em>hourly</em>.</div>
+<div>Riga 2: tutti i giorni alle 21:50 l&#39;ultimo backup <em>hourly</em> viene conservato come <em>daily</em>.</div>
+<div>Riga 3: tutti i sabati alle 22:50 l&#39;ultimo backup <em>daily</em> viene conservato come <em>weekly</em>.</div>
+<div>E&#39; possibile monitorare lo spazio occupato da ogni singolo salvataggio usando il comando:</div>
+<div>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">rsnapshot du</pre>
+</div>
+<p> </p>
+<p>Per le consuete notifiche da inviare a support@yetopen.it usare il wrapper <em>rsnapshot.wrapper</em> presente sui repository git YetOpen.</p>
+<p>Nel caso di backup verso <strong>CIFS</strong> verificare che tra le opzioni di mount sia presente il parametro <em>sfu</em>.</p>
+<p> </p>
+<h3>SEGNARSI DI CONTROLLARE IL GIORNO DOPO I BACKUP!!!</h3>
+<h3>Backup aggiuntivi</h3>
+<p>Come detto sopra tramite la direttiva <em>backup_script</em> è possibile far eseguire a rsnapshot degli script aggiuntivi che producono dei file da includere nel backup incrementale. Ad esempio per MySQL viene generato un dump che viene poi copiato nella destinazione dei salvataggi.</p>
+<p>In serverutils (git YO) ci sono gli script di backup per i principali servizi che installiamo:</p>
+<ul>
+<li>LDAP: nessuna configurazione necessaria, da configurare con:<br />
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">backup_script   /dati/yetopen/bin/rsnapshot_backup_ldap.sh      destinazione/ldap/</pre>
+</li>
+<li>MySQL: occorre creare un<a class="intfaqlink" href="index.php?action=artikel&amp;cat=24&amp;id=58&amp;artlang=it"> utente di backup</a>, modificare lo script con la password scelta quindi configurare con:<br />
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">backup_script   /dati/yetopen/bin/rsnapshot_backup_mysql.sh     destinazione/mysql/</pre>
+</li>
+<li>PostgreSQL: anche qui nessuna modifica:<br />
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">backup_script   /dati/yetopen/bin/rsnapshot_backup_pgsql.sh     destinazione/pgsql/</pre>
+</li>
+<li>pfSense:  copiare pfsense2-backup.sh e pfsense2-backup.conf sul server, nel secondo file modificare url e password di admin quindi:<br />
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">backup_script   /dati/yetopen/bin/pfsense2-backup.sh -c /dati/yetopen/bin/pfsense2-backup.conf  destinazione/pfsense/</pre>
+ </li>
+<li>Nel file di configurazione pfsense2-backup.conf settare il parametro BACKUPDIR nel seguente modo</li>
+</ul>
+<div>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">BACKUPDIR=&#39;./&#39;</pre>
+</div>
+<div>Fine</div>

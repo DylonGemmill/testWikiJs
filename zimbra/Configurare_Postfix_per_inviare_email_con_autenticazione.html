@@ -1,0 +1,40 @@
+<p>Installare i pacchetti:</p>
+<pre class="language-markup"><code>apt install postfix libsasl2-modules sasl2-bin</code></pre>
+<p>Modificare in /etc/default/saslauthd questi parametri:</p>
+<pre class="language-markup"><code>START=yes
+MECHANISMS="sasldb"
+OPTIONS="-c -m /var/spool/postfix/var/run/saslauthd"</code></pre>
+<p>e riavviare saslauth</p>
+<pre class="language-markup"><code>systemctl restart saslauthd</code></pre>
+<p>Per far funzionare sasl nella chroot di postfix:</p>
+<pre class="language-markup"><code>dpkg-statoverride --add root sasl 750 /var/spool/postfix/var/run/saslauthd
+adduser postfix sasl</code></pre>
+<p> </p>
+<p>Per creare un utente in sasl:</p>
+<pre class="language-markup"><code>saslpasswd2 -c NOMEUTENTE</code></pre>
+<p>Per verificare che sia stato inserito:</p>
+<pre class="language-markup"><code>sasldblistusers2</code></pre>
+<p>Per fare un test di autenticazione:</p>
+<pre class="language-markup"><code>testsaslauthd -u NOMEUTENTE -p PASSWORD</code></pre>
+<p>Creare il file /etc/postfix/sasl/smtpd.conf con questo contenuto:</p>
+<pre class="language-markup"><code>pwcheck_method: saslauthd
+mech_list: plain login 
+</code></pre>
+<p>ed aggiungere in /etc/postfix/main.cf queste righe in fondo:</p>
+<pre class="language-markup"><code># SMTP auth
+smtpd_sasl_local_domain = $myhostname
+smtpd_sasl_auth_enable = yes
+smtpd_sasl_security_options = noanonymous</code></pre>
+<h2>Abilitare SSL con i certificati di Letsencrypt</h2>
+<p>Di default è già abilitato con dei certificati autofirmati. Per usare quelli di LE modificare i due parametri come di seguito:</p>
+<pre class="language-markup"><code>smtpd_tls_cert_file=/etc/letsencrypt/live/DOMINIO/cert.pem
+smtpd_tls_key_file=/etc/letsencrypt/live/DOMINIO/privkey.pem</code></pre>
+<h2>Abilitare SMTPS (porta 465) e Submission (porta 587)</h2>
+<p>Per l&#39;invio tramite porta sicura modificare /etc/postfix/master.cf e decommentare i due blocchi <em>smtps</em> e <em>submission</em>. Abilitare sul firewall le porte relative.</p>
+<p> </p>
+<h2>Troubleshooting</h2>
+<p>Nei log a volte compaiono questi errori:</p>
+<pre class="language-markup"><code>Dec 31 16:36:55 gestionale saslpasswd2: error deleting entry from sasldb: BDB0073 DB_NOTFOUND: No matching key/data pair found
+Dec 31 16:36:55 gestionale saslpasswd2: message repeated 2 times: [ error deleting entry from sasldb: BDB0073 DB_NOTFOUND: No matching key/data pair found]
+Dec 31 16:36:55 gestionale saslpasswd2: DIGEST-MD5 common mech free</code></pre>
+<p>a quanto pare è un bug conosciuto/risolto. Di fatto non sembra essere un errore e tutto è funzionante, però non si capisce come fare in modo che non escano.</p>
