@@ -1,9 +1,0 @@
-<p>Steps: <br />(In this example, we have http and https enabled)</p>
-<p>1. Reconfigure nginx:<br />$ /opt/zimbra/libexec/zmproxyconfig -e -w -o -a 8080:80:8443:443 -x both -H `zmhostname`</p>
-<p>zmprov gs  `zmhostname` zimbraReverseProxySSLToUpstreamEnabled</p>
-<p> </p>
-<p>2. If the &#39;&#39;zimbraReverseProxySSLToUpstreamEnabled&#39;&#39; is configured to TRUE, the above command will fail with: <br />"proxy mail mode both is invalid when SSL to upstream is enabled". To change it to FALSE<br />$ zmlocalconfig zimbraReverseProxySSLToUpstreamEnabled FALSE</p>
-<p>3. $ zmtlsctl both</p>
-<p>4. $ zmprov ms `zmhostname` zimbraReverseProxyMailMode both</p>
-<p>5. $ zmprov ms `zmhostname` zimbraMailMode both</p>
-<p>6. $ zmcontrol restart</p>

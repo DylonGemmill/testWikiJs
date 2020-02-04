@@ -1,7 +1,0 @@
-<p>Andare in <em>Impostazioni &gt; Server di backup</em>, quindi nella prima scheda abilitare la voce <em>Abilita backup da un server remoto al server locale</em>, ed anche la successiva <em>Consenti al server remoto di eseguire il backup dei dati sul nas</em>. Nei campi di input inserire un username ed una password, da usare poi. Quando fatto premere <em>Applica</em>.</p>
-<p>Il server è già configurato, ed avrà accesso alle stesse condivisioni create per gli altri servizi.</p>
-<p>Sul server da cui si desidera fare il backup creare un file dove memorizzare la password inserita sopra (ad esempio <em>/etc/rsync_password</em>) e dare i permessi <em>600</em>.</p>
-<p>Per fare un backup da remoto verso la share <em>backup</em> usare il comando</p>
-<pre class="brush: bash;fontsize: 100; first-line: 1; ">rsync --password-file=/etc/rsync_password /dati utente_rsync@IP::backup/dati/</pre>
-<p>.</p>
-<p> </p>

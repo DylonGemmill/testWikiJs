@@ -1,4 +1,0 @@
-<p>Visti i recenti problemi abbiamo schedulato due backup al giorno, uno alle 12 ed uno alle 21, del software di contabilità Planet dal PC di Rino verso il server.</p>
-<p>I salvataggi vengono effettuati in /home/planet_backup/ORA. Per ripristinare, mettere 12 o 21 al posto di ORA ed eseguire:</p>
-<pre class="brush: bash;fontsize: 100; first-line: 1; ">cp -r /home/planet_backup/ORA/ /home/pubblica/planet_ripristinato_`date +%Y.%m.%d` | mail -s "Ripristino Planet completato" info@termosama.it</pre>
-<p>la directory sarà ripristinata nella condivisione <em>pubblica</em> dell&#39;ufficio, da cui possono accedere anche loro e rimettere il programma allo stato salvato.</p>

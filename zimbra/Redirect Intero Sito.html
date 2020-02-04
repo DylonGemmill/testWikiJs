@@ -1,6 +1,0 @@
-<p>E&#39; possibile crare un file di configurazione .htaccess nella webroot del sito:</p>
-<pre class="brush: bash;fontsize: 100; first-line: 1; ">Options +FollowSymLinks
-RewriteEngine on
-RewriteRule (.*) http://www.nuovodominio.com/$1 [R=301,L]</pre>
-<p>Il parametro $1 server mantere il percorso del sito se non si ha bisogno di tale impostazione modificare l&#39;ultima stringa con </p>
-<pre class="brush: bash;fontsize: 100; first-line: 1; ">RewriteRule (.*) http://www.nuovodominio.com/ [R=301,L]</pre>

@@ -1,8 +1,0 @@
-<p>Il nostro phpMyFaq non ci permette di creare i pdf di articoli con le immagini perché cerca di ricavarle dall&#39;indirizzo http corrispondente. Il server quindi si troverà davanti alla login di Shibboleth invece dell&#39;immagine vera e propria e TCPDF darà un errore. In allegato una patch per TCPDF che modifica il path delle immagini in modo che vengano prese localmente, senza passare da http (e quindi da Shibboleth).</p>
-<p>Durante la scrittura dell&#39;articolo, inoltre, i path delle immagini selezionate sono sbagliati. L&#39;errore è dovuto al symlink /var/www &gt; /home/www. Le operazioni che effettua pmf per calcolare gli url, sono infatti:</p>
-<p>- prendere il vero path dell&#39;immagine (/home/www/kb/images/...)</p>
-<p>- ricavare la wwwroot con apache (/var/www)</p>
-<p>- togliere la wwwroot dal path: l&#39;operazione fallisce perchè non trova /var/www all&#39;inizio del path</p>
-<p>- aggiungere l&#39;hostname</p>
-<p>di conseguenza il path risulta una cosa del tipo http://www.mioserver.com/home/www/kb/images... che è errato.</p>
-<p>La seconda patch modifica il wwwroot con /home/www, in modo che la sostituzione avvenga correttamente.</p>

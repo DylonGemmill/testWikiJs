@@ -1,6 +1,0 @@
-<p>Alcuni liveCD non hanno LVM installato (Ubuntu desktop, ad esempio). Per rilevare manualmente le partizioni e i volumi LVM installati sul sistema:</p>
-<pre class="brush: bash;fontsize: 100; first-line: 1; ">apt-get install lvm2
-vgscan 
-vgchange -a y</pre>
-<p> </p>
-<p>in questo modo avremo i volumi disponibili in /dev/VOLUMEGROUPNAME</p>

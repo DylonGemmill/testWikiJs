@@ -1,6 +1,0 @@
-<p>Se si vuole eseguire un&#39;operazione normalmente intesiva per CPU o disco ma che non vada ad impattare troppo sul resto dei servizi attivi si può usare <em>nice</em> in combinazione con <em>ionice</em>.</p>
-<p>Ad esempio per estrarre un file:</p>
-<pre class="brush: bash;fontsize: 100; first-line: 1; ">ionice -c 3 nice -n 10  tar -C /path_destinazione/  -xvf  /web88.tar</pre>
-<p>In questo modo l&#39;attività di decompressione non dovrebbe rallentare troppo il resto della macchina.</p>
-<p> </p>
-<p>http://www.cyberciti.biz/tips/linux-set-io-scheduling-class-priority.html</p>

@@ -1,3 +1,0 @@
-<p>Per effettuare l&#39;esportazione di tutti i contatti di un singolo dominio effettuare:</p>
-<pre class="brush: bash;fontsize: 100; first-line: 1; ">for i in $(zmaccts | grep -v never | grep @iltalentocoop | awk &#39;{print $1}&#39;) ; do zmmailbox -z -m $i getRestURL &#39;/Contacts&#39; &gt; /tmp/contatti/$i.csv ; done</pre>
-<p> </p>

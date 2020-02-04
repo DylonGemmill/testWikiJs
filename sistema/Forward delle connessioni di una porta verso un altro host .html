@@ -1,3 +1,0 @@
-<p>???echo "1" &gt; /proc/sys/net/ipv4/ip_forward</p>
-<p>iptables -t nat -A PREROUTING -p tcp --dport 1111 -j DNAT --to-destination 2.2.2.2:1111</p>
-<p>iptables -t nat -A POSTROUTING -j MASQUERADE</p>

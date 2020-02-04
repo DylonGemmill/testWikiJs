@@ -1,8 +1,0 @@
-<p>Scaricare il programma da qui: http://www.avg.com/it-it/download-2012.tpl-stdfull.prd-rad <span style="font-size: 13px;">(purtroppo disponibile solo in versione 2012).</span></p>
-<p>Il programma è disponibile in 2 versioni, quella sh (che fa tutto da sola) e quella compressa. Il vantaggio di scaricare quella compressa è che permette di visualizzare subito il file INSTALL e soddisfare quindi le dipendenze mancanti. Con il file sh invece si interrompe l&#39;installazione se manca del software, va quindi installato e rieseguito finchè tutte le dipendenze non vengono soddisfatte (per tentativi).</p>
-<p>Le dipendenze:</p>
-<p>* installare firebird (apt-get install firebird2.5-super)</p>
-<p>* viene installato solo il client, riconfigurare il pacchetto per avviare il demone (dpkg-reconfigure firebird2.5-super)</p>
-<p>* durante la riconfigurazione verrà chiesto di impostare una password, verrà poi richiesta la stessa password in fase di installazione</p>
-<p>* installare la compatibilità per il 32bit (apt-get install ia32-libs)</p>
-<p>* installare una dipendenza per i grafici (che però non mi funziona comunque perché l&#39;eseguibile rsvg non sembra essere presente nel pacchetto, apt-get install librsvg2-bin)</p>

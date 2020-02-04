@@ -1,4 +1,0 @@
-<p>Per fare il deployment dell&#39;applicativo in produzione creare nella directory principale del progetto un file deploy.sh<br /> <br /> Nel file inserire il seguente script, sostituento le parti variabile tra parenesi triangolari:</p>
-<pre class="language-javascript"><code>git ls-files -z | rsync $1 --size-only -e "ssh -i &lt;PATH_CHIAVE_PRIVATA&gt; -p&lt;PORTA_SSH&gt;" --stats --files-from - -lrvz0 . &lt;UTENTE&gt;@&lt;HOST&gt;:&lt;PATH_AL_PROGETTO&gt;
-rsync $1 --delete --delete-after --exclude .git -e "ssh -i &lt;PATH_CHIAVE_PRIVATA&gt; -p&lt;PORTA_SSH&gt;" --stats -lrvzHt vendor/ &lt;UTENTE&gt;@&lt;HOST&gt;:&lt;PATH_AL_PROGETTO&gt;</code></pre>
-<p><br /> Perche lo script funzioni bisogna prima aggiungere la propria chiave pubblica sul server per l&#39;utente <br /> <br /> Salvare il file e aggiungergli il permesso di esecuzione: `chmod +x &lt;PATH_LOCALE_AL_PROGETTO/deploy.sh`</p>

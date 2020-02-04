@@ -1,6 +1,0 @@
-<p>Il controllo dei messaggi dell&#39;LDAP di Zimbra avviene tramite il parametro&nbsp;<strong>ldap_common_loglevel</strong>.</p>
-<p>Per controllare il valore attuale, lanciare come utente zimbra il comando:</p>
-<p><span style="font-family: &#39;courier new&#39;, courier;">$ zmlocalconfig </span><span style="font-family: &#39;courier new&#39;, courier;">ldap_common_loglevel<br />ldap_common_loglevel = 49152</span></p>
-<p>Quello &egrave; il valore di default. Per incrementare il livello di debug, lanciare il comando:</p>
-<p><span style="font-family: &#39;courier new&#39;, courier;">$ zmlocalconfig -e ldap_common_loglevel=16640</span></p>
-<p>Non dovrebbe servire il riavvio di LDAP. I messaggi verranno stampati nel file /var/log/zimbra.log</p>

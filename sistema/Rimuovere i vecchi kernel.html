@@ -1,6 +1,0 @@
-<p>Usare questo comandi</p>
-<pre class="brush: bash;fontsize: 100; first-line: 1; ">sudo apt-get remove --purge $(dpkg -l &#39;linux-*&#39; | sed &#39;/^ii/!d;/&#39;"$(uname -r | sed "s/\(.*\)-\([^0-9]\+\)/\1/")"&#39;/d;s/^[^ ]* [^ ]* \([^ ]*\).*/\1/;/[0-9]/!d&#39;)
-</pre>
-<p>http://askubuntu.com/a/100953/259807</p>
-<p> </p>
-<p><strong>FIXME attenzione perché rimuove anche linux-image-generic e linux-server, andrebbe sistemata!!</strong></p>

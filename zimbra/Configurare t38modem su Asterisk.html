@@ -1,7 +1,0 @@
-<p>Per configurare t38modem su Asterisk occorre lanciare t38modem con l&#39;opzione <em>--sip-listen</em> in questo modo:</p>
-<pre class="brush: bash;fontsize: 100; first-line: 1; ">/usr/bin/t38modem --no-h323  --ptty +/dev/ttyT38-1 --route "modem:.*=sip:&lt;dn&gt;@10.107.13.139:5071" --route "sip:.*=modem:&lt;dn&gt;" -tttt -o /tmp/t38_modem1.log --sip-audio G.711-uLaw-64k --sip-listen udp\$127.0.0.1:6061</pre>
-<p> </p>
-<p>Nel nostro caso t38modem gira sulla stessa macchina di Asterisk, quindi occorre utilizzare una porta diversa dalla 5060 perché occupata proprio da Asterisk (di solito anche t38modem si mette in ascolto su quella porta).</p>
-<p>Quindi nella configurazione di Asterisk inserire dei <em>peer</em> (a me servono solo per inviare, utilizzare i tipi friend o user per la ricezione) in questo modo:</p>
-<pre>[modem1] ;configurazione presa da http://www.voip-info.org/wiki/view/T38modem+configuration+with+Asterisk<br />type=peer ;perché mi serve solo per inviare non ricevere<br />host=127.0.0.1<br />permit=127.0.0.1<br />;context=fax ;non dovrebbe servire<br />port=6061<br />allow=all<br />canreinvite=no<br />t38pt_udptl=yes<br />qualify=yes ;per rimuovere Unmonitored da sip show peers</pre>
-<p>In questo caso abbiamo cercato di avere un solo processo t38modem per porta in modo da distribuire il carico.</p>

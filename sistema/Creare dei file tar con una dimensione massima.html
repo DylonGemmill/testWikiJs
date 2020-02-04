@@ -1,8 +1,0 @@
-<p>Come si faceva una volta con dischetti / CD ed altri supporti, a volte occorre creare un file compresso suddividendolo in file con una dimensione massima (es limite dei 2Gb di Samba/vFAT).</p>
-<p>Tar da solo non è in grado di farlo, si usa il comando split.</p>
-<p>Normalmente si può creare un file .tar.gz e poi applicare split. Altrimenti, in un passaggio solo:</p>
-<p>tar czf - /etc | split -a 3 -b 1G - nomefiledest.tar.gz</p>
-<p>Il parametro <strong><em>a </em></strong>indica il numero di decimali da usare per il conteggio.<br />Il paremtro <strong><em>b</em></strong> indica la dimensione massima dei singoli file. Deve essere un intero, e si può specificare con i tradizionali suffissi. Per fare 1,5G dovrei scrivere 1500. </p>
-<p>(Per MacOS su chiavetta vFAT: tar czf - work | split -b 4294967295 - /dest/work.tgz.)</p>
-<p>Per scompattare:</p>
-<pre class="language-markup"><code>cat file.tar.gz.* | tar xzvf -</code></pre>

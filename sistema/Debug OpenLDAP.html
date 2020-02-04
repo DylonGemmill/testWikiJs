@@ -1,8 +1,0 @@
-<p>Creare il file /etc/rsyslog.d/99-slapd.conf con questo contenuto:</p>
-<pre class="brush: bash;fontsize: 100; first-line: 1; ">local4.debug  -/var/log/openldap.log</pre>
-<p><span style="font-size: 13px;">riavviare rsyslog.</span></p>
-<p> </p>
-<p>Modificare in  /etc/ldap/slapd.d/cn=config.ldif</p>
-<pre class="brush: bash;fontsize: 100; first-line: 1; ">olcLogLevel: 256</pre>
-<p> </p>
-<p>riavviare slapd. L&#39;output di debug di OpenLDAP sarà nel file /var/log/openldap.log</p>

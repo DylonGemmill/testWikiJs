@@ -1,9 +1,0 @@
-<p>Molto velocemente &egrave; possibile impostare dei limiti di banda con linux, usando il comando <strong>tc</strong>&nbsp;fornito dal pacchetto <strong><em>iproute</em></strong>.</p>
-<p>&nbsp;</p>
-<pre class="brush: bash;fontsize: 100; first-line: 1; ">tc qdisc add dev eth0 root handle 1: cbq avpkt 1000 bandwidth 100mbit
-tc class add dev eth0 parent 1: classid 1:1 cbq rate 256kbit allot 1500 prio 5 bounded isolated
-tc filter add dev eth0 parent 1: protocol ip prio 16 u32 match ip dst 0/0 flowid 1:1
-</pre>
-<p>&nbsp;</p>
-<p>&nbsp;</p>
-<p><a href="http://rami.info/how-tos/iptables-bandwidth-limit-under-linux/">http://rami.info/how-tos/iptables-bandwidth-limit-under-linux/</a></p>

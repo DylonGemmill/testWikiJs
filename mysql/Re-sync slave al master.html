@@ -1,8 +1,0 @@
-Prerequisiti: avere una configurazione master slave ben configurata che per qualche motivo (ad esempio disco pieno) è andata fuori sincronizzazione<br />
-<br />
-* Fermare lo slave, comando da eseguire sul server mysql slave: `SLAVE STOP`<br />
-* Eseguire un dump completo del master, comando da eseguire sul server mysql master: `mysqldump -h  -u root -p --all-databases --master-data > .sql`<br />
-* Visualizzare e copiarsi lo stato del master, comando da eseguire sul server mysql master mentre sta andando il dump: `SHOW MASTER STATUS`<br />
-* Dal server dello slave cancellare tutti i file del tipo db-relay-bin.*<br />
-* Resettare lo stato del server slave, comando da eseguire sul server mysql slave: `RESET SLAVE`<br />
-* Ripristinare il dump eseguito dal master sullo slave,  comando da eseguire sul server mysql slave: `mysql -h  -u root -p 

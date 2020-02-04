@@ -1,9 +1,0 @@
-<p>Esportazione e importazione cartelle di zimbra</p>
-<p>Questa operazione più essere svolta comodamente dal menù preferenze dell&#39;account di Zimbra, ma a volte si può avere l&#39;esigenza di farlo da riga di comando.</p>
-<p>Esportazione di un file compresso della cartella Trash: </p>
-<p>zmmailbox -z -m stefano.moreschi@mandolini.it -t 0 getRestURL &#39;//Trash?fmt=tgz&#39; &gt; /tmp/account_cestino.tgz</p>
-<p>Visualizzazione delle cartelle dell&#39;account:</p>
-<p>zmmailbox -z -m stefano.moreschi@mandolini.it gaf</p>
-<p>Importazione del file compresso nell&#39;account restorato:</p>
-<p>zmmailbox -z -m restored1118_stefano.moreschi@mandolini.it -t 0 postRestURL &#39;//00CESTINO_RECOVERY?fmt=tgz&amp;resolve=skip&#39; /tmp/account_cestino.tgz</p>
-<p>La cartella di destinazione 00CESTINO_RECOVERY va creata prima altrimenti il comando va in errore.</p>
