@@ -1,0 +1,38 @@
+<p>vsftpd è un demone sicuro e leggero, veloce da configurare.</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">apt-get install vsftpd</pre>
+<p> </p>
+<p>Rimpiazzare la configurazione esistente in /etc/vsftpd.conf con questa:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">listen=YES
+anonymous_enable=NO
+local_enable=YES
+write_enable=YES
+dirmessage_enable=YES
+use_localtime=YES
+xferlog_enable=YES
+connect_from_port_20=YES
+chroot_local_user=YES
+secure_chroot_dir=/var/run/vsftpd/empty
+pam_service_name=vsftpd
+rsa_cert_file=/etc/ssl/private/vsftpd.pem
+userlist_deny=YES</pre>
+<p> </p>
+<p>importanti sono le opzioni <em>anonymous_enable</em>, <em>local_enable</em>, <em>write_enable</em>, <em>userlist_deny</em>. L&#39;ultima consente di definire una lista ristretta di utenti a cui è consentito l&#39;accesso ftp. Il file che contiene questa lista è <strong>/etc/vsftpd.user_list</strong>.</p>
+<p>In caso serva l&#39;accesso al di fuori della rete locale occorre aggiungere alcune opzioni:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">pasv_enable=YES
+pasv_min_port=6000
+pasv_max_port=6025
+pasv_address=109.69.131.228
+pasv_promiscuous=YES</pre>
+<p>il parametro <em>pasv_address</em> indica l&#39;ip pubblico, ovviamente sul firewall andranno inoltrate le porte 6000:6025 verso il server ftp.</p>
+<p>Per consentire l&#39;accesso agli utenti senz shell modificare il file <strong>/etc/pam.d/vsftpd</strong>, commentando la riga </p>
+<p>auth   required    pam_shells.so</p>
+<p>Per creare un utente con accesso FTP ristretto alla sua sola home directory:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">useradd -d /home/ftp/ftp -s /bin/false ftp<br />passwd ftp </pre>
+<p>la shell <em>/bin/false</em> ci assicura che l&#39;utente non avrà i permessi di entrare via ssh. </p>
+<p>Riavviare il demone con il comando</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">restart vsftpd</pre>
+<p> </p>
+<p> </p>
+<p>rif: <a href="http://help.ubuntu-it.org/10.04/ubuntu/serverguide/it/ftp-server.html">http://help.ubuntu-it.org/10.04/ubuntu/serverguide/it/ftp-server.html</a></p>
+<p> </p>
+<p><a href="http://wiki.ubuntu-it.org/Server/Ftp">http://wiki.ubuntu-it.org/Server/Ftp</a></p>

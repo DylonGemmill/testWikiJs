@@ -1,0 +1,49 @@
+<p>L&#39;UPS in oggetto non è gestibile da APCUpsD, occorre usare NUT e via SNMP!</p>
+<p>Installare il pacchetto nut.</p>
+<p>Per una configurazione standalone modificare questi file in /etc/nut:</p>
+<p><strong>nut.conf</strong></p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">MODE=standalone</pre>
+<p> </p>
+<p><strong>upsd.users</strong></p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">[upsmon]
+        password  = uPSpass
+        upsmon master
+</pre>
+<p><em>queste credenziali (il nome tra quadre, la password e il tipo (master) devono conicidere con la riga MONITOR di upsmon.conf</em></p>
+<p> </p>
+<p><strong>upsmon.conf</strong></p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">MONITOR ibm3000_1@localhost 1 upsmon uPSpass master
+MINSUPPLIES 1
+SHUTDOWNCMD "/sbin/shutdown -h +0"
+POLLFREQ 5
+POLLFREQALERT 5
+HOSTSYNC 15
+DEADTIME 15
+POWERDOWNFLAG /etc/killpower
+RBWARNTIME 43200
+NOCOMMWARNTIME 300
+FINALDELAY 5
+</pre>
+<p> </p>
+<p><strong style="font-size: 13px;">ups.conf</strong></p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">[ibm3000_1]
+ driver = snmp-ups
+ port = IP_UPS_LAN
+ mibs = pw
+ pollfreq = 30
+ community = public
+ snmp_version = v1
+ desc = "UPS Principale"
+</pre>
+<p> </p>
+<p><span style="font-size: 13px;">Riavviare il servizio </span><em style="font-size: 13px;">nut</em><span style="font-size: 13px;"> e </span><em style="font-size: 13px;">ups-monitor</em><span style="font-size: 13px;"> e verificare in syslog che sia attivato correttamente.</span></p>
+<p> </p>
+<p>Per ottenere le info sull&#39;UPS digitare il comando:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">upsc ibm3000_1</pre>
+<p>Per simulare uno shutdown:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">upsmon -c fsd</pre>
+<p> </p>
+<p> </p>
+<p><a href="https://wiki.amahi.org/index.php/UPS_Ubuntu_Setup">https://wiki.amahi.org/index.php/UPS_Ubuntu_Setup</a></p>
+<p><a href="https://nixos.org/wiki/How_to_setup_UPS/NUT#how_to_use_this">https://nixos.org/wiki/How_to_setup_UPS/NUT#how_to_use_this</a></p>
+<p><a href="http://thehomeserverhandbook.com/2012/02/28/monitoring_ups/">http://thehomeserverhandbook.com/2012/02/28/monitoring_ups/</a></p>

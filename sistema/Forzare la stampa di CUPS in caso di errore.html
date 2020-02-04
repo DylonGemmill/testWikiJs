@@ -1,0 +1,7 @@
+<p>Cups permette di impostare il proprio comportamento in caso di errore nel lancio della stampa.</p>
+<p>Nel pannello di configurazione web, andare a modificare le proprietà della stampante (<em>Imposta opzioni stampante</em>).</p>
+<p>Alla voce <strong>Politica errori</strong> è possibile impostare il comportamento desiderato.</p>
+<p>Nelle versioni più vecchie (1.3.x) sembra che l&#39;impostazione predefinita sia <strong>stop-printer</strong>, mentre nelle versioni più recenti (1.5.x) è settato <strong>retry-job</strong>. Selezionare l&#39;impostazione desiderata e salvare le impostazioni.</p>
+<p> </p>
+<p>A sistema questa opzione è settata nel file <strong>/etc/cups/printers.conf</strong> con la riga</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">ErrorPolicy retry-job</pre>

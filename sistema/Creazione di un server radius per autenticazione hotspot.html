@@ -1,0 +1,99 @@
+<p>Installare il sistema base debian o ubuntu.&nbsp;</p>
+<p>Quindi procedere con l&#39;installazione dei pacchetti:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">apt-get install freeradius freeradius-utils freeradius-mysql</pre>
+<p>Modificare il file&nbsp;<em>/etc/freeradius/sql/mysql/admin.sql</em>&nbsp;alla riga&nbsp;<em>SET PASSWORD</em>&nbsp;mettere tra gli apici singoli una password per l&#39;utente mysql.&nbsp;</p>
+<p>Creare il database&nbsp;<em>radius</em>&nbsp;in MySQL quindi lanciare questo comando:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">cd /etc/freeradius/sql/mysql  <br />echo "create database radius" | mysql -p <br />cat admin.sql nas.sql schema.sql | mysql -p radius</pre>
+<p>Aprire quindi il file /etc/freeradius/sql.conf modificando i seguenti parametri:</p>
+<ul>
+<li>password: la password mysql messa sopra in admin.sql;</li>
+<li>num_sql_socks: aumentare a seconda del carico del server che si prevede. In base all&#39;esperienza, con circa 500 utenti contemporanei servono 25 socket;</li>
+<li>readclients: yes</li>
+</ul>
+<div>Aprire&nbsp;/etc/freeradius/sql/mysql/dialup.conf e modificare questi parametri:</div>
+<div>
+<ul>
+<li>decommentare la simul_count_query</li>
+</ul>
+<div>Aprire /etc/freeradius/radiusd.conf e modificare:</div>
+<div>
+<ul>
+<li>decommentare&nbsp;$INCLUDE sql.conf</li>
+<li>decommentare&nbsp;$INCLUDE sql/mysql/counter.conf</li>
+</ul>
+<div>Aprire&nbsp;/etc/freeradius/sites-enabled/default:</div>
+<div>
+<ul>
+<li>stanza&nbsp;<em>authorize</em>&nbsp;decommentare&nbsp;<em>sql</em>, aggiungere tre righe con <em>noresetcounter dailycounter monthlycounter</em>;</li>
+<li>stanza&nbsp;<em>accounting</em>&nbsp;commentare&nbsp;<em>radutmp</em>&nbsp;decommentare&nbsp;<em>sql</em>;</li>
+<li>stanza&nbsp;<em>post-auth</em>&nbsp;decommentare&nbsp;<em>sql</em>;</li>
+<li>stanza&nbsp;<em>session</em>&nbsp;decommentare&nbsp;<em>sql&nbsp;</em>commentare&nbsp;<em>radutmp</em>;</li>
+</ul>
+</div>
+</div>
+<div>Creare il file /etc/mysql/conf.d/yetopen.cnf con il seguente contenuto:</div>
+<div>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">[mysqld]
+datadir         = /var/lib/mysql
+bind-address            = 0.0.0.0
+low_priority_updates=1
+
+key_buffer              = 16M
+key_buffer_size         = 52M
+max_allowed_packet      = 16M
+thread_stack            = 128K
+thread_cache_size       = 8
+max_connections         = 600
+table_cache             = 1200
+thread_concurrency      = 8
+
+log_slow_queries        = /var/log/mysql/mysql-slow.log
+long_query_time = 1
+
+server-id               = 1
+log_bin                 = /var/log/mysql/mysql-bin.log
+expire_logs_days        = 10
+max_binlog_size         = 500M</pre>
+<p>Quindi installare Nginx seguendo la relativa guida (<a class="intfaqlink" href="index.php?action=artikel&amp;cat=4&amp;id=340&amp;artlang=it"> Installare Nginx + PHP-fpm su Debian 6 Squeeze</a>).</p>
+<p>&nbsp;</p>
+<h2>Syslog remoto</h2>
+<p>Per meglio gestire gli errori degli hotspot centralizziamo la lettura dei log, ove possibile.</p>
+<p>Sul server:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">apt-get install rsyslog-mysql</pre>
+<p>Memorizzare la password per l&#39;utente rsyslog nel database!&nbsp;</p>
+<p>Creare il file /etc/rsyslog.d/yetopen.conf con questo contenuto:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">$ModLoad imuxsock
+$ModLoad imklog
+$ModLoad imtcp
+$InputTCPServerRun 50514
+</pre>
+<p>Andando a modificare <strong><em>PASSWORD</em></strong>&nbsp;con la password di mysql, e l&#39;ultima riga con la porta dove vogliamo far ascoltare syslog. Quella di default &egrave; 514, conviene sempre spostarsi su porte che non vengono scansionate spesso! Riavviare rsyslog</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">/etc/init.d/rsyslog restart</pre>
+<p>&nbsp;</p>
+<p>Possiamo ora installare LogAnalyzer per visualizzare i log via web.</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">cd /tmp
+wget http://download.adiscon.com/loganalyzer/loganalyzer-3.4.1.tar.gz
+tar xvzf loganalyzer-3.4.1.tar.gz
+mv loganalyzer-3.4.1 /dati/www/management_site/logs
+chown -R www-data:www-data /dati/www/management_site/logs
+cp /dati/www/management_site/logs/contrib/* /dati/www/management_site/logs/src/
+cd /dati/www/management_site/logs/src/
+sh configure.sh</pre>
+<p>Accedere poi alla pagina di configurazione di LogAnalyzer all&#39;indirizzo</p>
+<p>https://wifinext.internavigare.com/logs/src/install.php</p>
+<p>e seguire il wizard facendo attenzione particolare alla pagina 7: creazione della sorgente syslog. In questa schermata dobbiamo mettere i dati in questo modo:</p>
+<ul>
+<li>Name of the source: Syslog Locale</li>
+<li>Source type: MYSQL Native</li>
+<li>Table type: MonitorWare</li>
+<li>Database host: localhost</li>
+<li>Database name: Syslog</li>
+<li>Database table: SystemEvents</li>
+<li>Database user: rsyslog</li>
+<li>Database password: [la password inserita nel wizard di prima]</li>
+</ul>
+<p>&nbsp;</p>
+<p>Per la configurazione del client si veda documento apposito.</p>
+<p>&nbsp;</p>
+</div>
+</div>

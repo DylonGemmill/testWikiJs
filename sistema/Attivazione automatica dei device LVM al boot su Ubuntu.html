@@ -1,0 +1,11 @@
+<p><span style="font-size: 13px;">In  Ubuntu ci sono dei problemi a rendere attivo un device LVM al boot. Per risolvere:</span></p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">apt-get install chiark-utils-bin
+cp /lib/udev/rules.d/85-lvm2.rules /etc/udev/rules.d/ 
+update-initramfs -u</pre>
+<p> </p>
+<p>Riavviare il sistema.</p>
+<p> </p>
+<p>Se non dovesse funzionare (forse nella condizione in cui il VG si chiama in un modo che non inizia per lvm*), rimuovere all&#39;interno del file copiato la parte <em>ENV{ID_FS_TYPE}=="lvm*|LVM*",</em></p>
+<p>(inclusa la virgola finale).</p>
+<p> </p>
+<p><a href="http://knowledge-republic.com/CRM/2012/07/ubuntu-12-04-pangolin-precise-lvm-not-activated-causing-bootup-to-fail/">http://knowledge-republic.com/CRM/2012/07/ubuntu-12-04-pangolin-precise-lvm-not-activated-causing-bootup-to-fail/</a></p>

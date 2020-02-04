@@ -1,0 +1,13 @@
+<p>Nel caso si esegua un upgrade di ubuntu e si stia utilizzando driver proprietari per la scheda video, durante la procedura di aggiornamento vengono disabilitate le sorgenti software di terze parti e quelle proprietarie. Di fatto, al riavvio, la scheda video potrebbe non funzionare correttamente.</p>
+<p>Per installare i driver proprietari bisogna utilizzare il comando ubuntu-drivers da console (il comando fa parte del pacchetto ubuntu-driver-commons).  <span style="font-size: 13px;"> </span></p>
+<p> </p>
+<p> </p>
+<p>Esempi di utilizzo del comando:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">sudo ubuntu-drivers list</pre>
+<p>Will show all the driver packages which apply to your current system. You can then</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">sudo ubuntu-drivers autoinstall</pre>
+<p>to install all the packages you need, or you can do:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">sudo ubuntu-drivers devices</pre>
+<p>to show you which devices need drivers, and their corresponding package names.</p>
+<p> </p>
+<p>fonte: <a href="http://askubuntu.com/questions/22118/can-i-install-extra-drivers-via-the-command-prompt">http://askubuntu.com/questions/22118/can-i-install-extra-drivers-via-the-command-prompt</a></p>

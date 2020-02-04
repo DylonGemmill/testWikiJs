@@ -1,0 +1,26 @@
+<p>In caso di carico di quaglia alto (capita anche ad un nuovo riavvio), è possibile provare a procedere in questo modo:</p>
+<ol>
+<li>stoppare <strong>apache </strong>con il comando
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">/etc/init.d/apache2 stop</pre>
+</li>
+<li>stoppare <strong>shibboleth </strong>con il comando
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">/etc/init.d/shibd stop</pre>
+</li>
+<li>stoppare <strong>tomcat </strong>con il comando
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">/etc/init.d/tomcat6 stop</pre>
+</li>
+<li>verificare che effettivamente nessuno dei programmi precedentemente citati sia in esecuzione. Spesso <strong>tomcat </strong>rimane in esecuzione anche se lo script dice che è stoppato. Effettuare quindi un
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">ps aux | grep tomcat</pre>
+per scoprire il pid e killarlo.</li>
+<li>avviare <strong>tomcat </strong>con il comando
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">/etc/init.d/tomcat6 start</pre>
+</li>
+<li>avviare <strong>shibboleth </strong>con il comando
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">/etc/init.d/shibd start</pre>
+</li>
+<li>avviare <strong>apache </strong>con il comando
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">/etc/init.d/apache2 start</pre>
+</li>
+</ol>
+<div>L&#39;ordine di avvio e stop dei programmi è importante, perchè <strong>apache</strong> ha bisogno di <strong>shibboleth</strong> e <strong>shibboleth</strong> ha bisogno di <strong>tomcat</strong>. Può essere che il problema sia dovuto al fatto che uno di questi demoni venga avviato senza che siano in esecuzione le sue dipendenze.</div>
+<div>Durante il procedimento monitorare l&#39;andamento del carico della macchina. Potrebbe essere buona cosa aspettare che si abbassi un pochino prima di avviare di nuovo i servizi. Se a servizi spenti il carico non diminuisce, probabilmente non è da imputare a loro l&#39;elevato carico.</div>

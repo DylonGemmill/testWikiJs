@@ -1,0 +1,10 @@
+<p>Aprire <em><strong>cupsd.conf</strong></em>&nbsp;e modificare la riga <em>Listen</em>&nbsp;come segue</p>
+<p>&nbsp;</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">Listen 0.0.0.0:631</pre>
+<p>&nbsp;</p>
+<p>Quindi per ogni riga&nbsp;<em>Order allow,deny</em> aggiungere subito sotto una <em>Allow</em> con la rete che si intende far accedere a quel sistema, come ad esempio</p>
+<p>&nbsp;</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">Allow 192.168.2.0/24</pre>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>Rif:&nbsp;<a href="https://answers.launchpad.net/ubuntu/+source/cupsys/+question/7880">https://answers.launchpad.net/ubuntu/+source/cupsys/+question/7880</a></p>

@@ -1,0 +1,10 @@
+<p>Tra i vari protocolli, l&#39;ix2 supporta anche rsync per effettuare i backup. Andare in <em>Rete &gt; Protocolli</em> ed assicurarsi che <strong>rsync</strong> sia abilitato. Se si eseguiranno backup su rete non protetta, è possibile limitare l&#39;accesso alle cartelle di rsync premendo sul pulsante con l&#39;ingranaggio per impostare una password di sincronizzazione.</p>
+<p> </p>
+<p>Vengono messe a disposizione su rsync tutte le condivisioni create tramite <em>Storage &gt; Shares</em>.</p>
+<p> </p>
+<p>Per sincronizzare una directory da Linux alla condivisione Backups predefinita, usare il comando:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">rsync -r /dati IP_IOMEGA::Backups</pre>
+<p> </p>
+<p>se si è abilitata l&#39;autenticazione rsync:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">rsync -r /dati rsync@IP_IOMEGA::Backups</pre>
+<p>e verrà chiesta la password configurata. Se si vuole evitare il prompt è possibile scriverla come prima riga di un file di testo ed usare il parametro <em>--password-file=NOME_FILE_CON_PW</em>.</p>

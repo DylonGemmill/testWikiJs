@@ -1,0 +1,25 @@
+<p>Il bonding di due interfacce di rete consente una sorta di alta disponibliità della connessione di rete, così che se un cavo di rete o una scheda fallisce il server mantiene la connessione.</p>
+<p>Come prima cosa installare ifenslave:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">apt-get install ifenslave-2.6</pre>
+<p> </p>
+<p>Quindi modificare /etc/network/interfaces come segue:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">auto eth0
+iface eth0 inet manual
+  bond-master bond0
+
+auto eth1
+iface eth1 inet manual
+  bond-master bond0
+
+auto bond0
+iface bond0 inet static
+  address 192.168.1.10
+  gateway 192.168.1.1
+  netmask 255.255.255.0
+  bond-mode active-backup
+  bond-miimon 100
+  bond-lacp-rate 1
+  bond-slaves none</pre>
+<p>associare le singole schede al bond invece che configurarle nel bond stesso (bond-slaves) velocizza l&#39;attivazione dell&#39;interfaccia.</p>
+<p> </p>
+<p><a href="https://help.ubuntu.com/community/UbuntuBonding">https://help.ubuntu.com/community/UbuntuBonding</a></p>

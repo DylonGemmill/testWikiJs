@@ -1,0 +1,18 @@
+<p>Scaricare da <a href="http://slackware.cs.utah.edu/pub/slackware/slackware-10.2/pasture/source/pcnfsd.93.02.16/">Slackware</a> il pacchetto sorgente e compilarlo (anche in allegato qui):</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">mkdir package &amp;&amp; cd package
+tar xzvf ../pcnfsd.*
+zcat ../pcnfsd.93.02.16.diff.gz | patch -p0
+make bsd
+mkdir /var/spool/pcnfs
+cp bsd/* /usr/sbin
+</pre>
+<p>Copiare gli script di avvio qui allegato in /etc/init.d</p>
+<p> </p>
+<p>Se si installa in un ambiente recente assicurarsi che nfs abbia disponibile anche la versione 2 del protocollo (verificabile con <em>rpcinfo -p, </em>le righe del demone nfs).</p>
+<p>Per abilitarlo, su CentOS7 modificare /etc/sysconfig/nfs con</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">RPCNFSDARGS="-V 2"</pre>
+<p> </p>
+<p>nel caso di pacemaker aggiungere alla risorsa nfsserver l&#39;opzione</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">nfsd_args="-V 2"</pre>
+<p> </p>
+<p> </p>

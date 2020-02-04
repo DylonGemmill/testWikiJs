@@ -1,0 +1,95 @@
+<p>Duplicity è un tool di backup che crea un file tar, opzionalmente criptato con GPG (abilitato di default). Si basa sempre su rsnyc per minimizzare le differenze tra i backup, ma crea poi un file unico quindi gestisce correttamente i permessi unix e link simbolici. <span style="text-decoration: underline;">Non</span> supporta gli hardlinks.</p>
+<p>Può appoggiarsi a diverse destinazioni per la conservazione dei salvataggi: file locale, ftp, rsync, Amazon S3.</p>
+<h2>Installazione e configurazione</h2>
+<pre class="language-markup"><code>add-apt-repository ppa:duplicity-team/ppa
+apt update
+apt install duplicity duply </code></pre>
+<p>ATTENZIONE: se si usa il backup <em>FTP</em> installare anche il pacchetto <strong>lftp</strong>. Per <em>S3</em> installare <strong>python-boto</strong>.</p>
+<p>Duply si basa sui profili. Copiare il profilo <em>yetopen</em> (da <a href="https://code.ufficyo.com/YetOpen/youtils/tree/master/serverutils/duply/yetopen" target="_blank" rel="noopener">Git</a>) sul server nella <em>/root/.duply</em>. All&#39;interno ci sono tre file.</p>
+<p>Aprire il file <em><strong>conf</strong></em> per modificare la configurazione. I parametri da impostare sono:</p>
+<ul>
+<li>GPG_PW: password di firma di GPG. Si può generare con <em>openssl rand -base64 20</em>. <strong>Attenzione</strong>: memorizzare la password negli appunti del cliente!</li>
+<li>TARGET: percorso di destinazione. Per tutti gli url possibili vedere <a href="http://duplicity.nongnu.org/duplicity.1.html#sect7" target="_blank" rel="noopener">il manuale</a> di duplicity</li>
+<li>TARGET_USER e TARGET_PASS: se servono username e pass di accesso al backend (<span style="text-decoration: underline;">non</span> per S3)</li>
+</ul>
+<p>Gli altri parametri dovrebbero andare bene come sono, in ogni caso sono documentati. Ci sono molte altre opzioni che si possono impostare. Per vederle tutte creare un nuovo profilo di duply con il comando <em>duply nuovo_profilo create</em>.</p>
+<p>La configurazione predefinita è i <span style="text-decoration: underline;">fare il backup della /, specificando le esclusioni</span>. Tipicamente salviamo <em>/root, /etc, /dati</em>, quindi nel repository è già presente il file <em>exclude</em> con tutte le directory tipiche di Linux (Ubuntu 16.04). <strong>Attenzione</strong>: aggiungere in <em>exclude</em> eventuali <span style="text-decoration: underline;">path montati con autofs</span>.</p>
+<h2>Effettuare un backup</h2>
+<p>Per lanciare un backup manuale</p>
+<pre class="language-markup"><code>duply yetopen backup</code></pre>
+<p>Dove <em>yetopen</em> è il nome del profilo che abbiamo creato sopra. Nei file di profilo c&#39;è anche uno script <em>post</em>, che si occupa di inviare a Zabbix (se installato) l&#39;esito del backup. </p>
+<p>Per vedere l&#39;elenco o lo stato dei backup usare rispettivamente i comandi <em>list</em> e <em>status </em>di duply.</p>
+<p>Per schedulare il backup aggiungere in /etc/cron.d/yetopen</p>
+<pre class="language-markup"><code>20 13,20 * * *          root    /usr/bin/duply yetopen backup &gt; /var/log/duply.log
+20 08 * * *          root    /usr/bin/duply yetopen purge --force &gt; /var/log/duply-purge.log</code></pre>
+<h2>Visualizzare lo stato e il contenuto di un backup</h2>
+<p>Per vedere lo stato e l&#39;elenco dei backup:</p>
+<pre class="language-markup"><code>duply yetopen status</code></pre>
+<p>Per vedere il contenuto dell&#39;ultimo backup</p>
+<pre class="language-markup"><code>duply yetopen list</code></pre>
+<p> </p>
+<h2>Ripristinare un file/directory</h2>
+<h3>Ripristino di tutto il backup</h3>
+<p>Per ripristinare tutto il backup in un percorso specifico:</p>
+<pre class="language-markup"><code>duply yetopen restore /percorso_di_ripristino</code></pre>
+<h3>Ripristino di un file/directory specifico</h3>
+<pre class="language-markup"><code>duply yetopen fetch etc/password /ripristino/password</code></pre>
+<p>Questo comando ripristina il file <em>etc/password</em> in <em>/ripristino/password</em>. </p>
+<h3>Ripristino ad una data specifica</h3>
+<p>Vedere l&#39;elenco dei backup con <em>duply yetopen status</em>, poi lanciare il comando sopra con l&#39;orario specifico:</p>
+<pre class="language-markup"><code>duply yetopen fetch etc/password /ripristino/password &#39;2017-12-01T07:38:30&#39;</code></pre>
+<p>usando data ed ora ottenuti dallo <em>status</em> sopra.</p>
+<p> </p>
+<p>Dopo aver completato la configurazione <strong>appuntarsi il giorno successivo <span style="text-decoration: underline;">e</span>  la settimana successiva di verificare che i salvataggi vengano eseguiti correttamente!</strong></p>
+<h2>Backup su Amazon S3</h2>
+<ol>
+<li>Creare un bucket sul pannello di Amazon S3</li>
+<li>Andare nel pannello IAM e creare un nuovo utente
+<ol>
+<li>Nel campo <em>Access type</em> abilitare <em>Programmatic access</em></li>
+<li>Nella configurazione dei permessi selezionare <em> Attach existing policy directly </em>e premere <em>Create policy</em></li>
+<li>Creare una nuova policy (magari dando un nome <em>yetopen-duplicity-nomeserver</em>) e nell&#39;editor JSON della policy inserire:<br />
+<pre class="language-markup"><code>{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": ["s3:ListBucket" ],
+      "Resource": "arn:aws:s3:::NOME_BUCKET"
+    },
+    {
+      "Effect": "Allow",
+      "Action": [ "s3:PutObject", "s3:GetObject", "s3:DeleteObject"],
+      "Resource": "arn:aws:s3:::NOME_BUCKET/SOTTODIR/*"
+    }
+  ]
+}</code></pre>
+sostituendo <em>NOME_BUCKET</em> con il nome del bucket creato sopra. È possibile creare delle policy che limitano una specifica directory aggiungendone il nome nella seconda regola. </li>
+<li>Al termine della procedura verranno visualizzati <em>KEY </em>e <em>SECRET </em>dell&#39;utente appena creato. Memorizzarli negli appunti del cliente.</li>
+</ol>
+</li>
+<li>Nella configurazione di <em>duply</em> rimuovere <em>TARGET_USER </em>e <em>TARGET_PASS</em> ed aggiungere:<br />
+<pre class="language-markup"><code>export AWS_ACCESS_KEY_ID=&#39;CHIAVE&#39;
+export AWS_SECRET_ACCESS_KEY=&#39;SECRET&#39;</code></pre>
+<p>mettendo i valori ottenuti dalla creazione dell&#39;utente IAM</p>
+</li>
+<li>Come <em>TARGET</em> di backup:<br />
+<pre class="language-markup"><code>TARGET=&#39;s3://s3-eu-west-1.amazonaws.com/NOME_BUCKET/NOME_DIRECTORY&#39;</code></pre>
+</li>
+</ol>
+<p> </p>
+<h2>Cifratura dei backup con chiave asimmetrica (chiave GPG)</h2>
+<p>FIXME maxxer da testare<br />Specificando solamente il parametro <em>GPG_PW</em> il backup viene cifrato con chiave simmetrica. Per una sicurezza maggiore si possono cifrare con chiave pubblica/privata.</p>
+<p>Definire comunque una password di cifratura, poi creare le chiavi GPG con il comando <em>gpg --gen-key</em> e rispondendo alle domande. La chiave deve essere RSA di almeno 2048 e senza scadenza, come <em>real name</em> dare <em>duplicity-NOMESERVER</em>. Con <em>gpg --list-keys </em>verrà elencata la chiave appena generata. Prendere nota dell&#39;ID della chiave, ed esportare chiave pubblica e privata con il comando: </p>
+<pre class="language-markup"><code>gpg --armor --export duplicity-NOMESERVER &gt; duplicity-NOMESERVER.pub
+gpg --armor --export-private-key duplicity-NOMESERVER &gt; duplicity-NOMESERVER.key</code></pre>
+<p>Copiare i due file in una posizione sicura, <span style="text-decoration: underline;">senza questi file i backup non sono decifrabili</span>!</p>
+<p>Nella configurazione di duply aggiungere il parametro </p>
+<pre class="language-markup"><code>GPG_KEY=duplicity-NOMESERVER</code></pre>
+<p> </p>
+<p><a href="http://old.blog.phusion.nl/2013/11/11/duplicity-s3-easy-cheap-encrypted-automated-full-disk-backups-for-your-servers/">http://old.blog.phusion.nl/2013/11/11/duplicity-s3-easy-cheap-encrypted-automated-full-disk-backups-for-your-servers/</a></p>
+<p><a href="https://sedden.github.io/blog/2015/11/11/backup-to-amazon-s3-glacier-with-duplicity/">https://sedden.github.io/blog/2015/11/11/backup-to-amazon-s3-glacier-with-duplicity/</a></p>
+<p><a href="https://icicimov.github.io/blog/devops/Duplicity-encrypted-backups-to-Amazon-S3/">https://icicimov.github.io/blog/devops/Duplicity-encrypted-backups-to-Amazon-S3/</a></p>
+<p> </p>
+<p>Rif: <a href="http://duplicity.nongnu.org/duplicity.1.html">http://duplicity.nongnu.org/duplicity.1.html</a></p>
+<p> </p>

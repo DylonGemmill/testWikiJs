@@ -1,0 +1,16 @@
+<p>Esistono dei repo che contengono il comando di amministrazione del raid, e degli script di monitoraggio dello stato del sistema.</p>
+<p>Creare un file /etc/apt/sources.list.d/megaraid.list contenente</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">deb http://hwraid.le-vert.net/distrib branch main</pre>
+<p>ATTENZIONE, <em>distrib</em> deve essere sostituito con <em>debian</em> o <em>ubuntu</em>, mentre <em>branch</em> con il nome della release.</p>
+<p>Quindi eseguire</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">apt-get update &amp;&amp; apt-get install megacli</pre>
+<p> </p>
+<p>Per installare la parte di monitor</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">apt-get install megaclisas-status</pre>
+<p>quindi creare il file /etc/default/megaclisas-statusd con all&#39;interno</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">MAILTO=support@yetopen.it   # Email che riceverà le notifiche
+PERIOD=600    # Secondi tra ogni controllo
+REMIND=7200   # Secondi tra ogni notifica (default 2h)
+</pre>
+<p> </p>
+<p>Rif: <a href="http://hwraid.le-vert.net/wiki/DebianPackages">http://hwraid.le-vert.net/wiki/DebianPackages</a></p>

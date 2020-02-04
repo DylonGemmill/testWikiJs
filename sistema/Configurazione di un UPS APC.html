@@ -1,0 +1,20 @@
+<p>Collegare l&#39;UPS con il cavo USB, quindi installare il pacchetto <em>apcupsd</em>.&nbsp;</p>
+<p>Quindi aprire il file /etc/apcupsd/apcupsd.conf e modificare questi parametri:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">UPSCABLE usb
+UPSTYPE usb
+DEVICE
+BATTERYLEVEL 5
+MINUTES 5</pre>
+<p>Il parametro <em>DEVICE</em>&nbsp;deve essere vuoto, <em>BATTERYLEVEL </em>e <em>MINUTES</em>&nbsp;vanno regolati in base alle preferenze: il primo spegne il computer quando il livello di carica percentuale della batteria raggiunge quel valore, il secondo quando il tempo stimato di durata raggiunge il valore impostato.</p>
+<p>&nbsp;</p>
+<p>Se ci sono altri pc collegati alla batteria dell&#39;UPS, ma che non hanno ovviamente il cavo dati, &egrave; possibile condividere lo stato della batteria tramite NIS server.&nbsp;</p>
+<p>Per fare questo modificare&nbsp;</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">NETSERVER on<br />NISIP 0.0.0.0</pre>
+<p>Al termine della configurazione, impostare <em><strong>ISCONFIGURED=yes</strong></em> in <em>/etc/defaults/apcupsd</em> e riavviare il demone <em>apcupsd</em>.</p>
+<p>&nbsp;</p>
+<p>Dopo qualche secondo, con il comando <em><strong>apcaccess</strong></em>&nbsp;dovrebbe essere possibile vedere lo stato della batteria, il carico ed il tempo residuo in caso di assenza di rete elettrica.</p>
+<p>&nbsp;</p>
+<p>Se dobbiamo connettere un altro server apcupsd al demone principale configurato con NIS, i parametri saranno i seguenti:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">UPSCABLE ether
+UPSTYPE net
+DEVICE host_con_nis_abilitato:porta</pre>

@@ -1,0 +1,49 @@
+<p><strong>Attenzione</strong>! t38modem è molto delicato e a quanto pare molto sensibile alle librerie con cui viene compilato. Essendo il sorgente originale abbandonato ci sono stati diversi personaggi che hanno portato avanti le patch per stare in linea con i rilasci di opal.</p>
+<p>Una situazione stabile si ha con opal 3.10.3, spandsp 0.6.6 e t38modem dai sorgenti di <a href="https://github.com/hehol/t38modem">Henning Holtschneider</a>. Questa configurazione è <span style="text-decoration: underline;">funzionante</span>!</p>
+<p> </p>
+<p><em>Secondo <a href="http://sourceforge.net/p/opalvoip/mailman/message/32975063/">un messaggio nella ML</a> esiste una patch per compilare t38modem (credo a qs punto) con i <a href="https://github.com/PeteDavidson/t38modem">sorgenti di Pete</a>, sistemando un bug che probabilmente non è sistemato. Sarebbe da testare.</em></p>
+<p> </p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">apt-get -y install flex bison libtiff-dev
+
+cd ptlib-2.10.11
+export PTLIBDIR=`pwd`
+./configure --prefix /opt/t38modem
+make
+make install
+
+
+cd spandsp-0.0.6
+PKG_CONFIG_PATH=/opt/t38modem/lib/pkgconfig ./configure --prefix /opt/t38modem
+make
+make install
+
+
+cd opal-3.10.11
+export LIBRARY_PATH=/opt/t38modem/lib/
+export CPLUS_INCLUDE_PATH=/opt/t38modem/include/
+export C_INCLUDE_PATH=/opt/t38modem/include/
+PKG_CONFIG_PATH=/opt/t38modem/lib/pkgconfig ./configure --prefix /opt/t38modem
+make
+make install
+
+# Sempre dalla dir di Opal
+##cd plugins/fax/fax_spandsp
+##make
+##make install
+
+
+cd t38modem
+export OPALDIR=/root/stable/opal-3.10.11
+export PTLIBDIR=/root/stable/ptlib-2.10.11 <br /><span>PKG_CONFIG_PATH=/opt/t38modem/lib/pkgconfig make USE_OPAL=1 USE_UNIX98_PTY=1</span>
+cp -v obj_linux_*_opal/t38modem /opt/t38modem/bin
+</pre>
+<p> </p>
+<p> </p>
+<p>Se ci sono errori di compilazione in Opal:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">test/signalCompare.o: In function `main&#39;:
+signalCompare.c:(.text.startup+0x36a): undefined reference to `sin&#39;
+signalCompare.c:(.text.startup+0x8ed): undefined reference to `log10&#39;</pre>
+<p>risolvere con:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">cd opal-3.10.2/plugins/audio/SILK/SILK_SDK
+gcc -L./ libSKP_SILK_SDK.a test/signalCompare.o -lSKP_SILK_SDK -o signalcompare -lm</pre>
+<p>rif: <span style="font-size: 13px;"><a href="http://stackoverflow.com/a/9428975">http://stackoverflow.com/a/9428975</a></span></p>

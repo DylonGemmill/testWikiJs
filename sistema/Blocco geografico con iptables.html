@@ -1,0 +1,19 @@
+<p>Oltre alle classiche regole di IP/subnet è possibile bloccare per nazione. Usando il database pubblico (lite) di <a href="https://dev.maxmind.com/geoip/geoip2/geolite2/">MaxMind</a> che associa IP &lt;&gt; nazione si possono creare regole di iptables di questo tipo.</p>
+<p>Installare il pacchetto di sistema:</p>
+<pre class="language-markup"><code>apt install xtables-addons-common</code></pre>
+<p>In teoria il pacchetto contiene gli script di download ed aggiornamento delle liste di MaxMind, ma dal gennaio 2019 il sito ha cambiato il formato dei file e non sono ancora stati aggiornate le librerie di iptables con il nuovo. Di fatto i download non funzionano e anche scaricando i file non sono di un formato compatibile. Vedere <a href="https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=918227">bdo#918227</a>.</p>
+<p>Esiste però <a href="https://github.com/mschmitt/GeoLite2xtables">uno script di conversione</a>, dal nuovo formato al vecchio compatibile con xtables. Se funziona si può usare (ma su Ubuntu14 non va), altrimenti si può usare un&#39;<a href="https://hub.docker.com/r/sander1/xtables_geoip">immagine Docker</a> da far girare una volta alla settimana per effettuare la conversione.</p>
+<p>Siccome non sempre è utile avere Docker su un server ho impostato una procedura schedulata (in /etc/cron.d/yetopen) una volta alla settimana su ispc.ufficyo.com che scarica e converte i file di regole usando l&#39;immagine sopra. I file sono disponibili a <a href="https://www.yetopen.it/Legacy-MaxMind-GeoIP-database.tar.gz">questo indirizzo</a>, e per aggiornarli su un server basta schedulare un&#39;attività che faccia:</p>
+<pre class="language-markup"><code>wget -q https://legacy-geoip-csv.ufficyo.com/Legacy-MaxMind-GeoIP-database.tar.gz -O - | tar -xvzf - -C /usr/share/xt_geoip</code></pre>
+<p>tutte le domeniche dopo le 4 di mattina.</p>
+<h2>Creazione regole</h2>
+<p>Dopo aver aggiornato le liste è possibile creare delle regole con</p>
+<pre class="language-markup"><code>iptables -A INPUT -m geoip ! --src-cc IT -i eth0 -m conntrack --ctstate NEW -j DROP</code></pre>
+<p>con questa regola si blocca tutto il traffico in ingresso su <em>eth0</em> che <span style="text-decoration: underline;">non</span> proviene dall&#39;Italia. Si possono specificare più nazioni separate da virgola, ad esempio <em>IT,DE</em>.</p>
+<p><strong>Attenzione</strong> che inserendo una riga come quella sopra vengono <strong>bloccate anche le subnet private</strong>, utilizzate per le reti LAN! Prima di quella conviene inserire una riga con:</p>
+<pre class="language-markup"><code>iptables -I INPUT -i eth0 -s &lt;RETE LAN&gt; -j ACCEPT</code></pre>
+<p>in modo da consentire, prima di tutto, che tutto il traffico della rete sia accettato.</p>
+<p>È possibile salvare le regole con iptables-save vedere la <a href="https://help.ubuntu.com/community/IptablesHowTo#Saving_iptables">guida di ubuntu</a>,  oppure fare uno script con le regole e lanciarlo da <em>post-up </em>in <em>/etc/network/interfaces</em>.</p>
+<p>Per testare un IP e vedere a che nazione viene associato visitare <a href="https://www.maxmind.com/en/geoip-demo">questo indirizzo</a>.</p>
+<p>https://daenney.github.io/2017/01/07/geoip-filtering-iptables.html</p>
+<p> </p>
