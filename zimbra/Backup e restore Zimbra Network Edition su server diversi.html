@@ -1,0 +1,35 @@
+<p>Eseguire manualmente un backup completo di tutte le caselle lanciare questo comando (tutti i comandi vanno eseguiti come utente Zimbra):</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">/opt/zimbra/bin/zmbackup -f -a all</pre>
+<p> </p>
+<p>Per ripristinare su un server diverso da quello su cui si è effettuato il salvataggio installare il nuovo server, installare Zimbra alla stessa versione, mantenendo <em>hostname</em> e <em>zmhostname</em> uguali come sul vecchio server.</p>
+<p>Copiare la vecchia /opt/zimbra/backup dal vecchio server al nuovo, quindi identificare l&#39;etichetta del backup da recuperare con il comando:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">zmrestoreldap --lbs</pre>
+<p><span style="font-size: 13px;">e ripristinare con:</span></p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">zmrestoreldap -lb &lt;label&gt; </pre>
+<p>verificare che ldap sia in esecuzione dopo questo passaggio, e procedere con il ripristino dei dati:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">zmrestore -sys -ra -a all -c</pre>
+<p>questo comando dovrebbe importare tutti gli account ad esclusione di <em>admin</em> e <em>wiki</em> (l&#39;output del comando dovrebbe dire quali sono stati saltati).</p>
+<p>Per ripristinare gli account mancanti lanciare:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">zmrestore -a admin@yourdomain.com</pre>
+<p> </p>
+<p>fonte: <a style="font-size: 13px;" href="http://wiki.zimbra.com/wiki/Moving_ZCS_to_New_Server">http://wiki.zimbra.com/wiki/Moving_ZCS_to_New_Server</a></p>
+<p> </p>
+<p> </p>
+<p><span style="font-size: 13px;">Per ripristinare una casella in una casella temporanea</span></p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">zmrestore -a user1@domain.com -ca -pre new_</pre>
+<p>verrà quindi creata new_user1@domain.com contenente l&#39;ultimo backup.</p>
+<p>Per ripristinare ad una data precisa, invece, occorre utilizzare l&#39;opzione restoreToTime in questo modo</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">zmrestore -a user@domain.com -restoreToTime "<span>2008/05/12 17:03:31.681</span>" -ca -pre new_</pre>
+<p><span>dove 2008/05/12 17:03:31.681 è l&#39;orario al quale si vuole ripristinare la casella, zimbra ripristinerà il backup più recente possibile. Per la data si può consultare l&#39;elenco dei backup col comando</span></p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">zmbackupquery</pre>
+<p> E&#39; possibile definire la directory in cui fare il backup con il seguente comnado:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">zmprov mcf zimbraBackupTarget /backup-dati/zimbrabackup/</pre>
+<p>fonti:</p>
+<ul>
+<li><a href="http://www.zimbra.com/docs/ne/6.0.6/administration_guide/A_app-command-line.20.15.html#1305605">http://www.zimbra.com/docs/ne/6.0.6/administration_guide/A_app-command-line.20.15.html#1305605</a></li>
+<li><a href="http://wiki.zimbra.com/wiki/CLI_zmrestore_restoreToTime_Network_Edition_only">http://wiki.zimbra.com/wiki/CLI_zmrestore_restoreToTime_Network_Edition_only</a></li>
+</ul>
+<p> </p>
+<p> </p>
+<p> </p>
+<p>asdfasdfasdfasdf</p>

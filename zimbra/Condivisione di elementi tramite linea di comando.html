@@ -1,0 +1,20 @@
+<p>La condivisione delle cartelle effettuata con l&#39;interfaccia web (ZWC) &egrave; ovviamente fattibile anche da linea di comando. Prima occorre dare i permessi, poi effettuare il mount dell&#39;elemento.</p>
+<p>Per la prima operazione dobbiamo dare i seguenti parametri:</p>
+<ul>
+<li>account_sorgente: nome account da cui si vuole condividere</li>
+<li>mfg: azione (modifyFolderGrant)</li>
+<li>/: cartella da condividere, in questo esempio TUTTO l&#39;account</li>
+<li>account_destinazione: nome account a cui si vuole condividere</li>
+<li>rwidxa: permessi</li>
+</ul>
+<p>Per la seconda, gli ultimi tre parametri:</p>
+<ul>
+<li>/nome_cartella: nome da dare alla nuova cartella</li>
+<li>account_sorgente: account da cui condividere</li>
+<li>/: cartella da condividere dall&#39;account sorgente</li>
+</ul>
+<p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">zmmailbox -z -m account_sorgente mfg / account account_destinazione rwidxa
+zmmailbox -z -m account_destinazione  cm /nome_cartella account_sorgente /
+</pre>
+</p>

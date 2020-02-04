@@ -1,0 +1,18 @@
+<p>E&#39; possibile salvare il contenuto di un account Zimbra esportando tutto come file <em>.tgz</em>.&nbsp;</p>
+<p>Ogni elemento (Contatti, Calendario...) &egrave; esportabile singolarmente, conformati compatibili con altri software, oppure &egrave; possibile esportare l&#39;account in blocco, via WebUI o CLI:</p>
+<ul>
+<li><em>Preferenze &gt; Importa / Esporta</em><br />Tipo: account</li>
+<li>zmmailbox -z -m nomeaccount &nbsp;getRestURL "//?fmt=tgz" &nbsp;&gt; /tmp/salvataggio.tgz&nbsp;</li>
+</ul>
+<p>Per ripristinare usare il comando</p>
+<p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">zmmailbox -z -m userinboxsubunder@domain.com postRestURL "//?fmt=tgz&amp;resolve=replace" /tmp/userinboxsubunder.tgz
+</pre>
+</p>
+<p>Questa operazione non esporta per&ograve; le preferenze ed i filtri. Per i filtri &egrave; possibile usare questa procedura. Sul server di origine</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">zmmailbox -z -m user@domain.com gfrl &gt; /tmp/filters.txt</pre>
+<p>su quello di destinazione</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">cat /tmp/filters.txt | sed &#39;s/^/afrl /&#39; | zmmailbox -z -m user@domain.com</pre>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>ref: <a href="http://www.zimbra.com/forums/users/39504-migrate-zimbra-zimbra.html#post180963">zimbra forum</a></p>

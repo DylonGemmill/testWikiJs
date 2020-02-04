@@ -1,0 +1,6 @@
+<p>Quando si condivide un calendario tra utenti Zimbra, al ricevente non verranno notificati gli avvisi degli appuntamenti. Questo perché normalmente l&#39;agenda condivisa si usa solo per vedere gli appuntamenti di un utente, non per esserne avvisato. Ma a questa regola fanno eccezione i calendari remoti ICS, per cui se si vuole convidere un calendario (in sola lettura!) con un altro utente e riceverne le notifiche si può fare dando i permessi ad un&#39;email fittizia e montando quindi l&#39;agenda come ICS remoto.</p>
+<p> </p>
+<p>Via CLI:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">zmmailbox -z -m  condividente@dominio mfg /Calendar guest mailfittizia@dominio.local passwordfittizia r
+zmmailbox -z -m ricevente@dominio cf --view appointment -F#  -u http://mailfittizia%40domiino.local:passwodfittizia@zimbraserver/home/condividente@dominio/Calendar /NomeCartellaRemota</pre>
+<p> </p>

@@ -1,0 +1,14 @@
+<p>Cambiare l&#39;hostname in dnsmasq e hosts, poi cambiarlo a zimbra con il comando specificato qui:</p>
+<p><a href="http://wiki.zimbra.com/wiki/ZmSetServerName">http://wiki.zimbra.com/wiki/ZmSetServerName</a></p>
+<p>quindi greppare il vecchio hostname e modificare tutte le occorrenze in</p>
+<ul>
+<li>/etc/apache2</li>
+<li>/etc/shibboleth</li>
+<li>/opt/shibboleth-idp (o qualunque sia la home del vostro idp)</li>
+<li>/var/www (o qualunque sia la vostra webroot)</li>
+</ul>
+<p>Reimpostare i link di login e logout di Zimbra come da guida:</p>
+<p><a href="https://mail.ufficyo.com/kb/index.php?action=artikel&amp;cat=28&amp;id=181&amp;artlang=it">https://mail.ufficyo.com/kb/index.php?action=artikel&amp;cat=28&amp;id=181&amp;artlang=it</a></p>
+<p>Occorre anche generare una nuova chiave di preauth per il file zimbra_preauth.php</p>
+<p> </p>
+<p> </p>

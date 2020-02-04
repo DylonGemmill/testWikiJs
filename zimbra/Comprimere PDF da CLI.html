@@ -1,0 +1,8 @@
+<p><a href="http://www.simoneradice.com/compressione-pdf-tramite-ghostscript-per-linux">http://www.simoneradice.com/compressione-pdf-tramite-ghostscript-per-linux</a></p>
+<p><a href="http://www.guru63.com/come-ridurre-le-dimensioni-dei-file-pdf-da-terminale-linux">http://www.guru63.com/come-ridurre-le-dimensioni-dei-file-pdf-da-terminale-linux</a></p>
+<p><a href="http://blog.skydiamond.org/linux/come-comprimere-pdf-con-pdftk-gs/">http://blog.skydiamond.org/linux/come-comprimere-pdf-con-pdftk-gs/</a></p>
+<p> </p>
+<p>Script per la conversione che vuole come parametri in ingresso la directory sorgente e la directory di destinazione</p>
+<pre>#!/bin/bash<br />for i in $(ls $1)<br />do<br />    echo converting $1/$i in $2/`basename $i`<br />    gs -dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite -dPDFSETTINGS=/ebook -sOutputFile=$2/`basename $i` $1/$i<br />done</pre>
+<p> </p>
+<p> </p>

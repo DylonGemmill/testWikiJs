@@ -1,0 +1,226 @@
+<p>La rete Zabbix YO si basa sulla versione 2.2. Per ogni host remoto è sempre meglio installare un proxy che faccia la raccolta locale dei dati ed invii i risultati al server Zabbix in ufficyo. Tutti i proxy devono assolutamente essere della stessa major+minor release del server, quindi 2.2. Per avere sempre l&#39;ultima versione aggiornata usiamo i pacchetti <a href="https://www.zabbix.com/documentation/2.2/manual/installation/install_from_packages" target="_blank" rel="noopener">forniti direttamente da Zabbix</a>, tranne che per la 10.04.</p>
+<p>Per Ubuntu 16.04</p>
+<pre class="code">wget <a href="http://repo.zabbix.com/zabbix/3.0/ubuntu/pool/main/z/zabbix-release/zabbix-release_3.0-1+xenial_all.deb">http://repo.zabbix.com/zabbix/3.0/ubuntu/pool/main/z/zabbix-release/zabbix-release_3.0-1+xenial_all.deb</a> -P /tmp
+dpkg -i /tmp/zabbix-release_3.0-1+xenial_all.deb
+apt update</pre>
+<p>Per Ubuntu 12.04:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">wget http://repo.zabbix.com/zabbix/2.2/ubuntu/pool/main/z/zabbix-release/zabbix-release_2.2-1+precise_all.deb -P /tmp
+dpkg -i /tmp/zabbix-release_2.2-1+precise_all.deb
+apt-get update</pre>
+<p>Per Ubuntu 14.04:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">wget http://repo.zabbix.com/zabbix/2.2/ubuntu/pool/main/z/zabbix-release/zabbix-release_2.2-1+trusty_all.deb -P /tmp/
+dpkg -i /tmp/zabbix-release_2.2-1+trusty_all.deb
+apt-get update</pre>
+<p>Per Ubuntu 10.04:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">apt-get -y install python-software-properties
+# Per 10.04
+add-apt-repository ppa:lorenzo-milesi/zabbix22-lucid<br /> apt-get update </pre>
+<p>Per CentOS 7:</p>
+<pre class="language-markup"><code>rpm -Uvh https://repo.zabbix.com/zabbix/3.0/rhel/7/x86_64/zabbix-release-3.0-1.el7.noarch.rpm</code></pre>
+<p> </p>
+<p> Per aprire le porte con ufw per apps.ufficyo.com:</p>
+<pre class="language-markup"><code>ufw allow from 173.212.216.248  to any port 10050
+ufw allow from 2a02:c207:2013:4710::1  to any port 10050
+</code></pre>
+<p><span style="font-size: 13px;">Procedere con l&#39;installazione del pacchetto </span></p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">apt-get -y install zabbix-agent zabbix-sender</pre>
+<p><span style="font-size: 13px;"> Per Ubuntu dalla 16 in poi:<br /></span></p>
+<pre class="language-markup"><code>systemctl enable zabbix-agent</code></pre>
+<p> </p>
+<p>In yo_utils/serverutils/zabbix ci sono i parametri personalizzati. Fare un scp -r in /etc/zabbix/ dei server da monitorare.</p>
+<p> </p>
+<p> </p>
+<h2>MySQL</h2>
+<p>Collegarsi alla shell di MySQL e creare un utente per il monitoraggio:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">GRANT USAGE ON *.* TO &#39;zabbix&#39;@&#39;127.0.0.1&#39;;
+GRANT USAGE ON *.* TO &#39;zabbix&#39;@&#39;localhost&#39;;
+</pre>
+<p>Per il monitoraggio di master/slave:</p>
+<pre class="language-markup"><code>GRANT REPLICATION CLIENT ON *.* TO &#39;zabbix&#39;@&#39;127.0.0.1&#39;;
+GRANT REPLICATION CLIENT ON *.* TO &#39;zabbix&#39;@&#39;localhost&#39;;</code></pre>
+<p>Creare il file /etc/zabbix/.my.cnf con utente e password:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">[client]
+user=zabbix
+#password=foobar
+</pre>
+<p>Se si è impostata una password per l&#39;utente decommentare la seconda riga.</p>
+<p>Associare all&#39;host il template MySQL.</p>
+<p> </p>
+<h2>pfSense</h2>
+<p>Installare il pacchetto zabbix-agent 2.4 (la versione LTS non funziona bene quindi usare quella non LTS). Andare in <em>Servizi &gt; Zabbix</em> e configurarlo come un host normale. Sul server Zabbix associare all&#39;host pfSense il template <em>Template FreeBSD</em>.</p>
+<p> <span style="font-size: 14px; line-height: 18px;"> </span></p>
+<h2>Postfix</h2>
+<p>Per installare i prerequisiti e il monitoraggio:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">apt-get -y install pflogsumm logtail
+ln -s /etc/zabbix/zabbixcron_postfix /etc/cron.d/</pre>
+<p>http://lifeisabug.com/postfix-statistical-graphs-zabbix-using-passive-checks/</p>
+<p>https://www.zabbix.com/forum/showthread.php?p=74271</p>
+<p> </p>
+<h2>fail2ban</h2>
+<p>Modificare <em>/etc/init.d/fail2ban</em> ed aggiungere in fondo alla <em>do_start</em>, prima della <em>return 0</em>:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">chgrp zabbix /var/run/fail2ban/fail2ban.sock
+chmod g+rw /var/run/fail2ban/fail2ban.sock
+</pre>
+<p> </p>
+<p><a href="https://www.zabbix.com/forum/showthread.php?t=46974">https://www.zabbix.com/forum/showthread.php?t=46974</a></p>
+<h2>nginx</h2>
+<p>Aggiungere nel file /etc/nginx/sites-enabled/default </p>
+<pre class="language-markup"><code>    location /server_status {
+        stub_status on;
+        access_log   off;
+        allow 127.0.0.1;
+        allow 192.168.250.0/24; # Modificare con la rete da cui arriva il controllo
+        deny all;
+    }</code></pre>
+<p> </p>
+<h2>php-fpm</h2>
+<p>Con nginx creare un file in /etc/nginx/conf.d/php-fpm.conf con questo contenuto:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">server {
+    listen 10061;
+
+    location /php-fpm_status {
+        fastcgi_pass 127.0.0.1:9000;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        include fastcgi_params;
+        access_log   off;
+        allow 127.0.0.1;
+        deny all;
+    }   
+}
+</pre>
+<p>modificare in /etc/php5/fpm/pool.d/www.conf</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">pm.status_path = /php-fpm_status</pre>
+<p>riavviare nginx e php5-fpm.</p>
+<p> </p>
+<h2>MegaCLI </h2>
+<p>Occorre creare link per gli script cron e le configurazioni di sudo.</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">ln -s /etc/zabbix/zabbixcron_megacli /etc/cron.d/
+cp sudoers/megacli_conf /etc/sudoers.d/</pre>
+<p>Verificare che l&#39;eseguibile specificato nel file megacli_conf esista </p>
+<h2>QNAP</h2>
+<p>Abilitare sul QNAP il protocollo SNMP andando in <em>Pannello di controllo &gt; Servizi di rete &gt; SNMP </em>ed abilitando la spunta <em>Attiva servizio SNMP</em>. Lasciare il numero porta invariato, selezionare come <em>Versione V1/V2</em> ed inserire <em>public</em> nel campo <em>Comunità</em>.</p>
+<p>Creare un nuovo host su Zabbix. Nella scheda <em>Host</em> indicare l&#39;IP nella riga<em> Agent interfaces</em> e <em>SNMP Interfaces</em>. Nella scheda <em>Templates</em> assegnare il template <em>QNAP SNMP </em>e <em>ICMPI Ping</em>, nella scheda <em>Macro</em> aggiungere due valori <em>{$SNMP_COMMUNITY}</em> con valore <em>public </em>e <em>{$SNMP_PORT}</em> con valore <em>161</em>.</p>
+<h2>Windows</h2>
+<p>Scaricare il <em>precompiled package </em>di Windows dalla <a href="http://www.zabbix.com/download">pagina di download di zabbix</a>.</p>
+<p>Scompattare tutto in <em>c:\yetopen</em> (o altra posizione comoda). Modificare il file di configurazione in <em>conf\zabbix_agent.win.conf</em> specificando i parametri <em>Server</em>, <em>ServerActive</em>, <em>Hostname</em> con i parametri del server e il nome della macchina.</p>
+<p>Se abilitato <strong>Windows Firewall</strong> aggiungere un&#39;eccezione per l&#39;eseguibile <em>bin\win64\zabbix_agentd.exe</em>.</p>
+<p>A questo punto installiamo il servizio e lo avviamo:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">C:\yetopen\zabbix_agents_3.2.0.win\bin\win64\zabbix_agentd.exe --config C:\yetopen\zabbix_agents_3.2.0.win\conf\zabbix_agentd.win.conf --install
+C:\yetopen\zabbix_agents_3.2.0.win\bin\win64\zabbix_agentd.exe --start</pre>
+<p><a href="http://www.tecmint.com/install-zabbix-agent-and-add-windows-host-to-zabbix-monioring/">Rif</a></p>
+<h2>Windows Update</h2>
+<p>Gli script si trovano su <a href="https://github.com/ygotame/zabbix/tree/master/templates/Windows-Updates">GitHub</a>. La prima volta che si usa su un server Zabbix importare il template XML.</p>
+<p>Per monitorare un host:</p>
+<ol>
+<li>installare (se non già presente) l&#39;eseguibile di <em>zabbix-sender</em></li>
+<li>copiare il file winupdates.vbs nella directory dove c&#39;è installato lo Zabbix agent</li>
+<li>configurare tre variabili nel file <em>winupdates.vbs</em>: </li>
+<li>hostName = <em>NOME HOST ZABBIX</em><br />serverName = <em>IP SERVER ZABBIX</em><br />zbxSender =<em> "C:\bin\zabbix\bin\win32\zabbix_sender.exe" PATH zabbix_sender.exe</em></li>
+<li>creare un&#39;attività schedulata che esegue lo script ogni giorno (<em>Basic Task</em> è sufficiente)</li>
+</ol>
+<h2>XenServer</h2>
+<p>Per identificare la piattaforma fare </p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">rpm -aq| head</pre>
+<p>e vedere i pacchetti di che release sono. Poi seguire i passaggi del <a href="https://www.zabbix.com/documentation/2.2/manual/installation/install_from_packages">sito zabbix</a> per la configurazione di CentOS ed installare il pacchetto <em>zabbix-release</em>. Quindi lanciare:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">yum install zabbix-sender zabbix-agent</pre>
+<p> </p>
+<p>Configurare il riavvio automatico con</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">chkconfig --level 35 zabbix-agent on</pre>
+<p>Lanciare il comando</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">system-config-securitylevel-tui</pre>
+<p>selezionare "Customize" e nel riquadro in fondo aggiungere <em><strong>10050:tcp</strong></em>.</p>
+<p>In caso di monitoraggio di MegaCLI commentare in /etc/sudoers la riga di <em>Defaults: requiretty</em>, ed includere il parametro per l&#39;esecuzione del comando <em>megacli</em>. e creare il link</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">ln -s /opt/MegaRAID/MegaCli/MegaCli /usr/local/bin/megacli</pre>
+<p> </p>
+<p>Per XenServer 7:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">rpm -ivh http://repo.zabbix.com/zabbix/2.2/rhel/7/x86_64/zabbix-release-2.2-1.el7.noarch.rpm</pre>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">yum install zabbix-sender zabbix-agent</pre>
+<p>Configurarare l&#39;agent:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">nano /etc/zabbix/zabbix_agentd.conf</pre>
+<p>Inserire la regola per il firewall</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">nano /etc/sysconfig/iptables</pre>
+<p>ed aggiungere questa regola</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">-A RH-Firewall-1-INPUT -p tcp --dport 10050 -j ACCEPT
+</pre>
+<p>Effettuare il riavvio e l&#39;abilitazione dei servizi</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">systemctl restart iptables
+systemctl enable zabbix-agent
+systemctl start zabbix-agent</pre>
+<h2> VMware</h2>
+<p>Nella scheda <em>Templates</em> associare solo il <em>Template VM VMware</em> o <em>Template Virt VMware </em>per Zabbix 3.0. Non associare gli altri template perché verranno popolati automaticamente dalle regole di discovery.</p>
+<p>Nella scheda <em>Macros</em> configurare questi tre parametri:</p>
+<ul>
+<li>{$USERNAME} =&gt; utente di accesso (root)</li>
+<li>{$PASSWORD} =&gt; password di accesso (dell’utente specificato sopra)</li>
+<li>{$URL} =&gt; https://IP_O_HOSTNAME_SERVER/sdk</li>
+</ul>
+<p>Zabbix farà poi automaticamente il discovery dell’hypervisor e delle VM associate all’host.</p>
+<p><span style="text-decoration: underline;">Attenzione</span>: sul server o sul proxy devono essere attivi dei processi <em>vmware collector</em>. Vedere il parametro <em>StartVMwareCollectors</em>.</p>
+<h2>zabbix-proxy</h2>
+<p>Installare il server con SQLite fissando il paccheto 2.2 o MySQL e disabilitare gli aggiornamenti (di solito la prima).</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">apt install zabbix-proxy-sqlite3=1:2.2.17-1+trusty<br />apt-mark hold zabbix-proxy-sqlite3</pre>
+<p>Se <span style="text-decoration: underline;">non</span> viene chiesta la configurazione automatica, andiamo a creare il DB SQLite:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">zcat /usr/share/zabbix-proxy-sqlite3/schema.sql.gz | sqlite3 /var/lib/zabbix/zabbix.db chown zabbix:zabbix /var/lib/zabbix/zabbix.db</pre>
+<p>e in /etc/zabbix/zabbix-proxy.conf inserire questa riga per il DB:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">DBName=/var/lib/zabbix/zabbix.db</pre>
+<p>Per le Ubuntu dalla 16 in poi:</p>
+<pre class="language-markup"><code>systemctl enable zabbix-proxy</code></pre>
+<p> </p>
+<p>Nel caso di MySQL:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">apt-get -y install zabbix-proxy-mysql</pre>
+<p>collegarsi alla shell di mysql poi:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">create database zabbix_proxy;
+grant all on zabbix_proxy.* to &#39;zabbix_proxy&#39;@&#39;localhost&#39; identified by &#39;Ixm04PXap&#39;;</pre>
+<p>Quindi creare lo schema con:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">zcat /usr/share/zabbix-proxy-mysql/schema.sql.gz | mysql -uzabbix_proxy -p zabbix_proxy</pre>
+<p> </p>
+<p>Modificare /etc/zabbix/zabbix_proxy.conf i parametri:</p>
+<ul>
+<li>Server=monitor.ufficyo.com</li>
+<li>Hostname=&lt;nome configurato in zabbix&gt;</li>
+<li>DBName=zabbix_proxy</li>
+<li>DBUser=zabbix_proxy</li>
+<li>DBPassword=Ixm04PXap</li>
+<li>ProxyOfflineBuffer=24 </li>
+</ul>
+<p>Modificare nel file <em>/etc/default/zabbix-proxy</em> <em>START=yes</em> ed avviare <em>zabbix-proxy </em>(su versioni &lt; 16.04).</p>
+<p> Eventualmente copiare i <strong>sudoers</strong> quando server.</p>
+<h2>Synology</h2>
+<p>Sul DSM andare in <em>Pannello di Controllo &gt; Terminale e SNMP</em>, aprire la scheda <em>SNMP</em> ed abilitare <em>Servizio SNMP, SNMPv1</em> e dare un nome alla comunità. Di default è <em>public</em> ma si può personalizzare con il nome del cliente, ad esempio <em>yopublic</em>. <br />Quando fatto premere <em>Applica</em>.</p>
+<p>Andare su Zabbix, creare un host per il NAS. Importante: nell&#39;elenco delle interfacce, dove si mette l&#39;IP dell&#39;agent, aggiungere un&#39;interfaccia SNMP con l&#39;IP del NAS, lasciando la porta standard 161.<br />Nella scheda <em>Templates </em>associare il template <em>Template_Synology_5</em> e nella scheda <em>Macros</em> aggiungere la variable <em>{$SNMP_COMMUNITY} </em>con la stringa usata sopra per definire la <em>Comunità SNMP</em> su DSM.</p>
+<p><a href="https://share.zabbix.com/storage-devices/synology/synology-dsm-5">Rif</a>.</p>
+<h2>Monitoraggio blacklist</h2>
+<p>Va fatto sui proxy</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">apt-get -y install ruby1.9.1
+gem install dnsbl-client</pre>
+<p> </p>
+<p>// FIXME sistemare la risoluzione usando un DNS esterno</p>
+<p> </p>
+<h2>IPMI</h2>
+<p>È possibile monitorare le interfacce IPMI di IBM.</p>
+<p>Configurare l&#39;interfaccia di rete IPMI come <a href="https://mail.ufficyo.com/kb/index.php?action=artikel&amp;cat=4&amp;id=439&amp;artlang=it">da guida</a>. ATTENZIONE: vedere i problemi <a href="https://www.zabbix.com/documentation/2.2/manual/config/items/itemtypes/ipmi">qui</a>.</p>
+<p>Sul server o sul proxy che deve monitorare gli host ablitare il parametro di configurazione</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">StartIPMIPollers=4</pre>
+<p>Nella configurazione dell&#39;host:</p>
+<ol>
+<li>aggiungere l&#39;IP dell&#39;interfaccia IPMI</li>
+<li>associare il template <em>Template_IPMI_IBM_IMM</em></li>
+<li>nel tab IPMI impostare l&#39;algoritmo di autenticazione MD5, e mettere username e password impostati nella guida sopra</li>
+</ol>
+<p> </p>
+<h2> Criptare il traffico client/server</h2>
+<p>Il modo più semplice è con una PSK.  Generare un hash sul server da monitorare con il comando</p>
+<pre class="language-markup"><code>openssl rand -hex 32 &gt; /etc/zabbix/monitor.psk</code></pre>
+<p>e prendere nota dell&#39;hash generato. Aggiungere in <em>/etc/zabbix/zabbix_agentd.conf</em> (o proxy) questi parametri (modificare <em>IDENTITA_CHIAVE_DA_INVENTARE</em> con una parola, andrà poi messa nella configurazione web di Zabbix):</p>
+<pre class="language-markup"><code>TLSConnect=psk
+TLSAccept=psk
+TLSPSKIdentity=IDENTITA_CHIAVE_DA_INVENTARE
+TLSPSKFile=/etc/zabbix/monitor.psk</code></pre>
+<p>Andare nelle proprietà dell&#39;host (o del proxy), nella scheda <em>Encryption</em>:</p>
+<ul>
+<li>nella prima voce <em>Connection to host</em> selezionare <em><strong>PSK</strong></em></li>
+<li>abilitare la spunta <em>PSK</em></li>
+<li>inserire nel campo <em>PSK Identity</em> il valore del parametro <em>TLSPSKIdentity</em></li>
+<li>inserire in <em>PSK</em> il contenuto del file <em>/etc/zabbix/monitor.psk</em></li>
+</ul>
+<p> </p>

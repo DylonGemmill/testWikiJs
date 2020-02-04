@@ -1,0 +1,83 @@
+<p>Configurando l&#39;account PEC come <em>account esterno</em> (pop o imap) consente tranquillamente di ricevere la posta, ma non di inviarla. Questo perché Zimbra invia sempre usando il suo relay (postfix), ma la PEC deve passare unicamente per gli SMTP certificati. Purtroppo non è ancora prevista la possibilità di usare un relay specifico per questi account (<a href="http://bugzilla.zimbra.com/show_bug.cgi?id=14526">bug #14526</a>).</p>
+<p> </p>
+<p>Modificando Postfix siamo però riusciti a spedire le mail dedicate alla PEC con l&#39;SMTP corretto. Qui di seguito la procedura.</p>
+<p> </p>
+<p>Installare stunnel (per CentOS vedere sotto):</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">apt-get install stunnel
+cp /usr/share/doc/stunnel4/examples/stunnel.conf-sample /etc/stunnel/stunnel.conf</pre>
+<p>modificare il file <em>/etc/stunnel/stunnel.conf</em> correggendo il percorso del valore cert con:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">cert = /etc/stunnel/stunnel.pem</pre>
+<p>commentando tutti i servizi ed aggiungendo in fondo:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">[smtp-tls-wrapper]
+accept = 11465
+client = yes
+connect = smtps.pec.aruba.it:smtps</pre>
+<p>questa configurazione crea un tunnel virtuale dalla porta 11465 locale verso l&#39;smtp della PEC di Aruba. Generare un certificato con il comando</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">openssl req -new -x509 -days 365 -nodes -out /etc/stunnel/stunnel.pem -keyout /etc/stunnel/stunnel.pem
+chmod 600 /etc/stunnel/stunnel.pem
+sed -i &#39;s/^ENABLED=0/ENABLED=1/&#39; /etc/default/stunnel4
+service stunnel4 restart </pre>
+<p>Creare un file <em>/opt/zimbra/conf/postfix_sender_relay</em> contenente il mittente ed il relay da utilizzare. Dovendo passare da stunnel, visto che postfix non contempla l&#39;invio tramite TLS, come relay avremo localhost:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">mittente@pec.yetopen.it [127.0.0.1]:11465</pre>
+<p>Quindi occorre specificare la password per il relay PEC. Creare il file /opt/zimbra/conf/postfix_sasl_passwd con i dati:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">[127.0.0.1]:11465 mittente@pec.yetopen.it:password</pre>
+<p>Creiamo i file di configurazione per postfix, eseguendo come utente zimbra:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">postmap /opt/zimbra/conf/postfix_sender_relay
+postmap /opt/zimbra/conf/postfix_sasl_passwd</pre>
+<p>quindi modifichiamo la configurazione di Zimbra:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">zmprov ms $(zmhostname) zimbraMtaSmtpSaslPasswordMaps lmdb:/opt/zimbra/conf/postfix_sasl_passwd
+zmprov ms $(zmhostname) zimbraMtaSmtpSaslAuthEnable yes
+zmprov ms $(zmhostname) zimbraMtaSmtpSaslSecurityOptions noanonymous
+
+postconf -e smtp_sender_dependent_authentication=yes
+postconf -e sender_dependent_relayhost_maps=lmdb:/opt/zimbra/conf/postfix_sender_relay<br />
+</pre>
+<p> </p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">postmap /opt/zimbra/conf/postfix_sender_relay <br />zmprov mc yetopen zimbraSmtpRestrictEnvelopeFrom FALSE
+zmprov mc yetopen zimbraAllowAnyFromAddress TRUE</pre>
+<p>Per le vecchie versioni di zimbra (&lt;8.5):</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">zmlocalconfig -e smtp_sender_dependent_authentication=yes
+zmlocalconfig -e sender_dependent_relayhost_maps=hash:/opt/zimbra/conf/postfix_sender_relay
+zmlocalconfig -e smtp_sasl_auth_enable=yes
+zmlocalconfig -e smtp_sasl_password_maps=hash:/opt/zimbra/conf/postfix_sasl_passwd
+zmlocalconfig -e smtp_sasl_security_options=
+postfix reload
+zmprov mc yetopen zimbraSmtpRestrictEnvelopeFrom FALSE
+zmprov mc yetopen zimbraAllowAnyFromAddress TRUE
+</pre>
+<p>Gli ultimi due parametri sono impostabili anche per singolo account invece che per CoS.</p>
+<p> </p>
+<p><strong>ATTENZIONE! E&#39; possibile che questi parametri vengano cancellati in fase di aggiornamento!</strong></p>
+<p>Fatti questi passaggi è possibile configurare l&#39;account PEC come child account oppure come email esterna (POP3) di un account Zimbra esistente.</p>
+<ul>
+<li>Nel caso di uso tramite account esterno:<br />configurare il pop3 con i parametri Aruba<br />creare una casella <em>Inviata</em> come figlia della Inbox PEC<br />creare una regola di posta in uscita per cui le mail inviate dall&#39;email PEC vengano spostate nella casella <em>Inviata</em> appena creata </li>
+<li>Nel caso di uso tramite <em>child account</em> occorre fare in modo che Postfix rimuova la riga <em>Sender</em> dalle intestazioni, usando questa procedura: <a class="intfaqlink" href="index.php?action=artikel&amp;cat=1&amp;id=87&amp;artlang=it"> Modificare la configurazione di postfix di Zimbra</a>.<br />Per ricevere la posta configurare fetchmail: <a class="intfaqlink" href="index.php?action=artikel&amp;cat=2&amp;id=288&amp;artlang=it"> Configurazione di fetchmail per la PEC</a></li>
+</ul>
+<p> </p>
+<h4>Installazione di stunnel su CentOS 7</h4>
+<p>Da luglio 2019 è necessario usare una versione di stunnel &gt; 5, quella fornita dai repo ufficiali è la 4.20. Scaricare da <a href="https://centos.pkgs.org/7/ius-x86_64/stunnel5u-5.44-1.ius.centos7.x86_64.rpm.html">questo indirizzo</a> l&#39;rpm ed installarlo tramite</p>
+<pre class="language-markup"><code>rpm -Uvh stunnel5u-5.44-1.ius.centos7.x86_64.rpm</code></pre>
+<p>creare il file di config di esempio:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">cp /usr/share/doc/stunnel5u-5.44/stunnel.conf-sample /etc/stunnel/stunnel.conf
+mkdir /var/run/stunnel
+chown nobody:nobody /var/run/stunnel</pre>
+<p>dopo aver configurato stunnel abilitarlo all&#39;avvio ed avviarlo</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">systemctl enable stunnel
+systemctl start stunnel</pre>
+<h4>Installazione stunnel su CentOS 6</h4>
+<p>In questo caso bisogna rimuovere stunnel ed installare <a href="https://centos.pkgs.org/6/ius-archive-x86_64/stunnel5u-5.41-1.ius.centos6.x86_64.rpm.html">stunnel5</a>.</p>
+<pre class="language-markup"><code>yum remove stunnel
+rpm -Uvh https://dl.iuscommunity.org/pub/ius/archive/CentOS/6/x86_64//stunnel5u-5.41-1.ius.centos6.x86_64.rpm</code></pre>
+<p>La configurazione dovrebbe essere compatibile con la precedente versione. Verificare il parametro</p>
+<pre class="language-markup"><code>sslVersion = all</code></pre>
+<p>(o comunque non deve essere sotto TLSv1.2). Se non parte perché non riesce a scrivere il file di log modificare</p>
+<pre class="language-markup"><code>output = stunnel.log</code></pre>
+<p>che farà scrivere il file nella chroot impostata, che dovrebbe essere /var/run/stunnel</p>
+<p> </p>
+<p><a href="http://wiki.zimbra.com/wiki/Maumar-Notes#Zimbra_and_Italian_PEC">http://wiki.zimbra.com/wiki/Maumar-Notes#Zimbra_and_Italian_PEC</a></p>
+<p><a href="http://www.postfix.org/SOHO_README.html#client_sasl_sender">http://www.postfix.org/SOHO_README.html#client_sasl_sender</a></p>
+<p><a href="http://www.zimbra.com/forums/italian/51496-zimbra-e-la-pec.html">http://www.zimbra.com/forums/italian/51496-zimbra-e-la-pec.html</a></p>
+<p><a href="http://www.seacom.it/drupal/blog-seacom/la-casella-pec-%C3%A8-obbligatoria-configurala-su-zimbra">http://www.seacom.it/drupal/blog-seacom/la-casella-pec-%C3%A8-obbligatoria-configurala-su-zimbra</a></p>
+<p>http://tekman.livejournal.com/83609.html</p>
+<p> </p>
+<p> </p>

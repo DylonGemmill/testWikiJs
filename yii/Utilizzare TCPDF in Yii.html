@@ -1,0 +1,20 @@
+<p>A tale scopo ci viene incontro un&#39;estensione che fa da "wrapper" per TCPDF:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">http://www.yiiframework.com/extension/tcpdf/</pre>
+<p>Scaricare l&#39;estensione e posizionarla nella directory delle estensioni di Yii (<em>protected/extensions</em>). L&#39;estensione contiene solo il file che fa da wrapper, TCPDF va scaricato a parte. La cartella creata dell&#39;estensione sar&agrave; quindi <em>protected/extensions/tcpdf</em>.</p>
+<p>Scaricare TCPDF dal sito ufficiale (http://www.tcpdf.org/) ed estrarlo in una directory a piacere. Prelevare quindi solo i file necessari (in modo da non appensantire l&#39;applicativo). Tali file comprendono i file nella directory principale, e le cartelle config, fonts e images (tralasciando quindi documentazione, cache ed esempi) e vanno messi nella directory <em>protected/extensions/tcpdf/tcpdf</em>.</p>
+<p>L&#39;autore consiglia di aggiornare spesso TCPDF, dato che e&#39; in continuo sviluppo.</p>
+<p>A questo punto &egrave; possibile creare un pdf in qualsiasi punto della nostra applicazione. Una volta istanziato l&#39;oggetto pdf, le funzioni a nostra disposizione sono le stesse di TCPDF; ecco un esempio:</p>
+<pre class="brush: php;fontsize: 100; first-line: 1; ">&lt;?php
+$pdf = Yii::createComponent(&#39;application.extensions.tcpdf.ETcPdf&#39;, &#39;P&#39;, &#39;cm&#39;, &#39;A4&#39;, true, &#39;UTF-8&#39;);
+$pdf-&gt;SetCreator(PDF_CREATOR);
+$pdf-&gt;SetAuthor("Nicola Asuni");
+$pdf-&gt;SetTitle("TCPDF Example 002");
+$pdf-&gt;SetSubject("TCPDF Tutorial");
+$pdf-&gt;SetKeywords("TCPDF, PDF, example, test, guide");
+$pdf-&gt;setPrintHeader(false);
+$pdf-&gt;setPrintFooter(false);
+$pdf-&gt;AliasNbPages();
+$pdf-&gt;AddPage();
+$pdf-&gt;SetFont("times", "BI", 20);
+$pdf-&gt;Cell(0,10,"Example 002",1,1,&#39;C&#39;);
+$pdf-&gt;Output("example_002.pdf", "I");</pre>

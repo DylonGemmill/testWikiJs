@@ -1,0 +1,33 @@
+<p>Questa guida è per creare dei pacchetti debian di Zabbix aggiornati. Ad esempio per avere Zabbix 2.2 su Ubuntu Lucid, visto che Zabbix non li fornisce. Usarla per aggiornare le build del <a href="https://launchpad.net/~lorenzo-milesi/+archive/ubuntu/zabbix22-lucid">PPA</a>.</p>
+<p> </p>
+<p>Installare il sistema per cui si desidera creare i pacchetti. <span style="text-decoration: underline;">Per firmare i sorgenti è necessario che ci sia la dir .gnupg configurata e popolata</span>.</p>
+<p> </p>
+<p>Come prima cosa andiamo ad installare i pacchetti di Zabbix per la nostra versione (anche se vecchia):</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">cd /usr/src
+wget http://repo.zabbix.com/zabbix/2.0/ubuntu/pool/main/z/zabbix-release/zabbix-release_2.0-1lucid_all.deb
+dpkg -i zabbix-release_2.0-1lucid_all.deb
+apt-get update
+apt-get build-dep zabbix
+apt-get install build-essential dpkg-dev devscripts
+apt-get source zabbix
+</pre>
+<p>Ora dobbiamo scaricare i SORGENTI della versione di Zabbix che vogliamo andare a pacchettizzare (ad esempio 2.2.8) e scompattiamoli sempre nello stesso percorso di prima.</p>
+<p>Entriamo ora nella directory dei sorgenti <em>vecchi</em> (quelli scaricati con apt-source) e lanciare:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">uupdate ../zabbix-2.2.8.tar.gz -v 2.2.8
+cd ../zabbix-2.2.8
+rm -rf debian/templates
+dch -l ~local &#39;Upstream 2.2.8&#39;</pre>
+<p>Modificare il file <em>debian/changelog</em> in modo che invece di ~local ci sia un nome personale (tipo maxxer1, attenzione che la ~ va rimossa) e l&#39;email del changelog deve corrispondere all&#39;email usata nella chiave GPG.</p>
+<p>Lanciare quindi:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">debuild -S -sa
+# debuild -us -uc per non firmare i sorgenti</pre>
+<p>a questo punto possiamo fare l&#39;upload sul PPA:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">dput ppa:lorenzo-milesi/zabbix22-lucid zabbix_2.2.8-0ubuntu1~local1_source.changes</pre>
+<p>(dando il nome file .changes generato).</p>
+<p> </p>
+<p>Per effettuare una build di prova in locale (prima che venga rifiutata dal build system di ubuntu):</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">apt-get -y install ubuntu-dev-tools
+pbuilder-dist lucid create
+pbuilder-dist lucid build zabbix_2.2.8-0ubuntu1~maxxer.dsc</pre>
+<p> </p>
+<p>Rif: http://zabbix.org/wiki/Docs/howto/rebuild_debs#3._You_want_to_build_a_deb_package_from_upstream_sources</p>

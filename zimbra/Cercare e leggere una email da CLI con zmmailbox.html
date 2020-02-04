@@ -1,0 +1,28 @@
+<p>Per elencare le mail di un account usare il comando</p>
+<pre class="language-markup"><code>zmmailbox -z -m ACCOUNT s -t message -l 20 "in:inbox date:02/02/2018"</code></pre>
+<p>tra apici è possibile specificare una qualunque query di ricerca, come quella di esempio che cerca tutte le email del 2 febbraio 2018 nella posta in arrivo. <em>-l</em>  è il numero di risultati, il massimo è 1000 il predefinito 25.</p>
+<p>Il risultato sarà qualcosa di simile:</p>
+<pre class="language-markup"><code>num: 3, more: false
+
+      Id  Type   From                  Subject                                             Date
+   -----  ----   --------------------  --------------------------------------------------  --------------
+1. 74313  mess   info                  Re: meeting                                         02/20/18 08:14
+2. 73555  mess   Morsal                Re: meeting                                         02/19/18 14:02
+3. 74315  mess   info                  Re: meeting                                         02/16/18 10:06</code></pre>
+<p>L&#39;importante è la prima colonna, ovvero l&#39;ID del messaggio. Per leggerlo:</p>
+<pre class="language-markup"><code>zmmailbox -z -m ACCOUNT getMessage IDMESSAGGIO</code></pre>
+<p>verrà stampato a video con delle intestazioni minimali. È possibile vedere dati aggiuntivi di Zimbra passando <em>--verbose</em> prima dell&#39;ID del messaggio, ma non è possibile vedere le intestazioni complete dell&#39;email. </p>
+<p>Per vedere il messaggio completo su disco bisogna fare un giro più lungo: trovare prima l&#39;id della mailbox e poi fare una query per ottenere il messaggio. </p>
+<p>Per cercare l&#39;ID della casella:</p>
+<pre class="language-markup"><code>zmprov getMailboxInfo ACCOUNT</code></pre>
+<p>Otterremo l&#39;id e la dimensione occupata. Come prima cosa bisogna trovare il gruppo di mailbox dove è memorizzata la casella, lanciando in una shell bash</p>
+<pre class="language-markup"><code>expr IDMAILBOX % 100</code></pre>
+<p>Prendere nota del risultato del comando sopra che ci fa ottenere il gruppo della mailbox ed entrare nel MySQL di zimbracon il comando:</p>
+<pre class="language-markup"><code>mysql mboxgroupIDMAILBOXGROUP</code></pre>
+<p>Per trovare il messaggio dobbiamo fare una query su MySQL di Zimbra. La query concatena alcune stringhe con i dati presi dal DB. Una cosa a cui fare attenzione è la parte iniziale del percorso, perché si basa sul path predefinito dello store che è <em>/opt/zimbra/store</em>. Se fosse in uso un volume (ottenibile con il comando <em>zmvolume -l</em>) diverso occorrerà cambiarlo. Il comando da lanciare:</p>
+<pre class="language-markup"><code>select id, 
+    concat(&#39;/opt/zimbra/store/&#39;, (mailbox_id &gt;&gt; 12), &#39;/&#39;, mailbox_id, &#39;/msg/&#39;,
+    (id &gt;&gt; 12), &#39;/&#39;, id, &#39;-&#39;, mod_content, &#39;.msg&#39;) as file
+    from mail_item where mailbox_id="MAILBOXID" and id="MESSAGEID" limit 1;</code></pre>
+<p>Il file ottenuto è il <em>blob</em> del messaggio su disco.</p>
+<p> </p>
