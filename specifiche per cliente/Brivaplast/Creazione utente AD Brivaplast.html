@@ -1,0 +1,8 @@
+<p>Creare l&#39;utente sull&#39;AD (di solito lo fanno loro).</p>
+<p>Dopo la creazione va creato in /etc/samba/smb.conf la <em>home</em> dell&#39;utente, ovvero una share con lo stesso nome dell&#39;utente creato.</p>
+<p>Questo è stato fatto dopo l&#39;upgrade a Samba4 AD per mantenere la compatibilità delle vecchie condivisioni <em>\\serverx7\$user</em> che non era più presente.<br />Dopo aver creato la directory, dato i permessi e modificato smb.conf, applicare la configurazione con:</p>
+<pre class="language-markup"><code>ADUSER="up34"
+mkdir /home/users/$ADUSER
+chown $ADUSER:"Domain Admins1" /home/users/$ADUSER
+chmod 2750 /home/users/$ADUSER
+smbcontrol smbd reload-config</code></pre>

@@ -1,0 +1,27 @@
+<h1>Installazione</h1>
+<p>Per le macchine 18.04, 16.04 e 14.04:</p>
+<pre class="language-markup"><code>wget https://repo.zabbix.com/zabbix/4.2/ubuntu/pool/main/z/zabbix-release/zabbix-release_4.2-1+$(lsb_release -c -s)_all.deb -P /tmp
+dpkg -i /tmp/zabbix-release*.deb &amp;&amp; apt update &amp;&amp; apt install zabbix-agent</code></pre>
+<p>Per 12.04:</p>
+<pre class="language-markup"><code>wget http://repo.zabbix.com/zabbix/2.2/ubuntu/pool/main/z/zabbix-release/zabbix-release_2.2-1+precise_all.deb -P /tmp
+dpkg -i /tmp/zabbix-release*.deb &amp;&amp; apt-get update &amp;&amp; apt-get install zabbix-agent</code></pre>
+<p>Per CentOS 7:</p>
+<pre class="language-markup"><code>rpm -ivh https://repo.zabbix.com/zabbix/4.2/rhel/7/x86_64/zabbix-release-4.2-1.el7.noarch.rpm
+yum install zabbix-agent</code></pre>
+<h1>Configurazione</h1>
+<p>Adattare l&#39;ultimo comando sostituendo <em>NOME HOST</em> con il nome host configurato sull&#39;interfaccia web:</p>
+<pre class="language-markup"><code>sed -i &#39;s/\(^Server=\).*/\1192.168.21.9/&#39; /etc/zabbix/zabbix_agentd.conf
+sed -i &#39;s/\(^ServerActive=\).*/\1192.168.21.9/&#39; /etc/zabbix/zabbix_agentd.conf
+sed -i &#39;s/\(^Hostname=\).*/\1NOME HOST/&#39; /etc/zabbix/zabbix_agentd.conf</code></pre>
+<p>Copiare i file per il monitoraggio dei servizi aggiuntivi da <em>yo_utils/serverutils/specifici_cliente/sicuritalia/zabbix/* </em>sul server in <em>/etc/zabbix</em>.</p>
+<p>Riavviare e abilitare l&#39;agent al boot:</p>
+<pre class="language-markup"><code>systemctl restart zabbix-agent &amp;&amp; systemctl enable zabbix-agent</code></pre>
+<p>(Solo per Ubuntu 12.04):</p>
+<pre class="language-markup"><code>/etc/init.d/zabbix-agent restart ; update-rc.d zabbix-agent enable</code></pre>
+<h2>Monitoraggio MySQL</h2>
+<p>Sostituire <em>MODIFICARE_CON_PASSWORD </em>con una password casuale, che verrà associata all&#39;utente di monitoraggio:</p>
+<pre class="language-markup"><code>ZABBIX_PW=MODIFICARE_CON_PASSWORD
+echo "GRANT USAGE ON *.* TO &#39;zabbix&#39;@&#39;localhost&#39; IDENTIFIED BY &#39;"$ZABBIX_PW"&#39;" | mysql -p
+mkdir /var/lib/zabbix
+echo -e "[client]\nuser=zabbix\npassword=$ZABBIX_PW\n" &gt; /var/lib/zabbix/.my.cnf
+chown -R zabbix:zabbix /var/lib/zabbix</code></pre>

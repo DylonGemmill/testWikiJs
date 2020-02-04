@@ -1,0 +1,12 @@
+<ol>
+<li>Eseguire il CD di <em>Telestra</em></li>
+<li>Impostare come stampante predefinita <em>PDFCreator</em></li>
+<li>Esegure da Telestra la stampa di tutte le categorie (Men&ugrave; <em>File &gt; Catalogo generale (?)</em>)</li>
+<li>Aprire il PDF generato</li>
+<li>Selezionare tutto il testo ed incollarlo in un file di testo</li>
+<li>Copiare il file TXT sul server</li>
+<li>Pulire le righe non di categoria con il comando&nbsp;<br /><span style="font-family: &#39;courier new&#39;, courier;">grep &#39;^0&#39; categorie.txt &gt; &nbsp;categorie_clean1.txt</span></li>
+<li>Sostituire il testo &#39;<span style="font-family: &#39;courier new&#39;, courier;">, </span>&#39; con &#39;<span style="font-family: &#39;courier new&#39;, courier;"><em>";"</em></span>&#39;<br /><span style="font-family: &#39;courier new&#39;, courier;">sed -e &#39;s/,\ /\";\"/g&#39; categorie_clean1.txt &gt; categorie_clean2.txt&nbsp;</span></li>
+<li>Inserire le virgolette all&#39;inizio ed alla fine di ogni riga<br /><span style="font-family: &#39;courier new&#39;, courier;">sed -e &#39;s/^/\"/g&#39; categorie_clean2.txt &gt; categorie_clean3.txt&nbsp;</span><br /><span style="font-family: &#39;courier new&#39;, courier;">sed -e &#39;s/$/\"/g&#39; categorie_clean3.txt &gt; categorie_clean4.txt</span></li>
+<li>Importare il file da phpmyadmin nella tabella <em>callcenter_categorie</em><br /><br /></li>
+</ol>

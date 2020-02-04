@@ -1,0 +1,29 @@
+<p>Modificare /etc/nginx/sites-enabled/red.sicuritalia.it.conf ed aggiungere nella stanza di <em>red.sicuritalia.it </em> il blocco per la sottodirectory che interessa, ad esempio:</p>
+<pre class="language-markup"><code>location /helpdesk {
+   root /data/nginx-webroot/redmine-helpdesk/public;
+   passenger_base_uri /helpdesk;
+   passenger_app_root /data/nginx-webroot/redmine-helpdesk;
+   passenger_document_root /data/nginx-webroot/redmine-helpdesk/public;
+}</code></pre>
+<p>Copiare dal server di sviluppo l&#39;installazione completa dell&#39;istanza. Visto che i sistemi sono identici possiamo copiare anche le Gem già installate:</p>
+<pre class="language-markup"><code>cd /data/nginx-webroot/
+rsync -a --progress -v 209.1.1.24:/data/nginx-webroot/redmine-helpdesk .</code></pre>
+<p>Creare il database locale e copiare un dump esistente:</p>
+<pre class="language-markup"><code>echo "create database redmine_helpdesk;" | mysql
+scp 209.1.1.24:/data/backup/mysql/backup_mysql_SRVCO012_redmine_helpdesk-16.sql.gz /tmp
+zcat /tmp/backup_mysql_SRVCO012_redmine_helpdesk-16.sql.gz | mysql -u redmine -p redmine_helpdesk</code></pre>
+<p>Sistemare le credenziali di accesso al database nel file <em>redmine-helpdesk/config/database.yml</em> e riavviare nginx.</p>
+<pre class="language-markup"><code>systemctl reload nginx</code></pre>
+<h2>Configurazione SMTP esterno</h2>
+<p>Modificare <code>config/configuration.yml</code> e nella zona <a href="http://www.redmine.org/projects/redmine/wiki/EmailConfiguration#Simple-Login-Authentication-default-settings"><em>smtp_settings</em></a>:</p>
+<pre class="language-markup"><code>      delivery_method: :smtp
+      smtp_settings:
+        address: "out.postassl.it"
+        port: 465
+        authentication: :login
+        enable_starttls_auto: false
+        openssl_verify_mode: &#39;none&#39;
+        tls: true
+        user_name: "xx"
+        password: "yy"</code></pre>
+<p> </p>

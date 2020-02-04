@@ -1,0 +1,95 @@
+<p><strong>ATTENZIONE: usare al massimo Ubuntu16 perché le installazioni attuali sono basate su Ruby 2.3!</strong> </p>
+<h1>Server</h1>
+<p>Ci sono quattro server di redmine:</p>
+<ul>
+<li>redtest.sicuritalia.it: server Apache di sviluppo - obsoleto</li>
+<li>redmine.sicuritalia.it: server Apache di produzione - obsoleto</li>
+<li>red2.sicuritalia.it: server nginx di sviluppo</li>
+<li>red.sicuritalia.it: server nginx di produzione</li>
+</ul>
+<p>In generale i server Apache sono <em>vecchi</em> e in via di dismissione. Per la migrazione di un&#39;istanza da apache a nginx vedere <a href="https://apps.ufficyo.com/kb/index.php?action=artikel&amp;cat=80&amp;id=911&amp;artlang=it">qui</a>. Per il passaggio da nginx-dev a nginx-prod vedere <a href="https://apps.ufficyo.com/kb/index.php?action=artikel&amp;cat=80&amp;id=926&amp;artlang=it">qui</a>.</p>
+<h1>Installazione server</h1>
+<p>Anche se non serve installiamo per comodità il pacchetto Ubuntu di Redmine, così da avere tutte le dipendenze.</p>
+<pre class="language-markup"><code>apt -y install mariadb-server apache2 redmine libapache2-mod-passenger ruby2.3-dev build-essential zlib1g-dev libmysqlclient-dev libmysqlclient20
+mysql_secure_installation
+gem install bundler</code></pre>
+<h1>Creazione istanza (nginx)</h1>
+<p><a href="https://www.redmine.org/projects/redmine/wiki/Download">Scaricare</a> il pacchetto di installazione della 3.4.x in /data/nginx-webroot e scompattarlo</p>
+<p>Quindi configurare il sistema con</p>
+<pre class="language-markup"><code>mv redmine-3.4.x redmine-NOMEISTANZA
+chown -R www-data:www-data redmine-NOMEISTANZA
+cd redmine-NOMEISTANZA
+gem install bundler --version &#39;1.17.3&#39;
+sudo -u www-data bundle install --path vendor/cache --without development test
+cp config/database.yml{.example,}
+mysql --defaults-extra-file=/etc/mysql/debian.cnf -e "create database redmine_NOMEISTANZA;"
+RAILS_ENV=production bundle exec rake db:migrate
+sudo -u www-data bundle exec rake generate_secret_token
+mkdir -p tmp tmp/pdf public/plugin_assets
+chown -R www-data:www-data files log tmp public/plugin_assets
+chmod -R 755 files log tmp public/plugin_assets</code></pre>
+<p>Modificare il file config/database.yml adeguando i parametri <em>database</em>, <em>username</em> e <em>password</em> con i valori presi da bitwarden.</p>
+<p>Aprire il file /etc/nginx/sites-enabled/default ed aggiungere un tag <em>location</em> per la nuova istanza:</p>
+<pre class="language-markup"><code>    location /NOMEISTANZA {
+        root /data/nginx-webroot/redmine-NOMEISTANZA/public;
+        passenger_base_uri /NOMEISTANZA;
+        passenger_app_root /data/nginx-webroot/redmine-NOMEISTANZA;
+        passenger_document_root /data/nginx-webroot/redmine-NOMEISTANZA/public;
+    }</code></pre>
+<p>e ricaricare la configurazione con nginx -s reload.</p>
+<h1>Personalizzazioni</h1>
+<p>Per ogni istanza sono state fatte delle personalizzazioni, spesso con l&#39;installazione di plugin o a volte con delle modifiche ai file sorgenti di Redmine. Elenchiamo qui sotto quanto fatto per ogni istanza.</p>
+<h2>Helpdesk</h2>
+<ul>
+<li>Plugin <em>Image Clipboard Paste</em>;</li>
+</ul>
+<h2>Retail</h2>
+<ul>
+<li>Tema <em>Boostmine</em>;</li>
+<li>Plugin <span class="name"><em>Nasconde membersbox da vista progetti</em> (YetOpen)</span>;</li>
+<li>Plugin <em><span class="name">Plugin Lead Retail Evolutive</span></em> (YetOpen);</li>
+<li><span class="name">Plugin <em>Aggiornamento issue su MailUP</em> (YetOpen);<br /></span></li>
+<li><span class="name">Plugin <em>Plugin Issue da Email</em> (YetOpen);</span></li>
+<li><span class="name">Plugin <em>Nasconde la cronologia della issue nel dettaglio segnalazione</em> (YetOpen);</span></li>
+<li><span class="name">Plugin <em>Workflow Image Mapping</em> (Sicuritalia/Bui).</span></li>
+</ul>
+<p> </p>
+<h2>Configurazione ed installazione plugin</h2>
+<h3>Plugin <em><span class="name">Image Clipboard Paste</span></em></h3>
+<p>Per installare il plugin seguire la guida della repo: <a href="https://github.com/thorin/redmine_image_clipboard_paste">https://github.com/thorin/redmine_image_clipboard_paste</a></p>
+<h4>Nel caso di <em>Internal Server Error</em></h4>
+<p>Controllare la versione della gem <em>fileutils</em> con il comando</p>
+<pre class="language-markup"><code>gem list</code></pre>
+<p>Se la versione è diversa dalla 1.1.0 eseguire</p>
+<pre class="language-markup"><code>gem uninstall fileutils
+gem install fileutils -v 1.1.0
+</code></pre>
+<p>Quindi riavviare nginx/apache.</p>
+<p>Controllare anche i permessi della cartella {redmine_root}/files</p>
+<h3>Nascondere i campi <em>core</em> di Redmine</h3>
+<p>Servono due plugin.</p>
+<pre class="language-markup"><code>git clone https://github.com/jbbarth/redmine_base_deface.git plugins/redmine_base_deface
+cd plugins/redmine_base_deface
+sudo -u www-data bundle install
+sudo -u www-data bundle exec rake redmine:plugins NAME=redmine_base_deface</code></pre>
+<p>Quindi quello vero e proprio (serve la revisione specificata perché <a href="https://github.com/nanego/redmine_customize_core_fields/issues/9">compatibile</a> con RM 3.3):</p>
+<pre class="language-markup"><code>git clone https://github.com/nanego/redmine_customize_core_fields.git plugins/redmine_customize_core_fields
+cd plugins/redmine_customize_core_fields
+git reset --hard df2442a 
+sudo -u www-data bundle install
+sudo -u www-data bundle exec rake redmine:plugins NAME=redmine_customize_core_fields</code></pre>
+<p> </p>
+<h2>Sviluppo</h2>
+<h3>Istanza Claim</h3>
+<p>Copiare i file in <em>/var/www/redmine-claim</em> dal server <em>dev</em>  e il database <em>redmine_claim</em>.</p>
+<p>Copiare i file in un ambiente locale in <em>/var/www/html/redmine-claim</em>, ripristinare il database e configurare l&#39;accesso al DB in <em>/var/www/html/redmine-claim/config/database.yml</em>.</p>
+<p>Modificare /etc/apache2/sites-enabled/default aggiungendo</p>
+<pre class="language-markup"><code>&lt;Directory /var/www/html/redmine-claim/public&gt;
+  RailsBaseURI /redmine-claim/public
+  PassengerResolveSymlinksInDocumentRoot on
+&lt;/Directory&gt;</code></pre>
+<p>L&#39;app a questo punto è accessibile su http://localhost/redmine-claim/public</p>
+<p>Per resettare la password di admin, collegarsi al database ed eseguire:</p>
+<pre class="language-markup"><code>UPDATE users SET hashed_password=&#39;353e8061f2befecb6818ba0c034c632fb0bcae1b&#39;, salt=&#39;&#39; WHERE login=&#39;admin&#39;;</code></pre>
+<p>che imposterà la password a <em>password</em>. Dettagli <a href="http://www.redmine.org/projects/redmine/wiki/FAQ#Reset-password-lost-without-admin-redmine-account-but-with-admin-redmine-database-account">qui</a>.</p>
+<p> </p>

@@ -1,0 +1,13 @@
+<p>Da Aleflex gestiscono le promozioni con delle immagini che compaiono come popup sul sito.</p>
+<p>La popup è gestita da del codice JavaScript presente nella index del template, che viene commentato quando la popup non serve e viene scommentato e modificato (impostando il nome del file immagine da visualizzare) quando invece serve. E&#39; anche impostato un cookie in modo da non visualizzare la popup ad ogni caricamento del sito, ma solo una volta ogni 4 ore.</p>
+<p> </p>
+<p>Per aggiornare ed abilitare la popup:</p>
+<ul>
+<li>caricare l&#39;immagine nella root del sito</li>
+<li>modificare il file <em>templates/as002006_16/index.php</em> per abilitare e visualizzare la popup, in particolare:</li>
+<ul>
+<li>scommentare il blocco di istruzioni JavaScript che va circa da riga 71 a riga 84</li>
+<li>modificare il parametro image (riga 75) con il nome della nuova immagine appena caricata, per esempio<br /><em>jQuery.facebox({image:&#39;POPUP_OFFERTE_NATALE14.jpg&#39;}); </em></li>
+<li>salvare e ricaricare il file sullo spazio web</li>
+</ul>
+</ul>
