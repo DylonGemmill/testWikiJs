@@ -1,0 +1,27 @@
+<p>Sul server ms1.3ssrl.eu sono stati installati moduli aggiuntivi a Zimbra OSE che in caso di upgrade vengono sovrascritti.</p>
+<p> </p>
+<h4>Modulo ActiveSync</h4>
+<p>Per i file <em>nginx.conf.web.https.template</em> e <em>nginx.conf.web.https.default.template</em> contenuti nella directory <em>/opt/zimbra/conf/nginx/templates/ </em><span style="font-size: 13px;">cercare il testo </span><em style="font-size: 13px;">Microsoft-Server-ActiveSync</em><span style="font-size: 13px;">. Modificare il blocco tra graffe in modo che risulti come il seguente:</span></p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">    location ^~ /Microsoft-Server-ActiveSync
+    {  
+        proxy_pass http://127.0.0.1:81;
+        proxy_set_header        X-Real-IP       $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+</pre>
+<p> </p>
+<p>Quindi riavviare il componente <em>proxy</em> di Zimbra con il comando</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">su - zimbra -c "zmproxyctl restart"</pre>
+<p> </p>
+<p>Attenzione: non usare http://localhost:81 altrimenti nginx risolve con ipv6 (a volte, non sempre) e sul client compaiono degli errori di spedizione!</p>
+<p> </p>
+<h3>Upgrade del modulo ActiveSync</h3>
+<p>In caso di upgrade di Z-Push per abilitare il supporto ad EAS (Outlook) occorre modificare il file lib/core/zpush.php e rimuovere dall&#39;array $supportedASVersions le prime tre righe, in modo che l&#39;array risultante sia come il seguente:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">static private $supportedASVersions = array(
+                self::ASV_25,
+                self::ASV_12,
+                self::ASV_121,
+                self::ASV_14
+            );</pre>
+<p> </p>
+<p>Rif: <a href="https://sourceforge.net/p/zimbrabackend/discussion/998911/thread/9ae384f6/#df54">sf.net</a></p>

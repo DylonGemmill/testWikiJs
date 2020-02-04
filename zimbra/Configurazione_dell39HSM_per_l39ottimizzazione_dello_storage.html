@@ -1,0 +1,44 @@
+<p>HSM è il software di Zimbra Network Edition utilizzato per l&#39;ottimizzazione dello storage. In pratica si può configurare il sistema per spostare gli elementi (posta, appuntamenti...) più vecchi su uno storage diverso da quello principale dove risiede Zimbra. Questo consente, ad esempio, di risparmiare sui costi dei dischi usando un NAS di rete per memorizzare i dati più vecchi. L&#39;impostazione predefinita è addirittura di 30gg, ma si possono lasciare anche 60gg o più.</p>
+<p>L&#39;impostazione è molto semplice: collegarsi al pannello di admin di Zimbra, andare in Impostazioni <strong>Globali &gt; HSM</strong>. Selezionare gli elementi che si desidera spostare, anche in base all&#39;utilizzo aziendale, ed impostare il tempo limite per lo spostamento.</p>
+<p> </p>
+<p>Fatto questo dobbiamo definire il nuovo volume, che altro non è che una partizione montata sul sistema. Dopo aver predisposto la directory montata (con fstab o autofs) andare in <em>Impostazioni server &gt; nomeserver &gt; Volumi</em> e premere il pulsante <em>Aggiungi</em> sotto l&#39;elenco dei volumi esistenti. I parametri richiesti sono:</p>
+<ul>
+<li>Nome volume: <em>un nome descrittivo</em>;</li>
+<li>Percorso principale volume: <em>path su filesystem di dove è stato montato lo storage secondario</em>;</li>
+<li>Tipo di volume: messaggio secondario;</li>
+</ul>
+<div>Premere OK. Ricaricare la pagina di configurazione del server e sempre nella stessa scheda, area "Assegna volumi correnti", selezionare il nuovo volume inserito come volume secondario corrente.</div>
+<div>Nella parte sottostante è possibile effettuare un&#39;override della configurazione globale sulla tipologia e sulla tempistica degli elementi da spostare.</div>
+<div>Per avviare una sessione di spostamento HSM (magari conviene farlo quando il carico di lavoro del server non è eccessivo, e soprattutto <span style="text-decoration: underline;">non</span> mentre è in esecuzione un backup) dalla stessa pagina premere in alto il pulsante <em>HSM</em> e quindi <em>Inizia sessione HSM</em>. Dalla stessa pagina è possibile vedere lo stato ed il progresso dell&#39;operazione di spostamento.</div>
+<div>Da linea di comando per iniziare una sessione lanciare il comando:</div>
+<div>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">zmhsm -t</pre>
+</div>
+<div>e per vedere lo stato ed il progresso</div>
+<div>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">zmhsm -u</pre>
+</div>
+<p> </p>
+<p>Il parametro CLI che condiziona lo spostamento dei messaggi è il globale (o per server) <em>zimbraHsmPolicy</em>.</p>
+<p>Via CLI è possibile anche impostare diverse regole per lo spostamento, sommandole tra loro. Ad esempio si può dire che per il cestino le mail vengano spostate dopo 24h sullo storage secondario.</p>
+<p> </p>
+<p>Come ultima operazione è necessario schedulare giornalmente lo spostamento dei messaggi. Questa operazione si può fare solo da linea di comando. Da utente <em>zimbra</em> esegurie:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">crontab -e</pre>
+<p>ed aggiungere in fondo al file, dopo ZIMBRAEND, queste righe:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; "># HSM
+0 6 * * * /opt/zimbra/bin/zmhsm -t</pre>
+<p> </p>
+<p>Rif:</p>
+<p><a href="http://wiki.zimbra.com/wiki/HSM">http://wiki.zimbra.com/wiki/HSM</a></p>
+<p><a href="http://wiki.zimbra.com/wiki/Ajcody-HSM-Notes">http://wiki.zimbra.com/wiki/Ajcody-HSM-Notes</a></p>
+<p> </p>
+<p> </p>
+<h3>Rimozione di HSM</h3>
+<p>La rimozione dell&#39;uso di HSM non è previsto. <a href="http://www.zimbra.com/forums/administrators/15084-revert-hsm-back-primary-volume.html#post264472">Sul forum</a> ci sono delle istruzioni manuali per spostare i blob da un volume all&#39;altro (quindi dal secondario al primario). Prima di tutto verificare che HSM non sia più in cron, dopodiché fare un elenco dei volumu con il comando</p>
+<div class="bbcode_container">
+<pre class="bbcode_code">zmvolume -l</pre>
+</div>
+<p><span>In questo esempio vengono spostati tutti i blob da tutte le caselle di posta create dopo il 1/1/1970 dal volume 3 al volume 1</span></p>
+<div class="bbcode_container">
+<pre class="bbcode_code">zmsoap -v -z MoveBlobsRequest @types=message @sourceVolumeIds=3 @destVolumeId=1 query=&#39;is:"anywhere" after:"1/1/1970"&#39;</pre>
+</div>

@@ -1,0 +1,9 @@
+<p>Gli UPS in oggetto non essendo APC non hanno lo stesso protocollo USB/Seriale. Per fortuna però implementano l&#39;SNMP ed il protocollo standard per gli UPS RFC1628.</p>
+<p> </p>
+<p>Dopo essersi assicurati che sia abilitato nella configurazione dell&#39;UPS, installare sull&#39;host che si desidera monitorare il demone apcupsd e configurare con questi parametri:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">UPSCABLE smart
+UPSTYPE snmp
+DEVICE IP_UPS:161:RFC:public
+</pre>
+<p> </p>
+<p>sostituendo IP_UPS con l&#39;indirizzo IP dell&#39;UPS snmp da monitorare.</p>

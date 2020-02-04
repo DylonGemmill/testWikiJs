@@ -1,0 +1,145 @@
+<h3>Indice generale:</h3>
+<ul>
+<li><a href="https://apps.ufficyo.com/kb/?action=artikel&amp;cat=42&amp;id=919&amp;artlang=it#ruoli">Ruoli</a></li>
+<li><a href="https://apps.ufficyo.com/kb/?action=artikel&amp;cat=42&amp;id=919&amp;artlang=it#gGitLab">Gestione delle attività in GitLab</a></li>
+<li><a href="https://apps.ufficyo.com/kb/?action=artikel&amp;cat=42&amp;id=919&amp;artlang=it#gProgetto">Gestione delle attività del progetto e rendicontazione tempi</a></li>
+</ul>
+<h2><a name="ruoli"></a>Ruoli</h2>
+<ul>
+<li>Capo progetto</li>
+<li>Sviluppatore</li>
+<li>Responsabile fatturazione</li>
+</ul>
+<h2><a name="gGitLab"></a>Gestione delle attività in GitLab</h2>
+<p>Per gestire lo sviluppo vero e <strong>proprio delle attività e la ripartizione di queste tra gli sviluppatori</strong> vengono utilizzate le issue di GitLab.</p>
+<p>Nel caso di progetti che coinvolgono più clienti verrà impiegata una label per ogni cliente, in modo da distinguere l&#39;origine della richiesta. Ad esempio &#39;Giacomel&#39; e &#39;Mandolini&#39;.</p>
+<p>Per tenere traccia di quando la funzionalità è stata richiesta da parte del cliente verrà applicata una label del tipo &#39;[mezzo richiesta] [data richiesta nel formato yyyy.mm.dd]&#39;, come ad esempio &#39;email 2018.08.30&#39; o &#39;riunione 2018.08.27&#39;.</p>
+<p>Label gestione flusso di lavoro:</p>
+<ul>
+<li>to do: funzionalità pronta per essere sviluppata</li>
+<li>doing: sviluppo in corso funzionalità</li>
+<li>discutere internamente</li>
+<li>pubblicare produzione: lo sviluppo dell&#39;attività è stato completato e dev&#39;essere rilasciato in produzione</li>
+</ul>
+<p>Label priorità:</p>
+<ul>
+<li>pri:immediata</li>
+<li>pri:alta</li>
+<li>pri:bassa</li>
+</ul>
+<p>Altre label utili:</p>
+<ul>
+<li>in analisi: funzionalità ancora in fase di analisi</li>
+<li>sospesa: sviluppo sospeso per motivo specificato nei commenti</li>
+<li>servono info: risulta necessario chiedere ulteriori chiarimenti dal cliente</li>
+<li>attesa info: si sta aspettando una risposta dal cliente</li>
+<li>proporre cliente: si tratta di un idea interna da discutere con il cliente</li>
+<li>label rappresentante un eventuale sotto progetto. Ad esempio per il progetto GestYOcar esiste la label ODL per identificare le attività riguardanti questo sotto progetto.</li>
+</ul>
+<p><strong>Flusso di lavoro</strong></p>
+<ol>
+<li>Creazione della issue in GitLab con eventuale indicazione della label cliente e della label richiesta</li>
+<li>Definizione del tempo stimato e assegnazione allo sviluppatore con applicazione label &#39;to do&#39;</li>
+<li>Inizio lavoro sviluppatore con applicazione label &#39;doing&#39;</li>
+<li>Conclusione lavoro sviluppatore con applicazione label &#39;pubblicare produzione&#39;</li>
+<li>Verifica da parte del capo progetto:
+<ol>
+<li>Problemi: rimozione label &#39;pubblicare produzione&#39;, applicazione label &#39;to do&#39; con commento sulle problematiche riscontrate. Si riprende dal punto 3.</li>
+<li>Ok: pubblicazione in produzione e rimozione label &#39;pubblicare produzione&#39;</li>
+</ol>
+</li>
+</ol>
+<p>Se non esiste una label necessaria questa andrà creata</p>
+<p>Per indicare la settimana in cui è programmato lo sviluppo di una issue sarà assegnata una milestone del tipo &#39;Sett. [nr. settimana&#39;. Se la scadenza dovesse essere a metà settimana o un giorno specifico verrà specificato l&#39;attributo &#39;Due date&#39;</p>
+<p>Per passare le issue da uno stato all&#39;altro verrà utilizzata la vista Board messa a disposizione da GitLab. L&#39;ordine delle attività nella colonna &#39;to do&#39; sarà rilevante la priorità con la quale lo sviluppatore dovrà svolgere le issue.</p>
+<h2><a name="gProgetto"></a>Gestione delle attività del progetto e rendicontazione tempi</h2>
+<p>Lo strumento attualmente utilizzato è FengOffice.</p>
+<p>Ogni cliente viene rappresentato da un progetto con il nome del cliente stesso.<br />Se ha un contratto di assistenza avrà il sotto progetto &#39;Assistenza yyyy (scad yyyy.mm.dd)&#39;. In questo andranno tutte le attività che rientrano nel contratto di assistenza.</p>
+<p>Ogni progetto sarà suddiviso nei seguenti sotto-progetti:</p>
+<ul>
+<li><strong>Amministrazione:</strong> attivita’ svolte dal commerciale</li>
+<li><strong>Analisi:</strong> attività che riguardano
+<ul>
+<li>riunioni di definizione specifiche con il cliente</li>
+<li>riunioni interne di analisi delle specifiche</li>
+<li>analisi vera e propria e realizzazione di progetti</li>
+</ul>
+</li>
+<li><strong>Gestione progetto:</strong> attività che riguardano
+<ul>
+<li>gestione delle risorse, pianificazione e assegnazione delle attività</li>
+<li>controllo di quanto sviluppato</li>
+<li>comunicazioni con il cliente</li>
+<li>verifica rispetto delle tempistiche di consegna delle singole attività</li>
+</ul>
+</li>
+<li><strong>Sviluppo:</strong> attività che riguardano
+<ul>
+<li>sviluppo delle funzionalità</li>
+<li>attivita’ sistemistica (comprese tutte le attività necessarie per installazione di eventuali server)</li>
+<li>messa in produzione</li>
+<li>attività di formazione</li>
+<li>documentazione</li>
+<li>test funzionali</li>
+<li>test con il cliente</li>
+</ul>
+</li>
+<li><strong>Help:</strong> attività che riguardano:
+<ul>
+<li>richieste di assistenza non coperte da contratto</li>
+</ul>
+</li>
+</ul>
+<p><strong>Gestione creazione attività</strong></p>
+<ul>
+<li>Se il capo progetto non ha creato le singolo attività ognuno provvederà a creare le proprie in feng</li>
+<li>Le attività che rientrano nei sotto progetti Analisi, Sviluppo, Help andranno assegnate anche al progetto di fatturazione. Le attività che rientrano nel sotto progetto Gestione progetto generalmente non vengono fatturate al cliente.
+<ul>
+<li>Se come progetto di fatturazione è presente un&#39;offerta il capo progetto dovrà fare attenzione a segnalare le attività che non rientrano in questa e assegnarle a un progetto di fatturazione a ore.</li>
+</ul>
+</li>
+<li>Se uno dei sotto progetti descritti manca chiedere al capo progetto se si hanno i permessi di visualizzazione, se invece questo manca crearlo</li>
+<li>Nel creare attività collegate a issue di GitLab il nome sarà &#39;#[nr. Issue] [nome issue]&#39; e verrà riportato il tempo stimato sulla issue, queste tendenzialmente andranno nel sotto progetto &#39;Sviluppo&#39;
+<ul>
+<li>Se la issue ha una label che identifica un sotto progetto anche in feng ci sarà un sotto progetto uguale, il quale a sua volta sarà suddiviso nella struttura descritta.</li>
+</ul>
+</li>
+<li>I commenti dei tempi lavorati devono riportare cosa di rilevante è stato fatto per il cliente in quel tempo. Poi se è un bug o un tecnicismo va bene anche il commento tecnico, ma sempre facendo riferimento alla problematica risolta per il cliente.</li>
+<li>[opzionale] configurazione della mail in Feng per creare un’attività direttamente da un’email che rimane collegata</li>
+</ul>
+<p><strong>Gestione fatturazione</strong></p>
+<ol>
+<li>Per gestire la fatturazione al cliente di attività extra o richieste successive, il responsabile fatturazione crea uno o più progetti tra i seguenti:
+<ol>
+<li>&#39;Fattura da emettere&#39;</li>
+<li>&#39;Ft. nr. XXX del yyyy.mm.dd ZZZh&#39; nel caso il cliente abbia preventivamente acquistato un pacchetto ore</li>
+<li>&#39;Ordine nr. XXX del yyyy.mm.dd&#39; se il progetto viene sviluppato in seguito a un&#39;offerta complessiva.</li>
+<li>Assistenza YYYY (scad. yyyy.mm.dd) (se coperta da assistenza annuale)</li>
+</ol>
+</li>
+<li>Quando il monte ore di un pacchetto viene esaurito il relativo progetto verra’ archiviato. Nel caso vengano fatturate le attività del progetto &#39;Fattura da emettere&#39; questo sarà rinominato come &#39;Ft. nr. XXX del yyy.mm.dd&#39; e archiviato. Si rifà il punto 1.</li>
+</ol>
+<p><u>Importante:</u></p>
+<ul>
+<li>per non dimenticarsi di assegnare il progetto fatturazione conviene creare le attività passando tramite il progetto stesso e poi nella vista di inserimento dati si seleziona il progetto specifico;</li>
+<li>le attività devono essere completate dal progetto di fatturazione assegnato.</li>
+</ul>
+<p><strong>Gestione label Feng speciali</strong></p>
+<ul>
+<li>‘fuori-stima-iniziale’ - etichetta da applicare per attività di progetti fatturati a corpo (Gestione fatturazione punto 3) e che devono essere eseguite ma non sono state prese in considerazione nella stima iniziale per cause imputabili a YetOpen</li>
+<li>‘nuove-richieste’ - etichetta da applicare per attività di progetti fatturati a corpo (Gestione fatturazione punto 3) e che sono relative a nuove richieste fatte dal cliente</li>
+<li>‘problema-esterno’ - etichetta da applicare per attività di progetti fatturati a corpo (Gestione fatturazione punto 3) e che sono relative a problemi incontrati durante i lavori per cause non imputabili a YetOpen</li>
+</ul>
+<p><strong>Gestione pianificazione</strong></p>
+<p>Per tutte le attività che vengono pianificate bisogna valorizzare l’attributo ‘Data fine’ e il campo ‘Tempo stimato’, il valore dato a ‘Data Fine’ corrisponderà al giorno in cui si intende completare l’attività. In questo modo raggruppando all’interno del progetto per ‘Data scadenza’ (sinonimo di ‘Data fine’) è possibile avere una visione globale delle attività da svolgere ogni giorno e rendersi conto se, rispetto al giorno attuale, l’avanzamento rispetta la pianificazione. Andando nella vista ‘Calendario’ le attività risulteranno già suddivise per giorno.</p>
+<p>Tutte le attività inerenti a raggiungere uno scopo intermedio nello svolgimento del progetto dovranno essere raggruppate sotto un traguardo. Raggruppando all’interno del progetto per traguardo sarà possibile tenere sotto controllo l’andamento di ogni sua parte.</p>
+<p><strong>Valutazioni e report</strong></p>
+<p>In fase di conclusione il capoprogetto potrà valutare come questo è stato svolto, generando un report con il raggruppamento per etichetta sarà possibile fare una valutazione di quanto tempo è stato impiegato e in quale tipo di attività.</p>
+<p>Durante lo svolgimento il capo progetto deve controllare la presenza di attività che rientrino in queste categorie e valutare come procedere.</p>
+<p>Alla fine dei lavori, o se necessario anche durante, il capo progetto ha il compito di analizzare e presentare le attività etichettate in questo modo al responsabile fatturazione, in modo che questi possa decidere se il costo per lo svolgimento deve rientrare o meno nell’offerta iniziale.</p>
+<p><strong>Gettone di ingresso</strong></p>
+<p>Il discorso del "gettone di ingresso" nel progetto e&#39; semplicemente per dire che il cliente che accede al progetto, paga questo gettone per avere il software cosi&#39; com&#39;è stato sviluppato fino a quel momento.</p>
+<p>Con quel budget noi andiamo a sviluppare migliorie e/o modifiche necessarie per l&#39;ingresso del nuovo soggetto nel progetto.</p>
+<p>Quando ‘_cliente2_’ richiede l&#39;installazione di un applicativo ‘_gestionale_’ precedentemente sviluppato per ‘_cliente1_’ (ad esempio Domus e Luna per l&#39;applicativo alloggyo precedentemente sviluppato per i Padri Somaschi) viene creato un nuovo progetto ‘_cliente2_’ e sotto i due progetti ‘_gestionale_’ e "Gettone di ingresso" a cui associare sia le attività relative alla personalizzazione delle funzionalità pregresse che eventualmente altre migliorie o refactoring del codice </p>
+<p><code>‘_cliente1_’<br />       ‘_gestionale_’<br />‘_cliente2_’<br />       ‘Gettone di ingresso’ (qui andranno attività relative alla personalizzazione delle funzionalità pregresse che eventualmente altre migliorie o refactoring del codice, "quantita" da concordare con Riccardo) <br />       ‘_gestionale_’ (aggiungendo anche qui le attività che vanno in ‘Gettone di ingresso’)
+</code></p>

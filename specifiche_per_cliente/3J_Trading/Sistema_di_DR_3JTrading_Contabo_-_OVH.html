@@ -1,0 +1,191 @@
+<p>Il sistema è configurato per fornire un livello di Disaster Recovery geografico tra due datacenter, Contabo in Germania ed OVH in Francia.</p>
+<p>I servizi attivi sul sistema sono:</p>
+<ol>
+<li>Zimbra</li>
+<li>MySQL</li>
+<li>Apache (ActiveSync, Nextcloud)</li>
+<li>OpenVPN</li>
+</ol>
+<p>Per sincronizzare i dati tra i due server vengono impiegati diversi sistemi. Per Zimbra usiamo <a href="https://gitlab.com/yetopen/zimbra-live-sync">zimbra-live-sync</a>, per MySQL una replica active/active, per Apache e i file statici unison.</p>
+<p><strong>Per le istruzioni di failover/fallback vedere in fondo alla pagina!</strong></p>
+<h1>Specifiche server</h1>
+<h2>Contabo</h2>
+<p>CPU: 6 core<br />RAM: 24G<br />Disco: 600G<br />Partizionamento: /boot da 1G, / da 585G</p>
+<h2>OVH</h2>
+<p>CPU: 2 core<br />RAM: 8G<br />Disco: 80G + 200G. Di base la VPS ha solo il primo disco, è stato aggiunto dello spazio associato al principale con LVM<br />Partizionamento: / da 20G, /dati da 230G. /opt/zimbra è montata su /dati/zimbra</p>
+<h1>Creazione tunnel con autossh</h1>
+<p>Per sincronizzare MySQL in modo sicuro dobbiamo usare un tunnel ssh. Per averlo in modo permanente usiamo <a href="https://www.everythingcli.org/ssh-tunnelling-for-fun-and-profit-autossh/">autossh</a>.</p>
+<pre class="language-markup"><code>yum install autossh</code></pre>
+<p>Creiamo il file di avvio di systemd /etc/systemd/system/autossh-mysql.service sulla macchina Contabo:</p>
+<pre class="language-markup"><code>[Unit]
+Description=AutoSSH tunnel service MySQL on local port 4066
+After=network.target
+
+[Service]
+Environment="AUTOSSH_GATETIME=0"
+ExecStart=/usr/bin/autossh -M 0 -o "ServerAliveInterval 30" -o "ServerAliveCountMax 3" -NL 4066:localhost:3306 3jtrading-ovh
+
+[Install]
+WantedBy=multi-user.target</code></pre>
+<p>Ed avviamolo, ora ed al boot:</p>
+<pre class="language-markup"><code>systemctl daemon-reload
+systemctl start autossh-mysql
+systemctl enable autossh-mysql</code></pre>
+<p>La stessa identica procedura è da fare su OVH, <strong>modificando il comando di autossh </strong>per usare l&#39;<strong>alias di <em>contabo</em></strong>.</p>
+<h1>Zimbra Live Sync</h1>
+<p>Vedere le istruzioni <a href="https://gitlab.com/yetopen/zimbra-live-sync">sul progetto</a>.</p>
+<h1>MySQL active/active</h1>
+<p>Visto che MySQL è in uso dobbiamo fare un dump bloccando le tabelle per fare il dump.</p>
+<p>Per i comandi sotto bisogna modificare i parametri a seconda della configurazione. Le password di replica devono essere quelle singole dei due server, le porte MySQL quelle determinate sopra con il tunnel autossh.</p>
+<h2>Sul server Contabo</h2>
+<p>Creiamo il file /dati/yetopen/bin/mysql_conf_contabo.cnf con:</p>
+<pre class="language-markup"><code>[mysqld]
+log-bin
+log-basename=mysql-contabo
+server_id=1
+auto-increment-increment=2
+auto-increment-offset=1
+replicate-ignore-db=information_schema
+replicate-ignore-db=performance_schema
+replicate-ignore-db=mysql</code></pre>
+<p>Con questa configurazione diciamo di replicare tutti i database ad eccezione di quelli indicati, che sono quelli di sistema di MySQL.</p>
+<p>Rendiamo effettiva la configurazione aggiuntiva creando un link e riavviando MySQL:</p>
+<pre class="language-markup"><code>ln -s /dati/yetopen/bin/mysql_conf_contabo.cnf /etc/my.cnf.d/
+systemctl restart mariadb</code></pre>
+<p>Per verificare che sia effettiva controlliamo di avere in /var/lib/mysql dei file <em>mysql-contabo-bin*</em>.</p>
+<p>Creiamo l&#39;utente per la replica dalla console di MySQL:</p>
+<pre class="language-markup"><code>GRANT REPLICATION SLAVE ON *.* TO &#39;mastercontabo&#39;@&#39;%&#39;  IDENTIFIED BY &#39;PASSWORD_MASTER_CONTABO&#39;;
+FLUSH PRIVILEGES;
+</code></pre>
+<p>E generiamo il dump. <br /><strong>Attenzione</strong>: siccome la replica funziona replicando i comandi SQL eseguiti sul master, occorre bloccare temporaneamente la scrittura sul database e memorizzare la posizione del binary log, in modo da far sapere allo slave da dove far partire la sua replica. Per questo motivo durante il dump <strong>le scritture sul database devono essere temporaneamente bloccate</strong> (lo fa mysqldump in automatico). <br />Il comando per eseguire il dump è:</p>
+<pre class="language-markup"><code>mysqldump --defaults-extra-file=/dati/yetopen/bin/mysql_backup_credentials.cnf -h 127.0.0.1 --databases nextcloud zabbix_proxy zpush -r dump_mysql_contabo_replica_2018.10.26.sql --master-data --single-transaction</code></pre>
+<p>Per capire il tempo di fermo e valutare quando eseguirlo è possibile lanciare lo stesso comando senza <em>--master-data --single-transaction</em>. <br />È importante la prima delle due opzioni perché scrive automaticamente nel dump i comandi per indicare allo slave da dove far partire la replica.</p>
+<h2>Sul server OVH</h2>
+<p>Ripristiniamo il dump del master:</p>
+<pre class="language-markup"><code>cat dump_mysql_contabo_replica_2018.10.26.sql | mysql -p</code></pre>
+<p>Quindi andiamo a verificare che abbia preso l&#39;impostazione del binlog, ed aggiungiamo le credenziali per attivare la replica:</p>
+<pre class="language-markup"><code>SLAVE STOP;
+CHANGE MASTER TO MASTER_HOST=&#39;127.0.0.1&#39;, MASTER_PORT=4066, MASTER_USER=&#39;mastercontabo&#39;, MASTER_PASSWORD=&#39;PASSWORD_MASTER_CONTABO&#39;;
+SLAVE START;
+SHOW MASTER STATUS \G</code></pre>
+<p>Nell&#39;output del comando dovrebbe vedersi lo stato della replica. Per verificare che la replica dal MASTER sia attiva queste due righe devono essere a <em>Yes</em>:</p>
+<pre class="language-markup"><code>Slave_IO_Running: Yes
+Slave_SQL_Running: Yes</code></pre>
+<p>Creiamo l&#39;utente di replica da OVH verso Contabo con il comando: </p>
+<pre class="language-markup"><code>GRANT REPLICATION SLAVE ON *.* TO &#39;masterovh&#39;@&#39;%&#39;  IDENTIFIED BY &#39;PASSWORD_MASTER_OVH&#39;;
+FLUSH PRIVILEGES;
+</code></pre>
+<p>Partendo dal presupposto che non faremo modifiche su OVH per il momento, prendiamo nota della posizione del binary log <em>locale</em>:</p>
+<pre class="language-markup"><code>show master status;
++----------------------+----------+--------------+------------------+
+| File                 | Position | Binlog_Do_DB | Binlog_Ignore_DB |
++----------------------+----------+--------------+------------------+
+| mysql-ovh-bin.000001 |      245 |              |                  |
++----------------------+----------+--------------+------------------+
+1 row in set (0.00 sec)</code></pre>
+<h2>Sul server Contabo (seconda fase)</h2>
+<p>Impostiamo la replica da OVH con il comando:</p>
+<pre class="language-markup"><code>CHANGE MASTER TO MASTER_HOST = &#39;127.0.0.1&#39;, MASTER_PORT=4066, MASTER_USER = &#39;masterovh&#39;, MASTER_PASSWORD = &#39;PASSWORD_MASTER_OVH&#39;, MASTER_LOG_FILE = &#39;mysql-ovh-bin.000001&#39;, MASTER_LOG_POS = 245;
+slave start;
+show slave status \G</code></pre>
+<p>Come per OVH dovremmo vedere le due righe di <em>Slave</em> <em>Running</em> a Yes.</p>
+<p>A questo punto la replica bidirezionale di MySQL è configurata.</p>
+<p>Rif. <a href="https://www.vpsserver.com/community/tutorials/9/setup-a-master-to-master-replication-between-two-mariadb-servers/" target="_blank" rel="noopener">vpsserver.com</a></p>
+<h1>Unison</h1>
+<h2>Installazione</h2>
+<p>Usando <a href="https://snapdev.net/2015/07/31/install-run-sync-unison-on-centos-7/">questa guida</a> installiamo l&#39;ultima versione di Unison:</p>
+<pre class="language-markup"><code>yum install ocaml ocaml-camlp4-devel ctags ctags-etags wget
+mkdir /dati/yetopen/src &amp;&amp; cd /dati/yetopen/src
+wget https://www.seas.upenn.edu/~bcpierce/unison//download/releases/stable/unison-2.48.4.tar.gz
+tar xvzf unison-2.48.4.tar.gz
+cd src
+make
+cp unison unison-fsmonitor /usr/local/sbin</code></pre>
+<p>Creiamo il file ~/.unison/yetopen.prf con questo contenuto:</p>
+<pre class="language-markup"><code># Unison preferences file - profilo YetOpen
+
+# Directory principale - sotto si definiscono le dir da sincronizzare
+root = /dati
+root = ssh://3jtrading-ovh//dati
+
+# Directory da sincronizzare all&#39;interno di "root"
+path = yetopen
+path = nextcloud_data
+
+auto=true
+batch=true
+confirmbigdel=true
+group=true
+owner=true
+prefer=newer
+silent=true
+times=true
+repeat = watch
+logfile = /var/log/unison-yetopen.log
+
+#ignore = Name {.mypasswords.kdbx.lock}</code></pre>
+<p>In questo modo possiamo lanciare unison specificando un nome profilo con le opzioni già valorizzate. Dovremo già aver configurato ssh per usare la chiave invece della password, e l&#39;alias <em>3jtrading-ovh</em>. Con la configurazione sopra unison istanzia un demone di <em>filesystem watch</em>, quindi le modifiche vengono propagate praticamente immediatamente sul server remoto.</p>
+<p>Per avviare unison al boot come servizio di systemd creiamo il file /etc/systemd/system/unison@.service con questo contenuto:</p>
+<pre class="language-markup"><code># /etc/systemd/system/unison@.service
+# Starts unison with the .prf-config of your choice
+
+[Unit]
+Description=Unison File Synchronization
+After=network.target
+
+[Service]
+Type=simple
+Environment="PATH=/usr/local/bin:/usr/bin"
+# Change to home directory of your user in which the .unison/*.prf files are located
+Environment="HOME=/root"
+ExecStart=/usr/local/bin/unison %i
+Restart=always
+RestartSec=7
+
+[Install]
+WantedBy=default.target
+</code></pre>
+<p>Modificare se necessaio il path dell&#39;eseguibile e la home dell&#39;utente con cui deve essere attivato il servizio.</p>
+<p>Unison lavora bidirezionalmente ma deve essere eseguito solo da uno dei due nodi. Per avviarlo al boot sul nodo di Contabo:</p>
+<pre class="language-markup"><code>systemctl reload-daemon
+systemctl enable unison@yetopen
+systemctl start unison@yetopen
+</code></pre>
+<p> Per ruotare i log creiamo il file /etc/logrotate.d/unison-yetopen con questo contenuto:</p>
+<pre class="language-markup"><code>/var/log/unison-yetopen.log {
+    notifempty
+    daily
+    rotate 180
+    dateext
+    dateformat .%Y-%m-%d
+    missingok
+    compress
+    postrotate
+        systemctl restart unison@yetopen
+    endscript
+}</code></pre>
+<p> </p>
+<h1>Procedura di failover</h1>
+<p>In caso il server Contabo (master) non sia raggiungibile o funzionante per avviare i servizi su OVH:</p>
+<ol>
+<li>spostare il DNS di posta.3jtrading.ch verso 51.75.122.209</li>
+<li>fermare il servizio di sync con <br />systemctl stop zimbra-livesyncd</li>
+<li>avviare zimbra con <br />/etc/init.d/zimbra start</li>
+</ol>
+<p>Gli altri servizi dovrebbero essere già attivi e sincronizzati.</p>
+<h2>Procedura di fallback</h2>
+<p>Quando il server Contabo torna online e si vuole far tornare primario:</p>
+<ol>
+<li>fermare Zimbra: è ad avvio automatico, sarebbe meglio addirittura non farlo partire del tutto</li>
+<li>avviare la sincronizzazione con <br />systemctl start zimbra-livesync<br />ed attendere che abbia replicato tutte le modifiche di LDAP e replicato i redolog. Controllare /opt/zimbra/live_sync/log/live_sync.log lo stato</li>
+<li>verificare lo stato della sincronizzazione di MySQL con il comando <em>show slave status \G</em>: i due flag di <em>running </em>dello slave devono essere a <em>Yes</em>, ed aspettare che <em>Seconds behind master</em> arrivi a 0</li>
+<li>verificare in /var/log/unison-etc-yetopen.log e /var/log/unison-yetopen.log che sia stata fatta la sincronizzazione e non ci siano stati errori</li>
+</ol>
+<p>Quando tutto è stato verificato e il server è allineato</p>
+<ol>
+<li>spostare i DNS verso Contabo 93.104.213.140</li>
+<li>fermare zimbra sul server OVH</li>
+<li>fermare live sync su Contabo<br />systemctl stop zimbra-livesync</li>
+<li>avviare zimbra<br />/etc/init.d/zimbra start</li>
+</ol>
+<p> </p>

@@ -1,0 +1,11 @@
+<p>Se si usano i child account o i multi account quando si spedisce come indirizzo secondario nelle intestazioni viene comunque messo il Return-Path con l&#39;indirizzo <em>reale</em> dell&#39;account di login in Zimbra.</p>
+<p>Per nascondere completamente questa informazione eseguire:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">zmprov mc default zimbraSmtpRestrictEnvelopeFrom FALSE
+zmprov fc all</pre>
+<p> </p>
+<p>in questo modo tutti gli utenti del CoS <em>default</em> saranno corretti.</p>
+<p>Se si desidera modificare un solo utente:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">zmprov ma user@domain zimbraSmtpRestrictEnvelopeFrom FALSE</pre>
+<p> </p>
+<p> </p>
+<p>Rif:  <span style="font-size: 13px;"><a href="http://bugzilla.zimbra.com/show_bug.cgi?id=47518">http://bugzilla.zimbra.com/show_bug.cgi?id=47518</a></span></p>

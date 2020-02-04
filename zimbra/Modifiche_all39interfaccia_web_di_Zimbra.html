@@ -1,0 +1,23 @@
+<p><code>E&#39; possibile effettuare modifiche all&#39;interfaccia web di Zimbra, sia di aspetto che di contenuto, modificando i file JavaScript che compongono le pagine.</code></p>
+<p>Il seguente esempio serve per modificare il comportamento del campo "Invia questo messaggio per conto di" (Send on behalf) che compare quando ci sono pi&ugrave; identit&agrave; configurate per un account.</p>
+<p>Come prima cosa effettuo una ricerca del messaggio nei file di traduzione:</p>
+<samp>grep "Invia questo messaggio per conto" /opt/zimbra/jetty/webapps/zimbra/WEB-INF/classes/messages</samp>
+<p>ed ottengo che il codice della stringa &egrave; <strong><em>sendObo</em></strong>.</p>
+<p>Poi cerco il codice stringa nelle pagine JS:</p>
+<p><code>grep -r sendObo /opt/zimbra/jetty/webapps/zimbra/js</code></p>
+<p>Ottengo quindi i tre file che contengono il testo. In questo caso, quindi, modifico la funzione di creazione <strong><em>_setObo</em><span style="font-weight: normal;">&nbsp;e metto </span><em>false</em></strong>&nbsp;al parametro <strong><em>this._oboCheckbox.checked</em></strong>.&nbsp;</p>
+<p><em>(non mi ricordo se va riavviato il mailbox server, </em>zmmailboxdctl restart<em>)</em></p>
+<p>Zimbra non usa solo i file JS per creare l&#39;interfaccia, ma i <strong><em>.zgz</em></strong>, che sono file JS compressi. Senza effettuare ogni volta la compressione, si pu&ograve; lavorare in modalit&agrave; <em>debug</em>, cos&igrave; da forzare il caricamento dei file .js. Aprire quindi Zimbra con l&#39;opzione <strong>?dev=1</strong> in fondo:</p>
+<p><strong>http://myserver/zimbra/?dev=1</strong></p>
+<p>Una volta ottenuto il risultato cercato, per fare in modo che le modifiche abbiano effetto anche sull&#39;interfaccia standard devo creare i suddetti .zgz. Per farlo (da eseguire come utente <em>zimbra</em>):</p>
+<p>
+<code>cp file.js file_new.js</code></p>
+<p>
+<code>gzip -S .zgz file.js</code></p>
+<p>
+<code>mv file_new.js file.js</code></p>
+<p>
+<code>chown zimbra:zimbra *</code></p>
+<p>
+<code>zmmailboxd restart</code></p>
+<p>All&#39;apertura dell&#39;interfaccia, assicurarsi di aver svuotato la cache del browser, premendo il tasto <em>Reload</em>.</p>

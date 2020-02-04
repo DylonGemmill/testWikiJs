@@ -1,0 +1,21 @@
+<p>La schedulazione dei backup di Zimbra di default &egrave; quella di effettuare un backup completo tutti i sabati alle ore 01:00, ed un backup incrementale tutti gli altri giorni, allo stesso orario. I backup pi&ugrave; vecchi di 15gg vengono cancellati.</p>
+<p>I backup sono schedulati con <em>cron</em>, difatti la lista &egrave; simile a quella di cron:</p>
+<p>&nbsp;</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">$ zmschedulebackup -q
+Current Schedule:
+
+        f 0 1 * * 6 -a all
+        i 0 1 * * 0-5 
+        d 15d 0 0 * * * 
+</pre>
+<p>&nbsp;</p>
+<p>La riga <strong>f&nbsp;</strong>indica un backup <strong>full</strong>, <strong>i</strong>&nbsp;per <strong>incrementale</strong>, <strong>d</strong>&nbsp;per <strong>delete</strong>.</p>
+<p>Per modificare la schedulazione, lanciare il comando in questo modo:</p>
+<p>&nbsp;</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">zmschedulebackup --mail-report -R f "40 21 * * 6" i "40 21 * * 0-5" d 15d "0 0 * * *"</pre>
+<p>&nbsp;</p>
+<p>In questo modo i backup verranno eseguiti alle 21:40, e le cancellazioni a mezzanotte.</p>
+<p>Attenzione, con l&#39;opzione -R viene riscritta tutta la programmazione, quindi vanno specificate tutte le opzioni.</p>
+<p>Per ripristinare la schedulazione di default, lanciare il comando con l&#39;opzione <strong>-D</strong>.</p>
+<p>&nbsp;</p>
+<p><a href="http://wiki.zimbra.com/wiki/CLI_zmschedulebackup_Network_Edition_only">http://wiki.zimbra.com/wiki/CLI_zmschedulebackup_Network_Edition_only</a></p>

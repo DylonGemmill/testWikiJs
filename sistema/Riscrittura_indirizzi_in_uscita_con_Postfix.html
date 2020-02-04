@@ -1,0 +1,8 @@
+<p>Creare il file /etc/postfix/generic con:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">@dominio.locale @dominio-pubblico.com</pre>
+<p>quindi in /etc/postfix/main.cf aggiungere la riga</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">smtp_generic_maps = hash:/etc/postfix/generic</pre>
+<p>infine eseguire questi comandi:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">postmap /etc/postfix/generic
+postfix reload</pre>
+<p> </p>

@@ -1,0 +1,36 @@
+<p>Zimbra può consegnare la posta anche ad un relay esterno con autenticazione (Aruba).</p>
+<p>Per Zimbra8.5+:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">echo smtp.esterno.it utente:pass &gt; /opt/zimbra/conf/relay_password 
+postmap /opt/zimbra/conf/relay_password 
+zmprov ms $(zmhostname) zimbraMtaSmtpSaslPasswordMaps lmdb:/opt/zimbra/conf/relay_password
+zmprov ms $(zmhostname) zimbraMtaSmtpSaslAuthEnable yes
+zmprov ms $(zmhostname) zimbraMtaSmtpCnameOverridesServername no
+zmprov ms $(zmhostname) zimbraMtaSmtpTlsSecurityLevel may
+zmprov ms $(zmhostname) zimbraMtaSmtpSaslSecurityOptions noanonymous
+zmprov ms $(zmhostname) zimbraMtaRelayHost smtp.esterno.it</pre>
+<p> </p>
+<p>Per Zimbra8:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">echo smtp.esterno.it utente:pass &gt; /opt/zimbra/conf/relay_password 
+postmap hash:/opt/zimbra/conf/relay_password 
+zmlocalconfig -e postfix_smtp_sasl_password_maps=hash:/opt/zimbra/conf/relay_password
+zmlocalconfig -e postfix_smtp_sasl_auth_enable=yes
+zmlocalconfig -e postfix_smtp_cname_overrides_servername=no
+zmlocalconfig -e postfix_smtp_sasl_security_options=noanonymous
+zmprov ms server.zimbra.it zimbraMtaRelayHost smtp.esterno.it:25 
+postfix reload</pre>
+<p> </p>
+<p>Ecco i comandi, da eseguire come utente zimbra, per Zimbra &lt; 8.x </p>
+<p><strong>ATTENZIONE la configurazione viene persa in caso di aggiornamento di Zimbra &lt; 8!</strong></p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">echo smtp.esterno.it utente:pass &gt; /opt/zimbra/conf/relay_password
+postmap hash:/opt/zimbra/conf/relay_password
+postconf -e smtp_sasl_password_maps=hash:/opt/zimbra/conf/relay_password
+postconf -e smtp_sasl_auth_enable=yes
+postconf -e smtp_cname_overrides_servername=no
+postconf -e smtp_sasl_security_options=noanonymous
+zmprov ms server.zimbra.it zimbraMtaRelayHost smtp.esterno.it:25
+postfix reload</pre>
+<p> </p>
+<p> </p>
+<p> </p>
+<p> </p>
+<p>rif: <a href="http://wiki.zimbra.com/wiki/Outgoing_SMTP_Authentication">http://wiki.zimbra.com/wiki/Outgoing_SMTP_Authentication</a></p>

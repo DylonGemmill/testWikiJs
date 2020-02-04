@@ -1,0 +1,8 @@
+<p>In fase di installazione dopo la selezione del mirror, che dovrà essere quello italiano, alla richiesta del proxy inserire l&#39;url</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">http://10.22.22.190:3142</pre>
+<p> </p>
+<p> </p>
+<p> </p>
+<p>Su una distribuzione già installata eseguire questo comando:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">echo &#39;Acquire::http { Proxy "http://10.22.22.190:3142" ;};&#39; &gt; /etc/apt/apt.conf.d/00proxy.conf</pre>
+<p> </p>

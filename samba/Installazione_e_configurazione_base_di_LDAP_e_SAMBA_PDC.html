@@ -1,0 +1,484 @@
+<h2>Configurazione di LDAP</h2>
+<p> </p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">apt-get install slapd ldap-utils db4.8-util
+dpkg-reconfigure slapd </pre>
+<p>In alcune versioni di slapd viene già chiesta la password di amministrazione.</p>
+<p>Alle domande rispondiamo come di seguito:</p>
+<ul>
+<li><span style="font-size: 13px;">Omettere la configurazione del server OpenLDAP: No</span></li>
+<li>Dominio: yetopen.it</li>
+<li>Nome organizzazione: yetopen</li>
+<li>Password dell&#39;amministratore: ripetere pure quella inserita durante l&#39;installazione</li>
+<li>Tipo di database: HDB</li>
+<li>Eliminare il database in caso di rimozione di slapd: No</li>
+<li>Spostare il vecchio database? Sì (creato durante l&#39;installazione prima del reconfigure)</li>
+<li>Abilitare il protocollo LDAPv2? No</li>
+</ul>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">ldapadd -Y EXTERNAL -H ldapi:/// -f /etc/ldap/schema/cosine.ldif 
+ldapadd -Y EXTERNAL -H ldapi:/// -f /etc/ldap/schema/inetorgperson.ldif 
+ldapadd -Y EXTERNAL -H ldapi:/// -f /etc/ldap/schema/nis.ldif 
+</pre>
+<p> </p>
+<p>Solo per Ubuntu10 (che non chiede la configurazione della password e del db nel reconfigure), creare un file /tmp/firstconfig.ldif con questo contenuto, sostituendo la password ed il dominio:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; "># Load dynamic backend modules
+dn: cn=module{0},cn=config
+objectClass: olcModuleList
+cn: module
+olcModulepath: /usr/lib/ldap
+olcModuleload: {0}back_hdb
+
+
+# Create the database
+dn: olcDatabase={1}hdb,cn=config
+objectClass: olcDatabaseConfig
+objectClass: olcHdbConfig
+olcDatabase: {1}hdb
+olcDbDirectory: /var/lib/ldap
+olcSuffix: dc=YETOPEN,dc=IT
+olcRootDN: cn=admin,dc=YETOPEN,dc=IT
+olcRootPW: PASSWORD
+olcDbConfig: {0}set_cachesize 0 2097152 0
+olcDbConfig: {1}set_lk_max_objects 1500
+olcDbConfig: {2}set_lk_max_locks 1500
+olcDbConfig: {3}set_lk_max_lockers 1500
+olcLastMod: TRUE
+olcDbCheckpoint: 512 30
+olcDbIndex: uid eq,pres,sub
+olcDbIndex: cn,sn,mail pres,eq,</pre>
+<p>quindi eseguire:<span style="font-size: 13px;"> </span></p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">ldapadd -Y EXTERNAL -H ldapi:/// -f /tmp/config.ldif</pre>
+<p>Fine parte per Ubuntu 10.</p>
+<p> </p>
+<p>Eseguiamo questo comando, sostituendo PASSWD con la password scelta per l&#39;amministrazione del db LDAP:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">slappasswd -h {MD5} -s PASSWD</pre>
+<p>tornerà una stringa iniziante per {MD5}, che andremo ad usare qui sotto.</p>
+<p>Creare un file /tmp/acl2.ldif con questo contenuto:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">dn: cn=config
+changetype: modify
+
+dn: olcDatabase={0}config,cn=config
+changetype: modify
+add: olcRootDN
+olcRootDN: cn=admin,cn=config
+
+dn: olcDatabase={0}config,cn=config
+changetype: modify
+add: olcRootPW
+olcRootPW: {MD5}STRINGADASOSTITUIRE
+
+dn: olcDatabase={0}config,cn=config
+changetype: modify
+delete: olcAccess
+</pre>
+<p>ed aggiungerlo al database con il comando:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">ldapadd -Y EXTERNAL -H ldapi:/// -f /tmp/acl2.ldif</pre>
+<p> </p>
+<p><span style="font-size: 13px;">Creare il file /tmp/indexes.ldif con questo contenuto:</span></p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">dn: olcDatabase={1}hdb,cn=config
+changetype: modify
+replace: olcDbIndex
+olcDbIndex: uid,uidNumber,gidNumber,memberUid,uniqueMember,objectClass,cn,displayName,sambaSID eq
+</pre>
+<p>ed eseguire </p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">ldapmodify -x -D cn=admin,cn=config -W -f /tmp/indexes.ldif</pre>
+<p> </p>
+<p> </p>
+<p>Ora dobbiamo aggiornare la password nel database. Eseguiamo questo comando, sostituendo PASSWD con la password scelta per l&#39;amministrazione del db LDAP:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">slappasswd -h {MD5} -s PASSWD</pre>
+<p>tornerà una stringa iniziante per {MD5}, che andremo ad usare qui sotto.</p>
+<p>Creare il file /tmp/base.ldif con questo contenuto, sostituendo MD5PASSWORD con la password ottenuta sopra, il dominio e le informazioni dell&#39;organizzazione:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">dn: dc=yetopen,dc=it
+objectClass: dcObject
+objectclass: organization
+o: yetopen.it
+dc: yetopen
+description: YetOpen S.r.l.
+
+dn: cn=admin,dc=yetopen,dc=it
+objectClass: simpleSecurityObject
+objectClass: organizationalRole
+cn: admin
+userPassword:{MD5}MD5PASWORD
+description: LDAP administrator
+</pre>
+<p> Applicare la configurazione con il comando</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">ldapadd -Y EXTERNAL -H ldapi:/// -f /tmp/base.ldif</pre>
+<p> </p>
+<p> </p>
+<p>Creare il file /tmp/config.ldif con questo contenuto, sostituendo MD5PASSWD con l&#39;hash ottenuto qui sopra:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">dn: cn=config
+changetype: modify
+
+dn: olcDatabase={0}config,cn=config
+changetype: modify
+add: olcRootDN
+olcRootDN: cn=admin,cn=config
+
+dn: olcDatabase={0}config,cn=config
+changetype: modify
+add: olcRootPW
+olcRootPW: {MD5}MD5PASSWORD
+
+dn: olcDatabase={0}config,cn=config
+changetype: modify
+delete: olcAccess
+</pre>
+<p> </p>
+<p>Applichiamo la nuova configurazione con il comando:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">ldapadd -Y EXTERNAL -H ldapi:/// -f /tmp/config.ldif</pre>
+<p> </p>
+<p>Andiamo ora a dare i permessi. Attenzione, in ogni file ldif è essenziale mantenere spaziature e newline come negli esempi!<br />Creiamo il file /tmp/acl.ldif:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">dn: olcDatabase={1}hdb,cn=config
+add: olcAccess
+olcAccess: to attrs=userPassword,shadowLastChange by write by anonymous auth by self write by * none
+olcAccess: to dn.base="" by * read
+olcAccess: to * by write by * read
+</pre>
+<p>e carichiamolo usando l&#39;utente admin con il comando</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">ldapmodify -x -D cn=admin,cn=config -W -f /tmp/acl.ldif</pre>
+<p>a cui dovremo fornire la password di admin codificata prima.</p>
+<p> </p>
+<p>Modifichiamo ora /etc/nsswitch.conf, nelle righe <em>passwd, group e shadow</em> sostituire <em>compat</em> con <em>files ldap </em>come nell&#39;esempio, in <em>hosts</em> aggiungere<em> ldap</em>:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">passwd:         files ldap
+group:          files ldap
+shadow:         files ldap
+hosts: files dns ldap</pre>
+<p> </p>
+<p>Installare quindi le librerie pam di ldap:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">apt-get install libpam-ldap libnss-ldap auth-client-config</pre>
+<p>Verranno chieste alcune domande, a cui rispondere in questo modo:</p>
+<ul>
+<li>ldap uri: <em>ldap://localhost</em></li>
+<li>distinguish name: <em>dc=yetopen,dc=it</em></li>
+<li>versione ldap: <em>3</em></li>
+<li>make local root database admin: <em>yes</em></li>
+<li>require login: <em>no</em></li>
+<li>user: <em>cn=admin,dc=yetopen,dc=it</em></li>
+<li>pass: (la pass di admin)</li>
+</ul>
+<div>qiundi configuriamo pam con auth-client-config:</div>
+<div>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">auth-client-config -t nss -p lac_ldap</pre>
+</div>
+<h2>Per consentire il cambio password da web </h2>
+<p><span id="OBJ_PREFIX_DWT926_com_zimbra_url" class="Object"><a class="" href="https://github.com/ltb-project/self-service-password" target="_blank" rel="noopener">https://github.com/ltb-project/self-service-password</a></span> </p>
+<h2>Installazione Samba</h2>
+<p> </p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">apt-get install samba samba-doc smbclient smbldap-tools winbind</pre>
+<p>per ottenere dei comandi più veloci da usare (netgroupadd invece di smbldap-groupadd ad esempio) creiamo dei link con questo comando</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">for i in $(ls /usr/sbin/smbldap*) ;
+ do sudo ln -s $i /bin/net$(echo $i | cut -d"-" -f2);
+done
+</pre>
+<p>quindi installiamo lo schema ldap</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">cp /usr/share/doc/samba-doc/examples/LDAP/samba.schema.gz /etc/ldap/schema/
+gzip -d /etc/ldap/schema/samba.schema.gz</pre>
+<p> </p>
+<p>creiamo il file /tmp/convert con questo contenuto:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">include /etc/ldap/schema/core.schema
+include /etc/ldap/schema/collective.schema
+include /etc/ldap/schema/corba.schema
+include /etc/ldap/schema/cosine.schema
+include /etc/ldap/schema/duaconf.schema
+include /etc/ldap/schema/dyngroup.schema
+include /etc/ldap/schema/inetorgperson.schema
+include /etc/ldap/schema/java.schema
+include /etc/ldap/schema/misc.schema
+include /etc/ldap/schema/nis.schema
+include /etc/ldap/schema/openldap.schema
+include /etc/ldap/schema/ppolicy.schema
+include /etc/ldap/schema/samba.schema</pre>
+<p> </p>
+<p>quindi lanciamo</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">mkdir /tmp/ldif
+slapcat -f /tmp/convert -F /tmp/ldif -n0 -s "cn={12}samba,cn=schema,cn=config" &gt; /tmp/cn=samba.ldif
+</pre>
+<p>apriamo il file  /tmp/cn=samba.ldif togliendo il {12} dalla prima e terza riga, in modo che diventino:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">dn: cn=samba,cn=schema,cn=config
+cn: samba</pre>
+<p>quindi eliminiamo le ultime sette righe, che dovrebbero essere come queste:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">structuralObjectClass: olcSchemaConfig
+entryUUID: 227a8594-54b4-1031-865e-11762c9b1370
+creatorsName: cn=config
+createTimestamp: 20120627145718Z
+entryCSN: 20120627145718.308872Z#000000#000#000000
+modifiersName: cn=config
+modifyTimestamp: 20120627145718Z</pre>
+<p>quindi carichiamo le informazioni:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">ldapadd -x -D cn=admin,cn=config -W -f /tmp/cn\=samba.ldif</pre>
+<p> </p>
+<p>Creiamo i permessi per samba, scriviamo nel file /tmp/smbacl.ldif (IMPORTANTE che le righe olcAccess siano su una riga sola):</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">dn: olcDatabase={1}hdb,cn=config
+changetype: modify
+add: olcAccess
+olcAccess: to dn.base="" by self write by * auth
+olcAccess: to attrs=userPassword,sambaNTPassword,sambaLMPassword by write by anonymous auth by self write by * none
+olcAccess: to * by * read by anonymous auth</pre>
+<p>quindi</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">ldapmodify -x -D cn=admin,cn=config -W -f /tmp/smbacl.ldif</pre>
+<p> </p>
+<p>Creiamo /tmp/smbindex.ldif:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">dn: olcDatabase={1}hdb,cn=config
+changetype: modify
+add: olcDbIndex
+olcDbIndex: uidNumber eq
+olcDbIndex: gidNumber eq
+olcDbIndex: loginShell eq
+olcDbIndex: memberUid eq,pres,sub
+olcDbIndex: uniqueMember eq,pres
+olcDbIndex: sambaSID eq
+olcDbIndex: sambaPrimaryGroupSID eq
+olcDbIndex: sambaGroupType eq
+olcDbIndex: sambaSIDList eq
+olcDbIndex: sambaDomainName eq
+olcDbIndex: default sub</pre>
+<p>quindi</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">ldapmodify -x -D cn=admin,cn=config -W -f /tmp/smbindex.ldif</pre>
+<p> </p>
+<p>Verifichiamo l&#39;albero ldap con il comando:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">ldapsearch -xLLL -D cn=admin,cn=config -x -b cn=config -W olcDatabase={1}hdb</pre>
+<p> </p>
+<h2>Configurazione LDAP Tools</h2>
+<p> </p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">stop smbd
+mv /etc/samba/smb.conf{,_ORIG}</pre>
+<p>creare /etc/samba/smb.conf:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">[global] 
+workgroup = YETOPEN
+netbios name = SBS
+server string = %h PDC (%v)
+;interfaces = eth0, lo
+;bind interfaces only = Yes
+;enable privileges = yes
+guest account = guest
+domain logons = Yes
+domain master = yes
+preferred master = Yes
+os level = 65
+wins support = Yes
+security = user
+ldap suffix = dc=yetopen,dc=it
+ldap user suffix = ou=Users
+ldap machine suffix = ou=Computers
+ldap group suffix = ou=Groups
+ldap idmap suffix = ou=Idmap
+ldap admin dn = cn=admin,dc=yetopen,dc=it
+;idmap backend = ldap:ldap://localhost
+;idmap uid = 10000-20000
+;idmap gid = 10000-20000
+ldap passwd sync = Yes
+encrypt passwords = true
+#ldap ssl = start tls
+ldap ssl = no
+admin users = root @"EGASISTEMI^Domain Admins"
+winbind use default domain = yes
+winbind enum users = yes
+winbind enum groups = yes</pre>
+<p>ottaniamo il samba SID locale con:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">net getlocalsid</pre>
+<p>quindi copiamo le configurazioni demo dei tools:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">zcat /usr/share/doc/smbldap-tools/examples/smbldap.conf.gz &gt; /etc/smbldap-tools/smbldap.conf
+cp /usr/share/doc/smbldap-tools/examples/smbldap_bind.conf /etc/smbldap-tools/</pre>
+<p>modifichiamo /etc/smbldap-tools/smbldap.conf correggendo i seguenti parametri come da configurazione:</p>
+<ul>
+<li>SID: sid ottenuto prima</li>
+<li>sambaDomain: il parametro workgroup di smb.conf</li>
+<li>masterLDAP: 127.0.0.1</li>
+<li>slaveLDAP: <em>commentato</em></li>
+<li>ldapTLS: 0</li>
+<li>cafile, caclientkey, caclientcert: <em>commentare </em>(in ubuntu12.04 caclientkey e caclientcert si trovano semplicemente come clientkey e clientcert)</li>
+<li>suffix: dc=yetopen,dc=it</li>
+<li>hash_encrypt="MD5" (in ubuntu12.04 hash_encrypt si trova come password_hash)</li>
+<li>userGecos: Utente di rete</li>
+<li>defaultMaxPasswordAge: 180</li>
+<li>userLoginShell: /bin/false</li>
+<li>userSmbHome: <em>vuoto</em></li>
+<li>userProfile: <em>vuoto</em></li>
+<li>userHomeDrive: K:</li>
+<li>userScript: %U.bat</li>
+<li>mailDomain: yetopen.it</li>
+</ul>
+<p>Modificare /etc/smbldap-tools/smbldap_bind.conf cambiando sia il master che lo slave in cn=admin,dc=yetopen,dc=it", e mettendo la password di admin.</p>
+<p>Eseguire, sostituendo PWDADMIN con la password di admin di ldap:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">chmod 0644 /etc/smbldap-tools/smbldap.conf
+chmod 0600 /etc/smbldap-tools/smbldap_bind.conf
+smbpasswd -w PWDADMIN </pre>
+<p> </p>
+<p>Prima di iniziare ad usare samba dobbiamo creare un utente <em>Administrator</em> per amministrare la rete windows, l&#39;equivalente di root in unix.  Eseguiamo</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">/usr/sbin/smbldap-populate -a administrator -u 5001 -g 5001 -r 5001 -b guest -l 5000
+</pre>
+<p>può essere, per convenienza, la stessa password di root del sistema, oppure diversa se si preferisce.</p>
+<p> </p>
+<h2>Configurazione utenti e gruppi</h2>
+<p>Per creare un nuovo gruppo:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">netgroupadd -a commerciale</pre>
+<p>Per creare un nuovo utente:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">netuseradd -a -m -N Nome -S Cognome nomeutente </pre>
+<p>Per aggiungere l&#39;utente al gruppo commerciale:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">netgroupmod -m nomeutente commerciale</pre>
+<p> </p>
+<p>Creiamo quindi le condivisioni. Poniamo di avere una cartella pubblica per tutti ed una per il gruppo commerciale:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">mkdir -p /dati/commerciale
+mkdir -p /dati/pubblica
+chgrp "Domain users" /dati/pubblica
+chgrp commerciale /dati/commerciale
+chmod 770 /dati/commerciale /dati/pubblica
+chmod g+s /dati/commerciale /dati/pubblica</pre>
+<p>l&#39;ultimo comando imposta il <em>setuid</em> per fare in modo che tutti i file creati nella cartella ottengano il gruppo della cartella e non quello dell&#39;utente, che altrimenti sarebbe il gruppo predefinito dell&#39;utente (<em>Domain users</em>).</p>
+<p>Finiamo con la creazione delle cartelle di sistema di samba:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">mkdir -p /dati/samba/netlogon/
+mkdir -p /dati/samba/profiles/
+chmod 777 /dati/samba/profiles/</pre>
+<p> </p>
+<p>Modifichiamo ora il file smb.conf, rispetto a quanto fatto prima aggiungiamo:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">passdb backend = ldapsam:ldap://localhost
+name resolve order = wins host dns bcast
+add user script = /bin/netuseradd -a -m &#39;%u&#39;
+delete user script = /bin/netuserdel &#39;%u&#39;
+add group script = /bin/netgroupadd -a -p &#39;%g&#39;
+delete group script = /bin/netgroupdel &#39;%g&#39;
+add user to group script = /bin/netgroupmod -m &#39;%u&#39; &#39;%g&#39;
+delete user from group script = /bin/netgroupmod -x &#39;%u&#39; &#39;%g&#39;
+set primary group script = /bin/netusermod -g &#39;%g&#39; &#39;%u&#39;
+add machine script = /bin/netuseradd -w &#39;%u&#39;
+logon script = %U.bat
+logon path =
+logon home =</pre>
+<p>I comandi fanno in modo che samba possa interpretare le chiamate da windows (cambio password, join al dominio), mentre le ultime due righe disabilitano i profili in roaming (attenzione che la configurazione di smbldaptools vince su questa).</p>
+<p> </p>
+<p>Aggiungiamo ora le condivisioni specifiche:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">[commerciale]
+        comment = "Commerciale"
+        path = /dati/condivisioni/commerciale
+        writeable = yes
+        browseable = Yes
+        directory mask = 0770
+        create mask = 0775
+        security mask = 0777
+        force security mode = 0
+        directory security mask = 0777
+        force directory security mode = 0
+        hide unreadable = Yes
+        force create mode = 0775
+        force directory mode = 6775
+        vfs objects = recycle
+        recycle:keeptree = yes
+        recycle:versions = yes
+        recycle:maxsize = 50000000
+        recycle:exclude = *.tmp|*.temp|*.o|*.obj|~$*|*.~??|~*.tmp
+        recycle:excludedir =
+        recycle:noversions = *.doc|*.xls|*.ppt
+        recycle:directory_mode = 770
+        recycle:touch = yes
+        recycle:touch_mtime = yes
+        recycle:repository = .cestino/%U
+
+[homes]
+        comment = "Cartella privata di %U, %u"
+        writeable = yes
+        create mask = 0700
+        directory mask = 0775
+        browseable = No
+        force user = %U
+        vfs objects = recycle
+        recycle:keeptree = yes
+        recycle:versions = yes
+        recycle:maxsize = 50000000
+        recycle:exclude = *.tmp|*.temp|*.o|*.obj|~$*|*.~??|~*.tmp
+        recycle:excludedir =
+        recycle:noversions = *.doc|*.xls|*.ppt
+        recycle:directory_mode = 770
+        recycle:touch = yes
+        recycle:touch_mtime = yes
+        recycle:repository = .cestino/%U
+
+[netlogon]
+        comment = Network Logon Service
+        path = /dati/samba/netlogon/
+        guest ok = Yes
+        locking = No
+        browseable = No
+        root preexec = /etc/samba/prelogon.sh "%U" "%G" "%L" "%T" "%m" "%a"
+        #root postexec = /etc/samba/logoff.pl "%U" "%G" "%L" "%T"
+[profiles]
+        comment = Profile Share
+        path = /dati/samba/profiles
+        writeable = yes
+        create mask = 0660
+        directory mask = 0770
+        profile acls =
+</pre>
+<p> <span style="font-size: 13px;"> </span></p>
+<h2>Gestione di LDAP tramite LAM - LDAP Account Manager</h2>
+<p>LAM è un frontend web per la gestione degli utenti Samba+UNIX.</p>
+<p>E&#39; scaricabile dal sito <a href="http://lam.sf.net">lam.sf.net</a>. C&#39;è già un pacchetto Debian scaricabile.</p>
+<p>L&#39;utente admin è lo stesso configurato sopra per cn=admin,dc=domain,dc=it</p>
+<p> </p>
+<p>Una volta installato collegarsi all&#39;intefaccia web <em>&gt; LAM configuration &gt; Edit server profiles</em>.</p>
+<p>(Se non è installato nient&#39;altro sul server, l&#39;installazione con dpkg darà errore. Correggerla con apt-get -f install, che provvederà a scaricare apache. Se si tratta di una delle ultime versione di lam, potrebbero esserci errori in /etc/apache2/conf.d/ldap-account-manager per via di alcuni blocchi IfVersion non interpretati. Tenere quelli che servono e cancellare gli altri in base alla propria versione di apache. Non sarà comunque presente il supporto a php, necessario per far funzionare l&#39;interfaccia, da installare quindi con apt-get install libapache2-mod-php5 &amp;&amp; service apache2 restart)</p>
+<p>(LAM configuration è in alto a destra, prima di loggarsi)</p>
+<p>La password predefinita è <strong>lam</strong>.</p>
+<p>Modificare i parametri:</p>
+<ul>
+<li>tree suffix: dc=dominio,dc=it (il dominio da gestire)</li>
+<li>Default language: Italiano</li>
+<li>Security Settings &gt; List of valid users: cn=admin,dc=dominio,dc=it</li>
+</ul>
+<div>Spostartsi sulla scheda in alto "Account Types"</div>
+<div>
+<ul>
+<li>Users &gt; LDAP Suffix: ou=Users,dc=domain,dc=it</li>
+<li>Groups &gt; LDAP Suffix: ou=Groups,dc=domain,dc=it</li>
+<li>Hosts &gt; LDAP Suffix: ou=Computers,dc=domain,dc=it</li>
+<li>Samba domains &gt; LDAP suffix: dc=domain,dc=it</li>
+</ul>
+</div>
+<p>Spostarsi sulla scheda "Impostazioni modulo"</p>
+<ul>
+<li><span style="font-size: 13px;"> UNIX &gt; Opzioni &gt; Tipo di codifica della password: MD5</span></li>
+<li><span style="font-size: 13px;">Samba 3 &gt; Fuso orario: GMT+1</span></li>
+</ul>
+<div>Salvare ed uscire, collegarsi a LAM con l&#39;utente admin poi andare in Strumenti &gt; Editor dei profili e premere l&#39;icona di modifica da parte ad "Utenti". Modificare</div>
+<div>
+<ul>
+<li>UNIX &gt; Gruppo primario: Domain Users</li>
+<li>UNIX &gt; Shell di login: /bin/false</li>
+<li>Shadow &gt; Aggiungi questa estensione automaticamente: abilitato</li>
+<li><span style="font-size: 13px;">Samba 3 &gt; Aggiungi questa estensione automaticamente: abilitato</span></li>
+</ul>
+</div>
+<p><strong>Pulizia Cestino</strong></p>
+<p>Inserire lo script presente su code ed avviarlo a seconda del volere del cliente :</p>
+<p>https://code.ufficyo.com/YetOpen/youtils/blob/master/serverutils/pulizia_cestino.sh</p>
+<h2>Condivisioni avanzate</h2>
+<p>Può essere necessario, in alcuni casi, creare delle condivisioni <em>avanzate</em>, per cui ad esempio concedere ad alcuni utenti i permessi in sola lettura in una condivisione dove altri sono in lettura/scrittura. Per questa funzione vengono in aiuto le ACL. Eseguiamo</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">apt-get install acl</pre>
+<p>quindi modificare il mountpoint dove sono presenti le condivisioni per usare le estensioni ACL, aggiungendo <em>acl </em>tra le opzioni di mount, come qui di seguito:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">/dev/mapper/mail-dati /dati           ext4    defaults,acl        0       2</pre>
+<p>quindi rimontiamo il fs con le nuove opzioni</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">mount -o remount /dati</pre>
+<p> </p>
+<p>Gli strumenti per vedere ed impostare le ACL sono <em>getfacl</em> e <em>setfacl</em>.</p>
+<p>Se volessimo, ad esempio, concedere ad alcuni utenti l&#39;accesso in RO alla condivisione <em>prodotti</em>, basta eseguire:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">setfacl -d -m group:prodotti-ro:r-x /dati/condivisioni/prodotti
+setfacl -m group:prodotti-ro:r-x /dati/condivisioni/prodotti</pre>
+<p>In questo modo gli utenti del gruppo <em>prodotti-ro </em>potranno accedere ma in sola lettura alla cartella.</p>
+<p> </p>
+<p>Altrimenti, se volessimo fare in modo che un gruppo di utenti possa accedere unicamente ad una sottocartella di <em>prodotti</em>, diciamo <em>cliente1</em>, occorrerà:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">mkdir /dati/condivisioni/prodotti/cliente1
+setfacl -m group:gruppocliente1:r-x /dati/condivisioni/prodotti
+setfacl -m group:gruppocliente1:rwx /dati/condivisioni/prodotti/cliente1</pre>
+<p> </p>
+<h2>Troubleshooting</h2>
+<ul>
+<li><span style="font-size: 13px;">In caso si errore di accesso negato, inserire : username map = /etc/samba/username.map e in username.map root=administrator </span></li>
+<li><span style="font-size: 13px;">Se un PC Windows non riesce a collegarsi alle unità di rete, verificare che la connessione di rete nelle impostazioni di Windows sia contrassegnata come rete aziendale, e non come rete pubblica.</span></li>
+<li>Aggiungendo un PC Windows ad un nuovo dominio, se il dominio risulta inesistente verificare che <em>smbd</em> sia attivo sul server.</li>
+<li>Aggiungendo un PC Windows ad un nuovo dominio, se le credenziali di accesso risultano errate verificare di utilizzare l&#39;utente corretto (<em>administrator</em>). Se non dovesse ancora funzionare aumentare il log di samba (<em>log level = 3</em> in <em>/etc/samba/smb.conf</em>) e consultare il file <em>/var/log/samba/log.smbd</em></li>
+<li>verificare che la modifica del registro di win abbia avuto successo aprendo il regedit e controllando i valori specificati nel file. Nel caso in cui non siano presenti è possibile inserirli a mano.</li>
+<li>per cambiare il nome del dominio modificare il <em>WORKGROUP</em> in <em>smb.conf</em> modificando il parametro <em>workgroup</em> e <em>/etc/smbldap-tools/smbldap.conf</em> modificando il parametro <em>sambaDomain</em> con lo stesso nome, quindi riavviare <em>smbd </em>e<em> nmbd</em> (testato anche con nome dominio COL-MENO).</li>
+<li>verificare che <em>/etc/hosts</em> sia corretto (i riferimenti al dominio locale siano ok) e se modificato riavviare <em>nmbd</em> (<em>/etc/init.d/nmbd restart</em>).</li>
+<li>se non si trova il dominio ed in <em>/var/log/samba/log.nmbd</em> compare un IP sbagliato (tipico nel trasferimento di un server da una rete ad un&#39;altra) in messaggi tipo questo<br />
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">There is already a domain master browser at IP 10.22.22.77 for workgroup CAPPERO registered on subnet UNICAST_SUBNET.</pre>
+<span style="font-size: 13px;">allora bisogna controllare che l&#39;IP non sia memorizzato nel file di cache <em>/var/lib/samba/wins.dat</em>, se presente stoppare samba, eliminare il file e farlo ripartire.<br />fonte: <a href="https://lists.samba.org/archive/samba/2005-February/100029.html" target="_blank" rel="noopener">https://lists.samba.org/archive/samba/2005-February/100029.html</a> </span></li>
+</ul>

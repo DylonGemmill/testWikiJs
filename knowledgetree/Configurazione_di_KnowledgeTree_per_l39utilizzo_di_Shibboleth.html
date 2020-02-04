@@ -1,0 +1,13 @@
+<p>Per KnowledgeTree &egrave; gi&agrave; stato sviluppato un <a href="http://forge.knowledgetree.com/gf/project/httpsso/">plugin apposito</a> per il SSO via HTTP Auth.</p>
+<p>Basta semplicemente scaricare l&#39;archivio e scompattarlo in /path/di/kt/plugins/ (se kt &egrave; stato installato con i pacchetti della distro o con lo script, il path dovrebbe essere <em>/usr/share/knowledgetree-ce</em>)</p>
+<p>Per scaricarlo selezionare la voce <em>Files</em> nel menu a sinistra e cliccare su <strong>HTTPSSOPlugin.zip</strong>&nbsp;</p>
+<p>Inserire quindi le opzioni nella configurazione di apache per far gestire la directory di Knowledgetree a Shibboleth</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">        # Knowledgetree Shibboleth Authentication
+        &lt;Location /knowledgetree&gt;
+          AuthType shibboleth
+          ShibRequireSession On
+          require valid-user
+        &lt;/Location&gt;
+</pre>
+<p>E riavviare apache per apportare le impostazioni (<em>/etc/init.d/apache restart</em>).</p>
+<p>Loggarsi in Knowledgetree come amministratore a andare nella gestione estensioni da <em>Amministrazione</em> &gt; <em>Varie</em> &gt; <em>Gestione estensioni</em>. Cliccare sul bottone <em>Aggiorna le estensioni</em> per far comparire il nostro plugin. Selezionarlo per abilitarlo (<em>HTTP Single Sign On</em>) e cliccare su <em>Aggiorna</em>&nbsp;per salvare le impostazioni.</p>

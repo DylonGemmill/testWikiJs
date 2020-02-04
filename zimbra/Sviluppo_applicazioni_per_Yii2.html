@@ -1,0 +1,22 @@
+<p>Yii2 si basa su <a href="http://getcomposer.org">composer</a>, il package manager di PHP. Prima di tutto installiamo quello:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">curl -sS https://getcomposer.org/installer | php 
+sudo mv composer.phar /usr/local/bin/composer.phar
+composer.phar global require "fxp/composer-asset-plugin:1.0.0" </pre>
+<p> </p>
+<p>Quando andiamo a sviluppare qualcosa per Yii2, a <span style="text-decoration: underline;">meno di un sito dedicato/specializzato</span> faremo sempre un&#39;<strong>estensione</strong>, in modo che sia facilmente integrabile con altri applicativi sviluppati.</p>
+<p> </p>
+<p>Questa guida suppone che i progetti di sviluppo siano in <em>~/work</em>. Chiameremo la nuova estensione <em>progetto0</em>.</p>
+<p> </p>
+<p>Come prima cosa creiamo la directory della nuova estensione e lanciamo il wizard di composer:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">mkdir ~/work/progetto0 ; cd $_
+composer.phar init</pre>
+<p>Le risposte da dare:</p>
+<ol>
+<li>Package name: yetopen/progetto0</li>
+<li>Description: Progetto di prova per l&#39;utilizzo di composer</li>
+<li>Author: (indicare i propri dati)</li>
+<li>Minimum stability: (lasciare vuoto)</li>
+<li>Package type: (lasciare vuoto)</li>
+<li>License: (lasciare vuoto)</li>
+</ol>
+<p> </p>

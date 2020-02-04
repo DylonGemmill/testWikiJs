@@ -1,0 +1,42 @@
+<p>Durante il passaggio da un server all&#39;altro un paio di cose mi hanno fatto diventare matto:</p>
+<ol>
+<li>l&#39;installazione della Gem "json", che nel lockfile (penso di Redmine) era vincolata alla versione 1.5.3 (o qualcosa del genere). Facendo l&#39;aggiornamento questo "requirement" sparisce e l&#39;installazione va a buon fine;</li>
+<li>l&#39;altra cosa è "bundler", lo strumento per installare le dipendenze di Ruby/Redmine: Ubuntu18 installa la versione 2.0.1, ma a quanto pare Redmine 3.4.x richiede &lt; 2.0.0. Nelle istruzioni di seguito ho messo come gestire il problema.</li>
+</ol>
+<h2>Configurazione nginx</h2>
+<p>Analogamente a come si faceva per Apache, per ogni istanza vanno aggiunte delle righe di configurazione. Ho cercato di fare una regola "generica" che andasse bene per tutte le installazioni ma non sono riuscito a farla funzionare:</p>
+<pre class="language-markup"><code>    # Fa il match ma non passa a passenger
+    location ~* ^/(?&lt;istanza&gt;[\w\-\_]+)$ {
+      passenger_base_uri /$istanza;
+       passenger_app_root /data/nginx-webroot/redmine-$istanza;
+       passenger_document_root /data/nginx-webroot/redmine-$istanza/public;
+    }</code></pre>
+<p>Il file da modificare è /etc/nginx/sites-enabled/red2_sicuritalia.conf, il "blocco" da aggiungere è questo (sostituire <em>co</em> con il nome dell&#39;istanza):</p>
+<pre class="language-markup"><code>    location /co {
+        passenger_base_uri /co;
+        passenger_app_root /data/nginx-webroot/redmine-co;
+        passenger_document_root /data/nginx-webroot/redmine-co/public;
+    }
+</code></pre>
+<h2>Aggiornamento istanza</h2>
+<p><strong><em>(sostituire $istanza con il nome dell&#39;istanza di redmine)</em></strong></p>
+<p>Scaricare la versione 3.4.9 di Redmine in /tmp con il comando:</p>
+<pre class="language-markup"><code>wget -c -P /tmp https://www.redmine.org/releases/redmine-3.4.9.tar.gz</code></pre>
+<p>Copiare la vecchia istanza sul nuovo server con nome <em>"redmine-</em>$istanza<em>-OLD"</em></p>
+<pre class="language-markup"><code>mkdir redmine-$istanza
+tar -xvzf /tmp/redmine-3.4.9.tar.gz --strip 1 -C redmine-$istanza
+cd redmine-$istanza
+cp ../redmine-$istanza-OLD/config/database.yml config/</code></pre>
+<p>Modificare <em>config/database.yml</em> con i nuovi parametri di accesso.<br />Il file <em>configuration.yml</em> potrebbe non esserci, quindi far restituire errore il comando successivo. Si può ignorare</p>
+<pre class="language-markup"><code>cp ../redmine-$istanza-OLD/config/configuration.yml config/
+cp -r ../redmine-$istanza-OLD/files/* files/
+cp -r ../redmine-$istanza-OLD/plugins/* plugins/
+gem install bundler --version &#39;1.17.3&#39;</code></pre>
+<p>Se esce errore di versione di bundler eseguire <em>gem uninstall bundler</em> e disinstallare la 2.x.</p>
+<p>Proseguire con:</p>
+<pre class="language-markup"><code>sudo -u www-data bundle install --without development test rmagick --path vendor/bundle
+chown -R www-data:www-data .
+bundle exec rake generate_secret_token # fare con sudo come sopra?
+systemctl reload nginx</code></pre>
+<p>In caso di errori vedere <em>/var/log/nginx/error.log</em>.</p>
+<p> </p>

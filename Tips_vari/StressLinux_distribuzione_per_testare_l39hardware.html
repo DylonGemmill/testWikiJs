@@ -1,0 +1,15 @@
+<p>Il sito di riferimento: <a href="http://www.stresslinux.org/sl/">http://www.stresslinux.org/sl/</a></p>
+<p>La distro è una live con del software per testare l&#39;hardware delle nostre macchine.</p>
+<p>Nella sezione Downloads si trovano le immagini ISO, le immagini per memorie USB e le VMWare appliance sia a 32 che a 64 bit.</p>
+<p>Ecco un paio di possibili test da lanciare una volta avviata la macchina con la live</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">stress --cpu 8 --io 4
+stress --cpu 8 --io 4 --vm 2 --vm-bytes 128M --hdd 100 --hdd-bytes 1M</pre>
+<p>Entrambi i test non hanno un timeout impostato, ciò significa che continueranno a girare finché non verranno arrestati con CTRL-C.</p>
+<p>Se i testi girano senza problemi per un periodo di 30 / 60 minuti, si può concludere che la macchina è in buona salute.</p>
+<p> </p>
+<p>Fonti:</p>
+<ul>
+<li><a style="font-size: 13px;" href="http://www.stresslinux.org//community/showthread.php?tid=8">http://www.stresslinux.org//community/showthread.php?tid=8</a></li>
+<li><a href="http://www.stresslinux.org//community/showthread.php?tid=183">http://www.stresslinux.org//community/showthread.php?tid=183</a></li>
+</ul>
+<p> </p>

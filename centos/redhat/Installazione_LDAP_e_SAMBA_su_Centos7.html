@@ -1,0 +1,241 @@
+<p><span style="font-size: 13px;">In questa guida vedremo come creare un Domain Controller Open Source nel quale sarà possibile joinare workstation Windows e gestire le utenze in modo centralizzato. Tutto questo grazie a Samba 4 con autenticazione LDAP e grazie all’utilizzo di LAM (Ldap Account Manager), un prodotto Open Source per la gestione grafica via web delle Utenze, dei Gruppi, dei Computer e dei Domini. Grazie all’utilizzo di OpenLdap potremo sfruttare le stesse utenze appartenenti al dominio per essere utilizzate da altre applicazioni che supportano l’autenticazione LDAP. Vediamo come fare…(link guida http://alexiobash.com/configurare-samba-domain-controller-con-openldap-su-centos-7/)</span> <br />Nell’esempio utilizzeremo:<br /><br />Server Ldap (OpenLdap) : server.alexiobash.com<br />nome NETBIOS: SERVER<br />Dominio (Samba 4): ALEXIOBASH.COM<br />LAM (Ldap Account Manager) per la gestione centralizzata via Web delle utenze.<br />Installazione e configurazione OpenLDAP<br /><br />Installiamo i paccheti necessari per creare il server LDAP con il comando:<br /><br /></p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">yum install -y openldap-clients nss-pam-ldapd openldap-servers openldap</pre>
+<pre> <br />Completata l’installazione procediamo con la configurazione del server.<br /><br />Creiamo il file /etc/openldap/slapd.conf con il comando:<br /><br /></pre>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">touch /etc/openldap/slapd.conf</pre>
+<pre> <br />e inseriamo all’interno le righe:<br /><br /></pre>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">pidfile /var/run/openldap/slapd.pid
+argsfile /var/run/openldap/slapd.args</pre>
+<pre> <br />eliminiamo la configurazione attuale:<br /><br /></pre>
+<pre class="brush: bash;fontsize: 100; first-line: 1; "># rm -rf /etc/openldap/slapd.d/*</pre>
+<pre> <br />e generiamo la nuova configurazione con il comando:<br /><br /></pre>
+<pre class="brush: bash;fontsize: 100; first-line: 1; "># slaptest -f /etc/openldap/slapd.conf -F /etc/openldap/slapd.d</pre>
+<pre> <br />Editiamo il file di configurazione appena generato con il nostro editor preferito:<br /><br /></pre>
+<pre class="brush: bash;fontsize: 100; first-line: 1; "># vim /etc/openldap/slapd.d/cn=config/olcDatabase\={0}config.ldif</pre>
+<pre> <br />e modifichiamo la riga (6) di accesso da:<br /><br /></pre>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">olcAccess: {0}to * by * none</pre>
+<pre> <br />con:<br /><br /></pre>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">olcAccess: {0}to * by dn.exact=gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth manage by * break</pre>
+<pre> <br />salviamo il file, e diamo i permessi corretti alle directory:<br /><br /></pre>
+<pre class="brush: bash;fontsize: 100; first-line: 1; "># chown -R ldap. /etc/openldap/slapd.d
+# chmod -R 700 /etc/openldap/slapd.d</pre>
+<pre> <br />a questo punto startiamo il servizio e abilitiamolo all’avvio:<br /><br /></pre>
+<pre class="brush: bash;fontsize: 100; first-line: 1; "># systemctl start slapd
+# systemctl enable slapd</pre>
+<pre> <br />Importiamo gli schema Ldap di base con i comandi:<br /><br /></pre>
+<pre class="brush: bash;fontsize: 100; first-line: 1; "># ldapadd -Y EXTERNAL -H ldapi:/// -f /etc/openldap/schema/core.ldif
+# ldapadd -Y EXTERNAL -H ldapi:/// -f /etc/openldap/schema/cosine.ldif
+# ldapadd -Y EXTERNAL -H ldapi:/// -f /etc/openldap/schema/nis.ldif
+# ldapadd -Y EXTERNAL -H ldapi:/// -f /etc/openldap/schema/inetorgperson.ldif</pre>
+<pre> <br />successivamente generiamo la password dell’admin di openldap in SSHA con il comando:<br /><br /></pre>
+<pre class="brush: bash;fontsize: 100; first-line: 1; "># slappasswd</pre>
+<pre> <br />ci chiederà l’inserimento della password e restituirà l’output della password criptata, ad esempio:<br /><br /></pre>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">{SSHA}yToxRNtwOUhYIwZCtEjIG7MGUiiuleDh</pre>
+<pre> <br />Ricordiamoci di salvarla in un file di testo perchè ci servirà per inserirla nei file .ldif che andremo a generare successivamente.<br /><br />Creiamo il file ldif “root.ldif” e inseriamo all’interno:<br /><br /></pre>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">dn: cn=module,cn=config
+objectClass: olcModuleList
+cn: module
+olcModulepath: /usr/lib64/openldap
+olcModuleload: back_hdb
+
+dn: olcDatabase=hdb,cn=config
+objectClass: olcDatabaseConfig
+objectClass: olcHdbConfig
+olcDatabase: {1}hdb
+olcSuffix: dc=alexiobash,dc=com
+olcDbDirectory: /var/lib/ldap
+olcRootDN: cn=admin,dc=alexiobash,dc=com
+olcRootPW: {SSHA}yToxRNtwOUhYIwZCtEjIG7MGUiiuleDh
+olcDbConfig: set_cachesize 0 2097152 0
+olcDbConfig: set_lk_max_objects 1500
+olcDbConfig: set_lk_max_locks 1500
+olcDbConfig: set_lk_max_lockers 1500
+olcDbIndex: objectClass eq
+olcLastMod: TRUE
+olcMonitoring: TRUE
+olcDbCheckpoint: 512 30
+olcAccess: to attrs=userPassword,sambaNTPassword,sambaLMPassword by dn="cn=admin,dc=alexiobash,dc=com" write by anonymous auth by self write by * none
+olcAccess: to attrs=shadowLastChange by self write by * read
+olcAccess: to dn.base="" by * read
+olcAccess: to * by dn="cn=admin,dc=alexiobash,dc=com" write by * read</pre>
+<pre><br />salviamo il file e importiamolo nell’ldap con il comando:<br /><br /></pre>
+<pre class="brush: bash;fontsize: 100; first-line: 1; "># ldapadd -Y EXTERNAL -H ldapi:/// -f root.ldif</pre>
+<pre> <br />una volta importato il root creiamo il secondo file “admin.ldif” e inseriamo all’interno:<br /><br /></pre>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">dn: dc=alexiobash,dc=com
+objectClass: top
+objectClass: dcObject
+objectclass: organization
+o: Alexiobash
+dc: Alexiobash
+
+dn: cn=admin,dc=alexiobash,dc=com
+objectClass: simpleSecurityObject
+objectClass: organizationalRole
+cn: admin
+userPassword: {SSHA}yToxRNtwOUhYIwZCtEjIG7MGUiiuleDh</pre>
+<pre> <br />salviamo e importiamolo con il comando:<br /><br /></pre>
+<pre class="brush: bash;fontsize: 100; first-line: 1; "># ldapadd -x -D cn=admin,dc=alexiobash,dc=com -W -f admin.ldif</pre>
+<pre><br />Sostituiamo anche qui il valore “dc=alexiobash,dc=com“. Ci verrà chiesta la password precedentemente creata.</pre>
+<pre><br /><br /><br /><br />Una volta configurato il tutto aggiungiamo l’autenticazione LDAP al nostro Server con il comando:<br /><br /></pre>
+<pre class="brush: bash;fontsize: 100; first-line: 1; "># authconfig --enableldap --enableldapauth --ldapserver=127.0.0.1 --ldapbasedn="dc=alexiobash,dc=com" --enablemkhomedir --update</pre>
+<pre><br />Sostituendo ancora una volta il campo “dc=alexiobash,dc=com”<br /><br />Ora il nostro Server OpenLDAP è pronto. Passiamo all’instalazione e alla configurazione di Samba.<br /><br />Installazione e configurazione Samba<br /><br />Abilitiamo i Repository EPEL  con il comado:</pre>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">yum install epel-release</pre>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">yum install -y samba smbldap-tools samba-common samba-client</pre>
+<pre> <br />completata l’installazione creiamo il file “import_samba.conf” e inseriamo all’interno:<br /><br /></pre>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">include /etc/openldap/schema/core.schema
+include /etc/openldap/schema/collective.schema
+include /etc/openldap/schema/corba.schema
+include /etc/openldap/schema/cosine.schema
+include /etc/openldap/schema/duaconf.schema
+include /etc/openldap/schema/dyngroup.schema
+include /etc/openldap/schema/inetorgperson.schema
+include /etc/openldap/schema/java.schema
+include /etc/openldap/schema/misc.schema
+include /etc/openldap/schema/nis.schema
+include /etc/openldap/schema/openldap.schema
+include /etc/openldap/schema/ppolicy.schema
+include /etc/openldap/schema/samba.schema</pre>
+<pre> <br />creiamo la directory ldif_samba:<br /><br /></pre>
+<pre class="brush: bash;fontsize: 100; first-line: 1; "># mkdir ldif_samba</pre>
+<pre> <br />generiamo il file di configurazione ldap per samba con il comando:<br /><br /></pre>
+<pre class="brush: bash;fontsize: 100; first-line: 1; "># slapcat -f import_samba.conf -F ./ldif_samba -n0 -s "cn={12}samba,cn=schema,cn=config" &gt; ./cn=samba.ldif</pre>
+<pre> <br />editiamo il file appena creato con il nostro editor preferito:<br /><br /></pre>
+<pre class="brush: bash;fontsize: 100; first-line: 1; "># vim ./cn=samba.ldif</pre>
+<pre> <br />modifichiamo le righe 1 e 3 da:<br /><br /></pre>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">dn: cn={12}samba,cn=schema,cn=config
+objectClass: olcSchemaConfig
+cn: {12}samba</pre>
+<pre> <br />con:<br /><br /></pre>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">dn: cn=samba,cn=schema,cn=config
+objectClass: olcSchemaConfig
+cn: samba</pre>
+<pre> <br />eliminando alla fine del file anche le righe:<br /><br /></pre>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">structuralObjectClass: olcSchemaConfig
+entryUUID: 754ed742-e23d-134f-64fr-8630c5b341ec
+creatorsName: cn=config
+createTimestamp: 20141222152242Z
+entryCSN: 20141222152242.9s4474Z#000000#000#000000
+modifiersName: cn=config
+modifyTimestamp: 20141222152242</pre>
+<pre> <br />salviamo il file appena modificato, ed importiamolo con il comando:<br /><br /></pre>
+<pre class="brush: bash;fontsize: 100; first-line: 1; "># ldapadd -Y EXTERNAL -H ldapi:/// -f cn=samba.ldif</pre>
+<pre> <br />Una volta importato lo schema di samba creiamo il file “indice.ldif” e inseriamo all’interno:<br /><br /></pre>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">dn: olcDatabase={1}hdb,cn=config
+changetype: modify
+add: olcDbIndex
+olcDbIndex: uidNumber eq
+olcDbIndex: gidNumber eq
+olcDbIndex: loginShell eq
+olcDbIndex: uid eq,pres,sub
+olcDbIndex: memberUid eq,pres,sub
+olcDbIndex: uniqueMember eq,pres
+olcDbIndex: sambaSID eq
+olcDbIndex: sambaPrimaryGroupSID eq
+olcDbIndex: sambaGroupType eq
+olcDbIndex: sambaSIDList eq
+olcDbIndex: sambaDomainName eq
+olcDbIndex: default sub<br /><br /><br /></pre>
+<pre> <br />salviamo il file e importiamolo con il comando:<br /><br /></pre>
+<pre class="brush: bash;fontsize: 100; first-line: 1; "># ldapmodify -Y EXTERNAL -H ldapi:/// -f indice.ldif</pre>
+<pre>Configuriamo lo start UID e GID in modo che non vada a sovrapporsi con quello di sistema e creiamo il file gui_uid.ldif:</pre>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">dn: cn=NextFreeUnixId,dc=galaservice,dc=it objectClass: inetOrgPerson objectClass: sambaUnixIdPool uidNumber: 10000 gidNumber: 10000 cn: NextFreeUnixId sn: NextFreeUnixId
+<br />ed applichiamo la configurazione</pre>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">ldapadd -x -D "cn=admin,dc=galaservice,dc=it" -w PASSWORD LDAP -f gid_uid.ldif</pre>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">Per la gestione delle ACL samba :</pre>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">dn: olcDatabase={1}hdb,cn=config
+changetype: modify
+replace: olcAccess
+olcAccess: to dn.base="" by self write by * auth
+olcAccess: to attrs=userPassword,shadowLastChange,sambaNTPassword,sambaLMPassword by dn="cn=admin,dc=galaservice,dc=it" write by anonymous auth by self write by * none
+olcAccess: to * by * read by anonymous auth
+<br />ed modifichiamo la configurazione con il seguente comando:</pre>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">ldapmodify -Y EXTERNAL -H ldapi:/// -f smbacl.ldif </pre>
+<pre><br /><br />Ora la configurazione LDAP per Samba è completata, passiamo alla configurazione vera e propria per creare un PDC (Primary Domain Controller).<br /><br />Creiamo un file di backup della configurazione attuale di Samba per sicurezza:<br /><br /></pre>
+<pre class="brush: bash;fontsize: 100; first-line: 1; "># mv /etc/samba/smb.conf /etc/samba/smb.conf.orig</pre>
+<pre> <br />copiamo ora il file di default di smbldap-tools (0.9.10 in questo esempio) con il comando:<br /><br /></pre>
+<pre class="brush: bash;fontsize: 100; first-line: 1; "># cp /usr/share/doc/smbldap-tools-0.9.10/smb.conf.example /etc/samba/smb.conf</pre>
+<pre><br />editiamo il file /etc/samba/smb.conf appena copiato rendendolo simile a QUESTO:<br /><br /></pre>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">[global]
+workgroup = ALEXIOBASH
+netbios name = SERVER
+log level = 1
+log file = /var/log/samba/log.%m
+max log size = 5000
+debug pid = yes
+debug uid = yes
+syslog = 0
+utmp = yes
+security = user
+domain logons = yes
+os level = 64
+logon path =
+logon home =
+logon drive = H:
+logon script =
+passdb backend = ldapsam:"ldap://127.0.0.1/"
+ldap ssl = off</pre>
+<pre><br /><br />Sostituendo ancora una volta “dc=alexiobash,dc=com“, “workgroup = ALEXIOBASH” e “netbios name = SERVER” con il nome del server.<br /><br />editiamo il file /etc/smbldap-tools/smbldap_bind.conf con il nostro editor preferito modificando i valori come di seguito:<br /><br /></pre>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">#slaveDN="cn=admin,dc=alexiobash,dc=com"
+#slavePw="secret"
+masterDN="cn=admin,dc=alexiobash,dc=com"
+masterPw="secret"</pre>
+<p><br />sostiruendo il nome del dominio dc=alexiobash,dc=com e inserndo la password dell’LDAP in chiaro nella direttiva “masterPw“.<br /><br />modifichiamo successivamente il file /etc/smbldap-tools/smbldap.conf rendendolo simile a QUESTO.</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">sambaDomain="rigamontistampi"
+
+masterLDAP="ldap://127.0.0.1/"
+ldapTLS="0"
+verify="require"
+cafile="/etc/pki/tls/certs/ldapserverca.pem"
+
+clientcert="/etc/pki/tls/certs/ldapclient.pem"
+clientkey="/etc/pki/tls/certs/ldapclientkey.pem"
+
+suffix="dc=rigamontistampi,dc=it"
+usersdn="ou=Users,${suffix}"
+itputersdn="ou=Computers,${suffix}"
+groupsdn="ou=Groups,${suffix}"
+idmapdn="ou=Idmap,${suffix}"
+
+sambaUnixIdPooldn="cn=NextFreeUnixId,${suffix}<br />
+scope="sub"
+
+password_hash="SSHA"
+
+password_crypt_salt_format="%s"
+
+userLoginShell="/bin/false"
+userHome="/home/%U"
+userHomeDirectoryMode="777"
+userGecos="System User"
+defaultUserGid="513"
+defaultComputerGid="515"
+skeletonDir="/etc/skel"
+shadowAccount="1"
+
+
+userSmbHome=
+userProfile=
+userHomeDrive="H:"
+userScript="logon.bat"
+
+mailDomain="rigamontistampi.it"
+
+with_smbpasswd="0"
+smbpasswd="/usr/bin/smbpasswd"
+with_slappasswd="0"
+slappasswd="/usr/sbin/slappasswd"
+</pre>
+<pre><br /><br />Modificando anche in questo file il nome del dominio “dc=alexiobash,dc=com“, il valore “sambaDomain” e il nome del server (in questo esempio “SERVER“).<br /><br />Ora generiamo il DB delle password di samba con il comando:<br /><br /></pre>
+<pre class="brush: bash;fontsize: 100; first-line: 1; "># smbpasswd -W</pre>
+<pre> <br />ci verrà chiesta la password dell’utente “root” del sistema che dovrà essere aggiunto agli utenti ldap (consiglio di utilizzare la stessa password del sistema).<br /><br />avviamo samba e abilitiamolo all’avvio del sistema:<br /><br /></pre>
+<pre class="brush: bash;fontsize: 100; first-line: 1; "># systemctl start smb
+systemctl start nmb
+systemctl enable smb
+systemctl enable nmb</pre>
+<pre> <br />Popoliamo il database LDAP con il comando:<br /><br /></pre>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">smbldap-populate</pre>
+<p><br />e verifichiamo l’inserimento dei gruppi con il comando:<br /><br /></p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">getent group</pre>
+<p><br />avendo come output:</p>
+<pre><br />Domain Admins:*:512:root<br />Domain Users:*:513:<br />Domain Guests:*:514:<br />Domain Computers:*:515:<br />Administrators:*:544:<br />Account Operators:*:548:<br />Print Operators:*:550:<br />Backup Operators:*:551:<br />Replicators:*:552:<br />Abbiamo completato anche la configurazione di Samba. Non ci rimane altro che aggiungere un utente Amministratore “administrator” per il join delle macchine Windows, che possiamo farlo dopo aver configurato LAM (Ldap Account Manger).</pre>
+<p> </p>
+<p> </p>

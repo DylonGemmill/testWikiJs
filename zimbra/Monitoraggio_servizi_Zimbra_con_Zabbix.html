@@ -1,0 +1,44 @@
+<h2>Su Zabbix web ui</h2>
+<ul>
+<li>Creare una nuova <em>Application</em> di nome <em>Zimbra Services<br /></em></li>
+<li>Creare un nuovo <em>Host template</em> di nome <em>Template_Zimbra</em></li>
+<li>Creare un elemento <em>Item</em> con questi parametri (quelli non specificati possono essere lasciati al default):<br />
+<ul>
+<li>Host: Template_Zimbra</li>
+<li>Description: Zimbra ldap</li>
+<li>Type: zabbix_agent</li>
+<li>Key: zimbra[ldap]</li>
+<li>Type of information: Numeric (unsigned)</li>
+<li>Data type: Decimal</li>
+<li>Keep history: 7</li>
+<li>Store value: As is</li>
+<li>Show value: Service state</li>
+<li>Applications: Zimbra Services</li>
+</ul>
+</li>
+<li>Clonare l&#39;<em>Item Zimbra ldap</em> per tutti i servizi eseguiti da Zimbra, quindi <em>antivirus, antispam, convertd</em> (solo NE)<em>, logger, mailbox, mta, snmp, spell, stats</em>, modificando oltre alla <em>Descrizione</em> il campo <em>Key</em>.</li>
+<li>Creare un nuovo Item per il controllo della versione di Zimbra, con questi parametri:<br />
+<ul>
+<li>Host: Template_Zimbra</li>
+<li>Description: Version of Zimbra running</li>
+<li>Key: zimbra[Release]</li>
+<li>Type of information: Character</li>
+<li>Update interval: 3600</li>
+<li>Keep history: 7</li>
+<li>Show value: As is</li>
+<li>Applications: Zimbra Services</li>
+</ul>
+</li>
+</ul>
+<p>In questo modo abbiamo predisposto un modello di server con i servizi Zimbra. Non dobbiamo fare altro che andare su un server configurato ed associare (link) questo template all&#39;host.</p>
+<h2>Su Zabbix server</h2>
+<p>Modificare il parametro <em>Timeout</em> a <strong>30</strong> in <em>/etc/zabbix/zabbix-server.conf</em>.</p>
+<h2>Su Zabbix agent</h2>
+<p>Copiare il file zabbix_check_zimbra.sh in /etc/zabbix/.</p>
+<p>Modificare il parametro <em>Timeout</em> a <strong>30</strong> in <em>/etc/zabbix/zabbix-agentd.conf</em>.</p>
+<p>Aggiungere in fondo a <em>/etc/zabbix/zabbix-agentd.conf </em>la riga</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">UserParameter=zimbra[*],/etc/zabbix/zabbix_check_zimbra.sh $1</pre>
+<p>Aggiungere in <em>/etc/sudoers</em> la riga</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">zabbix ALL=(zimbra) NOPASSWD:/opt/zimbra/bin/zmcontrol</pre>
+<p> </p>
+<p>rif: <a href="http://www.denraf.be/content/zimbra-monitoring-zabbix">http://www.denraf.be/content/zimbra-monitoring-zabbix</a></p>

@@ -1,0 +1,8 @@
+<p>Se nel database di SquidGuard viene specificato due volte un dominio, l&#39;url non viene considerato.</p>
+<p>Ad esempio, se in un elenco di siti in whitelist sono presenti:</p>
+<p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">mail.virgilio.it
+virgilio.it</pre>
+</p>
+<p> il dominio pi&ugrave; specifico, quindi quello di terzo livello, vince su quello pi&ugrave; generico, quindi la seconda riga viene ignorata.</p>
+<p>Se si intende abilitare o bloccare un dominio, verificare che non ci siano ulteriori righe della stessa radice.</p>

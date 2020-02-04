@@ -1,0 +1,37 @@
+<p>Configurare la casella <em>catchall</em>&nbsp;con Aruba ha i seguenti vantaggi:</p>
+<ul>
+<li>gestione centralizzata degli utenti solo su Zimbra</li>
+<li>semplificazione <em>fetchmailrc</em></li>
+<li>backup della posta in arrivo</li>
+<li>backup mx in caso si voglia esporre il mailserver</li>
+</ul>
+<p>Di contro:</p>
+<ul>
+<li>rischio di inviare reply agli spammer. Se viene inviata una mail ad un indirizzo inesistente del dominio, postfix di Zimbra risponder&agrave; al mittente, rischiando di inviare dello spam come mail di errore. Da verificare...</li>
+</ul>
+<h2>Su Aruba</h2>
+<p>Entrare nella gestione delle caselle email, creare la casella <em>catchall</em> con nome, ad esempio, <em>tutti@dominio.it</em>.</p>
+<p>Cliccare sul link <em>Gestione caselle postali</em>&nbsp;in alto a destra, e quindi su <em>Predisponi la casella predefinita </em>in fondo alla pagina, indicando come casella l&#39;indirizzo email creato prima, <em>tutti@dominio.it</em>.</p>
+<p>Confermata la scelta, sopra l&#39;elenco delle caselle comparir&agrave; la scritta:</p>
+<p><em>Messaggi inviati ad indirizzi non esistenti : raccolti dalla casella pred. tutti@dominio.it</em></p>
+<h2>Sul Server</h2>
+<p>Installare e configurare fetchmail. Invece che impostare ogni account ordineremo lo scaricamento di <em>tutti@dominio.it</em>, indicando per&ograve; dove dovr&agrave; andare a prendere il reale destinatario. La riga <em>poll</em>&nbsp;sar&agrave; come segue:</p>
+<p>&nbsp;</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">poll pop3.dominio.it proto pop3 envelope 1 "Delivered-To" localdomains dominio.it:
+     user tutti@domonio.it with pass PASSWORD to * here keep</pre>
+<p>&nbsp;</p>
+<ul>
+<li>l&#39;opzione <strong>envelope</strong>&nbsp;indica a <em>fetchmail</em>&nbsp;di prendere il destinatario dalla riga di header specificata dopo, in questo caso <em>Delivered-To</em></li>
+<li>il numero <strong>1</strong>&nbsp;indica a <em>fetchmail</em>&nbsp;che dovr&agrave; ignorare 1 riga di <em>Delivered-To</em>. Questo perch&eacute; Aruba aggiunge una prima riga di quel tipo, che va scartata</li>
+</ul>
+<p>Il resto della configurazione &egrave; quella standard di fetchmail.</p>
+<h2>Su Zimbra</h2>
+<p>Configurare gli account normalmente. Le mail a destinatari esisenti verranno consegnate, le altre rimbalzate al mittente.</p>
+<p>A questo proposito verificare se vale la pena e se c&#39;&egrave; modo per dire a fetchmail di ignorare i destinatari errati.</p>
+<p>&nbsp;</p>
+<p>La stessa configurazione pu&ograve; essere usata anche con diversi provider, a patto che in una header specifica venga inserito il destinatario.</p>
+<p>Possibili problemi da verificare, a seconda del mailserver:</p>
+<ul>
+<li>viene conservata una sola mail per due destinatari dello stesso dominio: in questo caso probabilmente non &egrave; possibile usare la catchall</li>
+<li>esposizione dei BCC nelle headers dell&#39;email: &egrave; possibile che, se viene ad esempio conservata una sola mail per tutti i destinatari del dominio, nelle intestazioni siano presenti anche i destinatari nascosti</li>
+</ul>

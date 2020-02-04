@@ -1,0 +1,17 @@
+<p>L&#39;impostazione del record <strong>SPF</strong>&nbsp;&egrave; indispensabile per l&#39;invio diretto delle mail. <strong>SPF </strong>contiene l&#39;elenco dei server abilitati ad inviare posta per un determinato dominio. In molti casi, l&#39;assenza di questo parametro causa il rifiuto delle mail da parte dei destinatari, o il rating di SPAM.</p>
+<p>I <strong>DNS record SPF</strong>&nbsp;sono di tipo 99. In caso non si possa creare un record di questo tipo, &egrave; possibile usare i record <strong>TXT</strong>, anche se risultano deprecati sono ad oggi (2010) ancora molto utilizzati.</p>
+<p>Per comporre il contenuto del record &egrave; utile aiutarsi con dei tools. I pi&ugrave; comodi da usare sono:<br /><a href="http://spfwizard.com/">spfwizard.com/<br /></a><a href="http://old.openspf.org/wizard.html">old.openspf.org/wizard.html</a></p>
+<p><a href="http://old.openspf.org/wizard.html"></a>In molti casi, un record di questo tipo pu&ograve; bastare:</p>
+<pre style="color: black; background-color: #f9f9f9; line-height: 1,1em; font-family: monospace, sans-serif; padding: 1em; border: 1px dashed #2f6fab;">example.org. IN SPF "v=spf1 mx -all"</pre>
+<div>Che significa che tutti i record <strong>MX</strong>&nbsp;del dominio<em><strong>&nbsp;</strong><span style="font-style: normal;">sono IP abilitati all&#39;invio di mail per conto di </span>example.org</em>. Se il tentativo di consegna avviene da un IP non in elenco, la mail viene rifiutata (<strong>hard fail</strong>, <strong>-all</strong>).</div>
+<p>Ci sono diversi tipi rifiuto, ma i principali sono due: <strong>-all</strong>&nbsp;o <strong>hard fail</strong>, ovvero se il server non &egrave; in quelli abilitati viene rifiutata.<strong>~all </strong>o <strong>soft fail</strong>, ovvero (a discrezione del server ricevente) la mail viene solamente taggata come possibile spam.</p>
+<p>In caso ci siano altri server, esterni, che consegnano legittimamente la posta per conto del dominio, si possono aggiungere con diversi parametri:</p>
+<ul>
+<li><strong>ipv4</strong> o <strong>ipv6</strong>: un elenco di ip/netmask abilitati</li>
+<li><strong>include</strong>: importa dei record SPF di un altro dominio</li>
+</ul>
+<p>La prima opzione &egrave; generalmente usata per un limitato numero di IP. La seconda in caso esista gi&agrave; un record SPF del servizio esterno. Ad esempio, nel caso di invio mail tramite <strong>Blackberry</strong>, invece di includere tutti i possibili server SMTP di RIM, si importa il loro record SPF con l&#39;opzione:</p>
+<pre style="color: black; font-family: monospace, sans-serif; font-size: 10px; background-image: initial; background-attachment: initial; background-origin: initial; background-clip: initial; background-color: #f9f9f9; overflow-x: auto; overflow-y: auto; background-position: initial initial; background-repeat: initial initial; padding: 1em; margin: 8px; border: 1px dashed #2f6fab;">include:srs.bis.eu.blackberry.com</pre>
+<p>in questo modo vengono importati tutti i server Europei di Blackberry come possibili, e non occorre modificare nulla se questi cambiano.</p>
+<p>&nbsp;</p>
+<p>Riferimenti:<br /><a href="http://en.wikipedia.org/wiki/Sender_Policy_Framework">http://en.wikipedia.org/wiki/Sender_Policy_Framework<br /></a><a href="http://www.openspf.org/">http://www.openspf.org/</a></p>

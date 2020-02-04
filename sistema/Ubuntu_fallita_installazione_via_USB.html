@@ -1,0 +1,5 @@
+<p>Mi è capitato sull&#39;HP Proliant ML350 di Eco86 che l&#39;installazione via USB si bloccasse durante l&#39;installazione base del sistema.</p>
+<p>Per risolvere ho trovato <a href="https://bugs.launchpad.net/ubuntu/+source/debian-installer/+bug/1117292/comments/22">questo workaround</a>: appena iniziata l&#39;installazione aprire una shell sul secondo terminale ed eseguire questo comando:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">while true; do rm /var/run/chroot-setup.lock; sleep 1; done</pre>
+<p> </p>
+<p>In questo modo funziona.</p>

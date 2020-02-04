@@ -1,0 +1,28 @@
+<p> </p>
+<p>Il software A-PDF Content Splitter si occupa di dividere un pdf in pdf multipli sulla base del cambiamento del testo in una detterminata sezione del pdf sulle varie pagine.</p>
+<p>La neccessità era quelle di dividere i pdf risultanti in sottocartelle, in base alla parte variabile del nome dei file configurata nelle opzioni delle regole di divisione. Il programma non permette di farlo ma è in grato di eseguire un file .exe alla terminazione della divisione del file.</p>
+<p>Creazione del .exe da eseguire:</p>
+<ul>
+<li>Creare un nuovo file .bat e aprirlo con un editor</li>
+<li>Il codice dello script che si occupa di prendere tutti i file pdf nella cartella di destinazione dello "splitter" e dividerli in sottocartelle in base al nome è il seguente:</li>
+</ul>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">@echo off
+rem prendo tutti i file della directory passata come parametro
+set "path=C:\Users\liviucalin\DocumentsA-PDF\buste_paga"
+for /f "delims=|" %%f in (&#39;dir /b /a-d %path%\*.pdf&#39;) do (
+	rem per ogni file prendo il nome, dovrebbe essere tra i caratteri _ e .
+	for /f "tokens=2 delims=_,." %%A in ("%%f") do (<br />                rem se la cartella con il nome non esiste la creo
+		if not exist "%path%\%%A" mkdir "%path%\%%A"<br />                rem sposto il file nella cartella corrispondente al nome
+		move "%path%\%%f" "%path%\%%A\%%f"
+	)
+)</pre>
+<ul>
+<li>Una volta salvato per convertire il file da .bat a .exe si può usare un servizio online come ad esempio: http://www.f2ko.de/it/b2e.php</li>
+</ul>
+<p> </p>
+<p>Per specificare uno script da esebuire al termine della divisione di un pdf:</p>
+<ol>
+<li>Nella sezione "2. Selecting a Rule for Splitting" cliccare l&#39;icona di modifica per modificare una regola o se questa non c&#39;è cliccare l&#39;icona per aggiungere una regola nuova</li>
+<li>Andare in "Options" e successivamente nel tab "Trigger for Output Folder"</li>
+<li>Attraverso il pulsante "Browse..." selezionare l&#39;applicazione da eseguire precedentemente creata.</li>
+</ol>

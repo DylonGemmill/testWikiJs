@@ -1,0 +1,67 @@
+<p>Per ogni servizio usiamo i seguenti servizi</p>
+<p> </p>
+<h2>MySQL</h2>
+<p>C&#39;è uno script in Git che esegue il dump del database. Per effettuare i backup usare la relativa FAQ: <a class="intfaqlink" href="index.php?action=artikel&amp;cat=24&amp;id=58&amp;artlang=it"> MySQL: creazione utente di backup</a>.</p>
+<h4>Test di integrità</h4>
+<p><span>Verificare che l&#39;ultimo file del dump sia leggibile ed abbia inizio e fine come da dump MySQL. Verificare inoltre che l&#39;elenco dei db del server corrisponda con quelli effettivamente salvati.</span></p>
+<p> </p>
+<h2>File server</h2>
+<p>Effettuare i salvataggi usando Rsnapshot.</p>
+<p>Per esigenze particolari usare rdiff-backup.</p>
+<h4>Test di integrità</h4>
+<p><span>Cercare un file modificato il giorno dell&#39;ultimo salvataggio e recuperarlo dal backup. Aprirlo e verificare che sia leggibile. </span></p>
+<p><span>Eseguire la stessa operazione su 2/3 file a caso.</span><br />Per trovare un file modificato ieri usare il comando:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">find DIRECTORY_DEL_FILESERVER -ctime -2 -mtime 1 -type f</pre>
+<p>Se non si ottengono risultati, aumentare il numero di giorni</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">find DIRECTORY_DEL_FILESERVER -ctime -3 -mtime 2 -type f
+find DIRECTORY_DEL_FILESERVER -ctime -4 -mtime 3 -type f
+find DIRECTORY_DEL_FILESERVER -ctime -5 -mtime 4 -type f
+ecc...</pre>
+<p>Ripristinare quindi il file con il comando</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">rdiff-backup -r 1D /mnt/backup/path/file.doc /tmp/file.doc</pre>
+<p>dove <strong>1D</strong> corrisponde al numero di giorni utilizzato nell&#39;opzione <em>ctime</em>, <strong>/mnt/backup/path/file.doc</strong> è il percorso del file nella directory del backup e <strong>/tmp/file.doc</strong> è la destinazione del file recuperato.</p>
+<p><strong>NOTE</strong>:</p>
+<p>* rdiff-backup vuole sempre il path completo di destinazione</p>
+<p>* se si fornisce una directory vuota come path di destinazione, verrà creato un file al posto della directory</p>
+<p>* se non viene creato nessun file, significa che il file prima di quella data non esisteva (capitava spesso con la vecchia ricerca senza l&#39;opzione <em>ctime</em>)</p>
+<p>* l&#39;opzione <em>ctime</em> non si riferisce alla data di creazione ma all&#39;ultimo cambio di permessi. Tuttavia spesso coincide con la data di creazione e noi la utilizziamo proprio in questo modo per trovare file modificati, ma precedentemente esistenti. Purtroppo nei filesystem che utilizziamo di solito non sembra essere gestita la data di creazione (fonte: <a href="http://stackoverflow.com/questions/158044/how-to-use-find-to-search-for-files-created-on-a-specific-date">http://stackoverflow.com/questions/158044/how-to-use-find-to-search-for-files-created-on-a-specific-date</a> commento di Max Cantor, attualmente #6).</p>
+<p> </p>
+<h2>Zimbra</h2>
+<p>Ci sono due tipi di backup: uno integrale di sistema, da usare in caso di disaster recovery, ed uno delle singole caselle da usare per il ripristino di singoli elementi.</p>
+<h4>Test di integrità</h4>
+<p><span>Verificare date di creazione dei file dei salvataggi e che i suddetti file si aprano, per eventuali controlli piu&#39; approfonditi sentire il cliente e pianificare prove a pagamento.</span></p>
+<p><span>Per i backup integrali di <em>zmbak</em> usare il comando:</span></p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">dar -t /PATH_DELL_ULTIMO_FULL</pre>
+<p>Per gli archivi di <em>zmbkpose</em> verificare che il programma <em>tar</em> riesca a leggere all&#39;interno dell&#39;archivio con il comando</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">tar tf nomearchivio.tar</pre>
+<p> </p>
+<h2><span>Zimbra Network Edition</span></h2>
+<p><span>Loggarsi nella console di amministrazione e caricare il pannello Strumenti &gt; Backup. Verificare quindi che i salvataggi, dall&#39;ultimo full in poi, siano stati eseguiti senza errori. Verificare eventualmente che il percorso della destinazione dei backup sia raggiungibile sul server e che siano presenti i file.</span></p>
+<p><span>Per verificare via CLI come utente zimbra lanciare </span></p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">zmbackupquery</pre>
+<p><span>verranno visualizzati l&#39;elenco dei backup in modalità decrescente (quindi l&#39;ultimo in alto).</span></p>
+<p><span>Per sapere la directory di destinazione dei salvataggi:</span></p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">zmprov gs NOMESERVER zimbraBackupTarget</pre>
+<p><span><br /></span></p>
+<p> </p>
+<h2>Fax</h2>
+<p>Si applicano gli stessi metodi di backup per fileserver (per la parte www), e del database su MySQL.</p>
+<p>Vedere le relative sezioni per i test.</p>
+<p> </p>
+<h2>WebApps / UfficYo</h2>
+<p>Si applicano gli stessi metodi di backup per fileserver (per la parte www), e del database su MySQL.</p>
+<p>Vedere le relative sezioni per i test.</p>
+<p> </p>
+<h2>Joomla</h2>
+<p>I salvataggi vanno eseguiti con Akeeba, che memorizza file e database in un pacchetto estraibile.</p>
+<p><span style="text-decoration: underline;">La procedura è a carico dei clienti</span>, se non diversamente concordato.</p>
+<p>Fornire al cliente il manuale su come operare (<a class="intfaqlink" href="index.php?action=artikel&amp;cat=5&amp;id=505&amp;artlang=it"> Esecuzione di un backup con Akeeba</a>), e la directory FTP dove vengono salvati i file. Per comodità creare una directory nella root del sito, con un nome non standard (come BKUP, BackupS...).</p>
+<h4>Test di integrità</h4>
+<p>// FIXME</p>
+<h2>Firewall</h2>
+<p>Sui firewall pianifichiamo un backup mensile della configurazione da inviare via email a support@yetopen.it. Verificare che esista la schedulazione andando in Sistema &gt; Backup &gt; Backup programmati, e che gli ultimi invii siano stati fatti.</p>
+<p>Se non si ha accesso diretto al firewall è possibile accedere per mezzo di un tunnel ssh in questo modo:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">ssh -p 30022 10443:192.168.0.182:10443 root@mail.coelsrl.it -N</pre>
+<p>dove 192.168.0.182 è l&#39;ip del firewall.</p>
+<p>E&#39; obbligatorio utilizzare la porta 10443 anche localmente, perché il pannello web ha dei redirect su quella.</p>
+<p>Il firewall sarà quindi disponibile all&#39;indirizzo http://localhost:10443</p>

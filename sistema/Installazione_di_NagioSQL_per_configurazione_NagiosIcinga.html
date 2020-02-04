@@ -1,0 +1,9 @@
+<p>Scaricare l&#39;ultimo pacchetto da <a href="http://www.nagiosql.org">nagiosql.org</a> e scompattarlo nella directory del web server.</p>
+<p>Opzionalmente dipende da php+ssh, se lo vogliamo:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">apt-get install libssh2-php</pre>
+<p>Poi occorre disabilitare il flag <span><em>suhosin.session.encrypt</em> di php. Si può modificare nei file .ini di php.</span></p>
+<p>Quindi creare la directory per ospitare i file di config di nagiosql:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">mkdir /etc/nagiosql
+chown www-data:www-data /etc/nagiosql</pre>
+<p>Riavviare apache, quindi aprire il browser alla posizione appena scompattata, che sarà http://SERVER/nagiosql32. Partirà l&#39;installer, che crea già da solo il database. Se non compare il tipo di database (primo campo, inibito) ripartire con l&#39;installer da index.php.</p>
+<p>Proseguire con tutti i passaggi, e quando viene chiesto rimuovere la sottocartella install/</p>

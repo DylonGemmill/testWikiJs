@@ -1,0 +1,13 @@
+<p>Come base useremo una Ubuntu 10.04 LTS server.</p>
+<p>Andare al sito <a href="http://www.knowledgetree.org">knowledgetree.org</a> e scaricare l&#39;installer universale (qui allegato).&nbsp;</p>
+<p>Andare su <a href="http://packages.ubuntu.com/search?keywords=swftools&amp;searchon=names&amp;suite=all&amp;section=all">packages.ubuntu.org</a> e scaricare il pacchetto swftools, che da qualche distribuzione non &egrave; pi&ugrave; incluso. L&#39;ultima versione pacchettizzata &egrave; per <em>karmic</em>, disponibile a questo url: <a href="http://packages.ubuntu.com/karmic/swftools">swftools per karmic</a>. Scaricato eseguire:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">dpkg -i swftools_0.9.0-0ubuntu1_amd64.deb
+apt-get -f install</pre>
+<p>Lo script configurer&agrave; i repository di Zend e Knowledgetree, ed installer&agrave; le dipendenze necessarie, tra cui Apache2, MySQL e PHP5.</p>
+<p>Per loggarsi utilizzare le credenziali<br />username: admin</p>
+<p>password: admin&nbsp;</p>
+<p>&nbsp;</p>
+<p>Come da istruzioni a fine installazione, avviare il demone per avere maggiori prestazioni in ricerca, indicizzazione e creazione dei pdf</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; "># cd /usr/share/knowledgetree-cs
+# sudo ./dmsctl.sh start</pre>
+<p>&nbsp;</p>

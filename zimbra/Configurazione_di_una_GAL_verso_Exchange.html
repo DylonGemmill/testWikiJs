@@ -1,0 +1,18 @@
+<p>Specialmente in fase di migrazione &egrave; necessario usare una GAL (Global Address List) esterna, che punta verso un server Exchange. Per configurare una GAL verso Exchange &egrave; necessario avere delle credenziali di accesso.</p>
+<p>La GAL &egrave; relativa al dominio, quindi per modificarla collegarsi all&#39;interfaccia web di amministrazione, quindi andare in <em>Dominio &gt; miodominio.it</em> e premere in alto <em>Configura GAL</em>.</p>
+<ul>
+<li>Modalit&agrave; GAL: <em>Esterna</em></li>
+<li>Tipo di server: <em>LDAP</em></li>
+<li>Nome server: <em>ip o hostname del server, porta 3268</em></li>
+<li>Filtro LDAP:<br /><em>(&amp;(|(displayName=*%s*)(cn=*%s*)(sn=*%s*)(givenName=*%s*)(mail=*%s*))(!(msExchHideFromAddressLists=TRUE))(|(&amp;(objectCategory=person)(objectClass=user)(!(homeMDB=*))(!(msExchHomeServerName=*)))(&amp;(objectCategory=person)(objectClass=user)(|(homeMDB=*)(msExchHomeServerName=*)))(&amp;(objectCategory=person)(objectClass=contact))(objectCategory=group)(objectCategory=publicFolder)(objectCategory=msExchDynamicDistributionList)))</em></li>
+<li>Filtro autocompletamento:<br /><em>(|(cn=%s*)(sn=%s*)(gn=%s*)(mail=%s*))</em></li>
+<li>Base di ricerca LDAP:<br /><em>dc=dominioexchange,dc=local</em></li>
+</ul>
+<div>Quindi nella schermata successiva:</div>
+<div>
+<ul>
+<li>Mettere la spunta per l&#39;uso del binding</li>
+<li>Come username mettere: <em>utente@dominioexchange.local</em></li>
+<li>Password: la password del suddetto account in exchange</li>
+</ul>
+</div>

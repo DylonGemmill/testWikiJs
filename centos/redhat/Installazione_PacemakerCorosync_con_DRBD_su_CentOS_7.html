@@ -1,0 +1,358 @@
+<div>A differenza di Ubuntu in CentOS si usa PCS per gestire il cluster.</div>
+<div class="crayon-line">Installare i pacchetti necessari con il comando:</div>
+<div class="crayon-line">
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">yum install corosync pcs pacemaker</pre>
+</div>
+<div class="crayon-line">poi definire una password per l&#39;utente hacluster:</div>
+<div class="crayon-line">
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">passwd hacluster</pre>
+</div>
+<div class="crayon-line">avviare quindi <em>pcsd</em></div>
+<div class="crayon-line">
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">systemctl start pcsd</pre>
+</div>
+<div class="crayon-line">per evitare errori durante l&#39;installazione andiamo ad inserire il nome della maccchina con l&#39;inidirizzo ip nel file hosts:</div>
+<div class="crayon-line">
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">vim /etc/hosts
+
+INDIRIZZOIP hostname</pre>
+</div>
+<div class="crayon-line"> </div>
+<div class="crayon-line">aggiungiamo i nodi al cluster (se ne abbiamo solo uno omettere il secondo), fornendo utente e password dell&#39;utente <em>hacluster</em> fatto sopra:</div>
+<div class="crayon-line">
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">pcs cluster auth node01 node02</pre>
+</div>
+<div class="crayon-line">andiamo quindi a creare il cluster:</div>
+<div class="crayon-line">
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">pcs cluster setup --name cluster_yetopen node01 node02</pre>
+</div>
+<div class="crayon-line">ed avviamo</div>
+<div class="crayon-line">
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">pcs cluster start --all</pre>
+</div>
+<div class="crayon-line">Possiamo a questo punto vedere lo stato dei nodi:</div>
+<div class="crayon-line">
+<pre class="brush: bash;fontsize: 100; first-line: 1; "># pcs status nodes
+ Pacemaker Nodes:
+ Online: node01 node02
+ Standby:
+ Offline:
+</pre>
+</div>
+<div class="crayon-line">Impostiamo i parametri base del cluster:</div>
+<div class="crayon-line">
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">pcs property set stonith-enabled=false
+pcs property set no-quorum-policy=ignore</pre>
+</div>
+<div class="crayon-line">La configurazione iniziale è terminata, ora possiamo passare all&#39;aggiunta delle risorse.</div>
+<h3 class="crayon-line"> </h3>
+<h3 class="crayon-line">Configurazione delle risorse</h3>
+<div class="crayon-line">Per definire un indirizzo IP condiviso:</div>
+<div class="crayon-line">
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">pcs resource create virtual_ip ocf:heartbeat:IPaddr2 ip=192.168.202.100 nic=eth0 idr_netmask=24 op monitor interval=30s</pre>
+</div>
+<div class="crayon-line">in questo modo definiamo un indirizzo ip aggiuntivo sull&#39;interfaccia <em>eth0</em>. Attenzione che la risorsa IPaddr2, a differenza di IPaddr, aggiunge un IP che è visibile solo con il comando <em>ip a</em> e non con <em>ifconfig</em>.</div>
+<div class="crayon-line">Andiamo ora ad aggiungere il servizio <em>httpd</em>, che dovrà essere dipendente dall&#39;indirizzo IP: il server web deve avviarsi solo dopo l&#39;attivazione dell&#39;indirizzo condiviso e deve risiedere sullo stesso server dove è attivato.</div>
+<div class="crayon-line">Prima di lanciare i comandi verificare che la pagina <em>/server-status</em> di apache sia funzionante. Servirà a Pacemaker per monitorare se il server web è attivo o meno.</div>
+<div class="crayon-line">
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">pcs resource create webserver ocf:heartbeat:apache configfile=/etc/httpd/conf/httpd.conf statusurl="http://localhost/server-status" op monitor interval=1min
+pcs constraint colocation add webserver virtual_ip INFINITY
+pcs constraint order virtual_ip then webserver
+</pre>
+Con il primo comando definiamo la risorsa, con il secondo il fatto che la risorsa <em>webserver</em> <strong>deve</strong> (<em>INFINITY</em>) essere in esecuzione dove c&#39;è anceh <em>virtual_ip</em> e con la terza che l&#39;ordine di avvio deve essere prima <em>virtual_ip</em> e poi <em>webserver</em>.</div>
+<div class="crayon-line">Riavviamo il cluster e a questo punto dovremmo avere il server web attivo:</div>
+<div class="crayon-line">
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">pcs cluster stop --all &amp;&amp; sudo pcs cluster start --all</pre>
+</div>
+<div class="crayon-line">In ultimo assicuriamoci che i servizi di alta disponibilità vengano avviati al boot:</div>
+<div class="crayon-line">
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">systemctl enable pcsd
+systemctl enable corosync
+systemctl enable pacemaker
+</pre>
+</div>
+<p class="crayon-line">ATTENZIONE: per gestire le risorse di tipo <strong><em>VirtualDomain</em></strong> (macchine virtuali KVM) la versione fornita da CentOS <a href="https://bugs.centos.org/view.php?id=9179">è bacata</a>. Aggiornarla con questo comando:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">mv /usr/lib/ocf/resource.d/heartbeat/VirtualDomain{,_centos}
+wget https://github.com/ClusterLabs/resource-agents/raw/master/heartbeat/VirtualDomain -O /usr/lib/ocf/resource.d/heartbeat/VirtualDomain
+chmod +x /usr/lib/ocf/resource.d/heartbeat/VirtualDomain</pre>
+<p class="crayon-line"> </p>
+<p class="crayon-line">Per vedere l&#39;elenco dei fornitori (la prima parte della definizione del servizio) di risorse usare il comando</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">pcs resource standards</pre>
+<p class="crayon-line">lsb significa <em>linux standard base</em>, e sono i servizi avviabili con il vecchio <em>init</em> (quindi in /etc/init.d). I servizi di CentOS sono quasi tutti avviaibi da systemd, qiundi usare <em>systemd</em> come provider. Ad esempio per gestire samba avremo due risorse:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">pcs resource create nmb systemd:nmb 
+pcs resource create smb systemd:smb</pre>
+<p class="crayon-line"> </p>
+<h3 class="crayon-line">NFS</h3>
+<p class="crayon-line">NFS ha già uno script OCF di gestione che si occupa di avviare il demone e tutti i servizi correlati, ad esclusione di rpcbind.</p>
+<p class="crayon-line">Per avviare NFS via HA quindi è necessario avere due risorse, rpcbind e nfsserver, e fare in modo (tramite group o constraint) che si avviino in questo ordine.</p>
+<p class="crayon-line">Il comando di creazione delle risorse è:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">pcs resource create rpcbind systemd:rpcbind
+pcs resource create nfsserver ocf:heartbeat:nfsserver</pre>
+<h3 class="crayon-line"> LDAP</h3>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">pcs  resource create ldap ocf:heartbeat:slapd --group grp_servizi</pre>
+<h3> Esempio di collocation e order</h3>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">pcs constraint colocation add grp_servizi dati_fs INFINITY
+pcs constraint order slapd then grp_zimbra</pre>
+<h3 class="crayon-line">Gruppi di risorse</h3>
+<p class="crayon-line">A volte è utile che una serie di risorse vengano avviate in sequenza, ma per comodità non si vuole creare <em>order</em> e <em>constraint</em> per tutte. In questo caso si possono usare i gruppi. Le risorse specificate in un gruppo vengono avviate nell&#39;ordine come compaiono nello stesso.</p>
+<p class="crayon-line">Per creare un gruppo basta aggiungergli delle risorse. Ad esempio:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">pcs resource group add GruppoServizi rpcbind nfsserver</pre>
+<p class="crayon-line">Lo stesso comando si può usare per aggiungere successivamente una risorsa ad un gruppo.</p>
+<p class="crayon-line">E&#39; possibile anche aggiungere la risorsa posizionalmente in un gruppo, usando le opzioni <em>--before</em> o <em>--after</em>. Ad esempio:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">pcs resource group add GruppoServizi smbd --before rpcbind</pre>
+<p class="crayon-line">Stesso comando per modificare la posizione di un servizio. Se la risorsa è già in un altro gruppo o nello stesso verrà spostata.</p>
+<p class="crayon-line">E&#39; possibile specificare il gruppo di una risorsa direttamente in fase di creazione:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">pcs resource create NomeRisorsa [...] --group GruppoServizi</pre>
+<h3 class="crayon-line"> Macchina Virtuale con KVM</h3>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">pcs cluster cib add_firewall
+pcs -f add_firewall resource create firewall_drbd ocf:linbit:drbd drbd_resource=firewall op monitor interval=60s
+pcs -f add_firewall resource master firewall_drbd_sync firewall_drbd master-max=1 master-node-max=1 clone-max=2 clone-node-max=1 notify=true
+pcs cluster cib-push add_firewall
+
+pcs cluster cib add_vm
+pcs -f add_vm resource create firewall_vm ocf:heartbeat:VirtualDomain op monitor interval=60s config=/etc/yetopen/firewall.xml hypervisor=qemu:///system meta target-role=Stopped op monitor interval=60s
+pcs -f add_vm constraint colocation add firewall_vm firewall_drbd_sync INFINITY with-rsc-role=Master
+pcs -f add_vm constraint order promote firewall_drbd_sync then start firewall_vm
+pcs cluster cib-push add_vm</pre>
+<p class="crayon-line">Rif: <a href="https://access.redhat.com/documentation/en-US/Red_Hat_Enterprise_Linux/6/html/Configuring_the_Red_Hat_High_Availability_Add-On_with_Pacemaker/s1-resourcegroups-HAAR.html">redhat</a></p>
+<p class="crayon-line"> </p>
+<p class="crayon-line">Altre info su gruppi e risorse:</p>
+<p class="crayon-line"><span style="font-size: 13px;">http://clusterlabs.org/doc/it-IT/Pacemaker/1.1-pcs/html/Clusters_from_Scratch/_add_a_resource.html</span></p>
+<p class="crayon-line">http://clusterlabs.org/doc/fr/Pacemaker/1.1-pcs/html/Clusters_from_Scratch/_configure_the_cluster_for_drbd.html </p>
+<h3 class="crayon-line"> </h3>
+<h3 class="crayon-line">Installazione e configurazione di DRBD</h3>
+<div class="crayon-line">DRBD non è più incluso in RHEL, quindi dobbiamo aggiungere il repository di ELRepo:</div>
+<div class="crayon-line">
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">rpm --import https://www.elrepo.org/RPM-GPG-KEY-elrepo.org
+yum install http://www.elrepo.org/elrepo-release-7.0-2.el7.elrepo.noarch.rpm
+</pre>
+</div>
+<div class="crayon-line">e possiamo quindi procedere:</div>
+<div class="crayon-line">
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">yum install drbd84-utils kmod-drbd84</pre>
+</div>
+<div class="crayon-line">Creiamo una risorsa DRBD su un device (fisico o per comodità LVM). Prima la configurazione globale di drdb in /etc/drbd.d/global-common.conf:</div>
+<div class="crayon-line">
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">global {
+ usage-count no;
+}
+handlers {
+ # Il nodo è primario, ma dovrebbe diventare target da dopo la negoziazione. Inviare alert
+ pri-lost "echo pri-lost su DRBD. Verificare i log! | mail -s &#39;DRBD Alert&#39; support@yetopen.it";
+ # Notifica in caso di split-brain
+ split-brain "echo split-brain. drbdadm -- --discard-my-data connect $DRBD_RESOURCE ? | mail -s &#39;DRBD Alert&#39; support@yetopen.it";
+}
+ 
+startup {
+ # Questi sono i tempi di timeout massimi per cui il sistema verrà tenuto fermo
+ # (in genere servono per permettere la risincronizzazione del raid prima di far partire il sistema in ogni caso)
+ degr-wfc-timeout 120;
+ wfc-timeout 120;
+ # Per active-active
+ become-primary-on both;
+}
+ 
+disk {
+ on-io-error detach;
+}
+ 
+net {
+ allow-two-primaries;
+ after-sb-0pri disconnect;
+ after-sb-1pri disconnect;
+ after-sb-2pri disconnect;
+ rr-conflict disconnect;
+}</pre>
+</div>
+<div class="crayon-line">quindi la configurazione della risorsa:</div>
+<div class="crayon-line">
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">resource drbd0 {
+        disk /dev/vg_drbd/lv_drbd0;
+        device /dev/drbd0;
+        meta-disk internal;
+        on node01 {
+                address 192.168.202.101:7789;
+        }
+        on node02 {
+                address 192.168.202.102:7789;
+        }
+}</pre>
+</div>
+<div class="crayon-line">effettuare la pulizia della partzione:</div>
+<div class="crayon-line">
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">dd if=/dev/zero bs=1M count=1 of=/dev/PARTIZIONE</pre>
+</div>
+<div class="crayon-line">riavviamo drbd e per inizializzare il disco:</div>
+<div class="crayon-line">
+<pre class="brush: bash;fontsize: 100; first-line: 1; "> drbdadm create-md drbd0
+drbdadm up drbd0
+drbdadm primary --force drbd0</pre>
+</div>
+<div class="crayon-line">l&#39;ultimo comando forza la risorsa drbd <em>drbd0</em> ad attivarsi su uno dei due nodi, che diventerà primario.</div>
+<div class="crayon-line">A questo punto possiamo usarlo come una partizione normale:</div>
+<div class="crayon-line">
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">mkfs.ext4 /dev/drbd/by-res/drbd0
+mount /dev/drbd/by-res/drbd0 /mnt</pre>
+</div>
+<div class="crayon-line">Smontiamo tutto per configurare la risorsa in PCS.</div>
+<div class="crayon-line">Prima però ovviamo a dei problemi di permessi:</div>
+<div class="crayon-line">
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">chmod 777 /var/lib/pacemaker/cores</pre>
+</div>
+<div class="crayon-line">ATTENZIONE: lo script di gestione della risorsa drbd è <a href="http://elrepo.org/bugs/view.php?id=578">obsoleto e bacato</a>. Scaricare la versione aggiornata con questo comando:</div>
+<div class="crayon-line">
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">wget "http://git.linbit.com/gitweb.cgi?p=drbd-utils.git;a=blob_plain;f=scripts/drbd.ocf;h=cf6b966341377a993d1bf5f585a5b9fe72eaa5f2;hb=HEAD" -O /usr/lib/ocf/resource.d/linbit/drbd
+chmod +x /usr/lib/ocf/resource.d/linbit/drbd</pre>
+</div>
+<div class="crayon-line">Modificheremo la configurazione in un file temporaneo da applicare poi al cluster. Dopo il primo comando il file <em>add_drbd</em> conterrà la configurazione attuale, in XML.</div>
+<div class="crayon-line">
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">pcs cluster cib add_drbd
+pcs -f add_drbd resource create webserver_data ocf:linbit:drbd drbd_resource=drbd0 op monitor interval=60s
+pcs -f add_drbd resource master webserver_data_sync webserver_data master-max=1 master-node-max=1 clone-max=2 clone-node-max=1 notify=true
+pcs cluster cib-push add_drbd</pre>
+</div>
+<div class="crayon-line">questa prima parte istruisce il cluster su come gestire drbd, ma non ancora il <em>mount</em> dello stesso. Per quello aggiungiamo:</div>
+<div class="crayon-line">
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">pcs cluster cib add_fs
+pcs -f add_fs resource create webserver_fs Filesystem device="/dev/drbd0" directory="/var/www/html" fstype="ext4"
+pcs -f add_fs constraint colocation add webserver_fs webserver_data_sync INFINITY with-rsc-role=Master
+pcs -f add_fs constraint order promote webserver_data_sync then start webserver_fs
+pcs -f add_fs constraint colocation add webserver webserver_fs INFINITY
+pcs -f add_fs constraint order webserver_fs then webserver
+pcs cluster cib-push add_fs</pre>
+</div>
+<div class="crayon-line">Aggiunta configurazione risorsa drbd con mount /dati:</div>
+<div class="crayon-line">
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">pcs cluster cib add_drbd
+pcs -f add_drbd resource create drbd_dati ocf:linbit:drbd drbd_resource=dati op monitor interval=60s
+pcs -f add_drbd resource master drbd_dati_sync drbd_dati master-max=1 master-node-max=1 clone-max=2 clone-node-max=1 notify=true 
+pcs cluster cib-push add_drbd</pre>
+</div>
+<div class="crayon-line">
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">pcs cluster cib add_fs
+pcs -f add_fs resource create dati_fs Filesystem device="/dev/drbd0" directory="/dati" fstype="ext4"
+pcs -f add_fs constraint colocation add dati_fs drbd_dati_sync INFINITY with-rsc-role=Master
+pcs -f add_fs constraint order promote drbd_dati_sync then start dati_fs
+pcs cluster cib-push add_fs</pre>
+</div>
+<h3 class="crayon-line"> Aggiunta nuovo nodo da cluster esistente</h3>
+<p> </p>
+<h4 class="crayon-line">Allineamento utenti password e gruppi sul secondo nodo</h4>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">scp /etc/passwd nodo2:/etc/
+scp /etc/group nodo2:/etc/
+scp /etc/shadow nodo2:/etc/
+</pre>
+<h4>Installazione DRBD secondo nodo</h4>
+<div class="crayon-line"> Effettuiamo l&#39;installazione di drbd sul secondo nodo:</div>
+<div class="crayon-line">
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">yum install drbd84-utils kmod-drbd84</pre>
+</div>
+<div class="crayon-line">Effettuiamo la copia di tutta la configurazione di drbd dal nodo1 al nodo2</div>
+<div class="crayon-line">
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">scp -r /etc/drbd* nodo2:/etc/</pre>
+</div>
+<div class="crayon-line"> </div>
+<div class="crayon-line">A questo punto dovremmo vedere in modo corretto la risorsa drbd(esempio nodo 2):</div>
+<div class="crayon-line">
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">drbd-overview<br />0:dati/0      Connected    Secondary/Primary UpToDate/UpToDate</pre>
+</div>
+<div class="crayon-line"> </div>
+<h4 class="crayon-line">Installazione LDAP e SAMBA  secondo nodo:</h4>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">yum install -y openldap-clients nss-pam-ldapd openldap-servers openldap</pre>
+<div class="crayon-line">
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">yum install -y samba smbldap-tools samba-common samba-client</pre>
+</div>
+<div class="crayon-line">eliminiamo la vecchia configurazione del secondo nodo</div>
+<div class="crayon-line">
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">rm -rf /etc/openldap/slapd.d/*</pre>
+</div>
+<div class="crayon-line">ed effettuiamo la copia  di tutta la configurazione di ldap sul secondo nodo:</div>
+<div class="crayon-line">
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">scp -r /etc/openldap/* nodo2:/etc/openldap/
+</pre>
+</div>
+<div class="crayon-line">Procediamo alla copia dei file di configurazione  di samba:</div>
+<div class="crayon-line">
+<pre class="brush: bash;fontsize: 100; first-line: 1; "> scp -r /etc/samba/* galasrv02:/etc/samba/
+scp -r /var/lib/samba/* galasrv02:/var/lib/samba
+scp -r /etc/smbldap-tools/* galasrv02:/etc/smbldap-tools/</pre>
+</div>
+<h4 class="crayon-line"> Installazione NFS secondo nodo</h4>
+<p>Installazione dei pacchetti NFS</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">yum install nfs-utils nfs-utils-lib</pre>
+<p class="crayon-line">Procediamo con la copia della configurazione di nfs:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">scp -r /etc/sysconfig/nfs node2:/etc/sysconfig/</pre>
+<p> E del file di exports:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">scp /etc/exports node02:/etc/</pre>
+<h4 class="crayon-line"> Installazione dnsmasq</h4>
+<p>Il pacchetto dnsmasq è già installato nella versione minimal, quindi bisogna solo procedere alla copia della configurazione:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">scp /etc/dnsmasq.d/* node02:/etc/dnsmasq.d/</pre>
+<h4> Installazione Apache</h4>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">yum install httpd </pre>
+<p class="crayon-line">installazione mod_ssl se necessario:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">yum -y install mod_ssl</pre>
+<p class="crayon-line">Copia dei file di configurazione di apache:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">scp -r /etc/httpd/conf/* nodo02:/etc/httpd/conf
+scp -r /etc/httpd/conf.d/* nodo2:/etc/httpd/conf.d/
+</pre>
+<h4 class="crayon-line">Installazione Mysql</h4>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">yum -y install mariadb-server mariadb</pre>
+<p class="crayon-line">Copia dei file di configurazione di mysql</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">scp /etc/my.cnf.d/* node02:/etc/my.cnf.d/</pre>
+<h4 class="crayon-line">Installazione cups</h4>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">yum install cups ghostscript hplip-common</pre>
+<p class="crayon-line">copia dei file di configuraizone di cups:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">scp -r /etc/cups/* node02:/etc/cups/
+</pre>
+<h4 class="crayon-line">Installazione Zimbra</h4>
+<p>Effetuare la modifica del file hosts(modifica temporanea):</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">vim /etc/hosts 
+127.0.0.1   localhost
+10.22.22.5 zimbra.yetopen.it zimbra</pre>
+<p>Installazione dei pacchetti dei prerequisiti di zimbra:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">yum install perl perl-core ntpl nmap-ncat libidn gmp libaio libstdc++ unzip sysstat sqlite  -y</pre>
+<p> Installazione dei pacchetti di Zimbra con la solo parte software, quindi andiamo a scompattare il pacchetto scaricato di Zimbra ed effettuiamo:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">./install.sh -s</pre>
+<p>Rinominare la directory zimbra in opt:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">mv /opt/zimbra{,_OLD}
+mkdir /opt/zimbra</pre>
+<p>Se ulizzato effettuiamo l&#39;installazione di fetchmail:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">yum install fetchmail</pre>
+<p>Effettuare la copia del demone:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">scp /etc/init.d/fetchmail node02:/etc/init.d/</pre>
+<p>Copiare il file se presente in /etc o in un secondo creare il link simbolico(dipende dalla configurazione utilizzata):</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">ln -s /dati/etc/fetchmail/fetchmailrc /etc/fetchmailrc
+</pre>
+<p> Installazione zabbix-proxy (installazione pacchetti come da guida kb)  e copia file di configurazione:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">scp /etc/zabbix/zabbix_proxy.conf nodo02:/etc/zabbix/</pre>
+<h3>Installazione Pacemaker e Corosync:</h3>
+<div class="crayon-line">
+<p>Instalazione pacemaker corosync pcs nodo2</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">yum install corosync pcs pacemaker
+systemctl start pcsd
+systemctl enable pcsd
+</pre>
+<p>Sul primo nodo installato aggiungere il secondo nodo:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">pcs cluster auth galasrv02
+pcs cluster node add node02<br />pcs cluster auth galasrv01 galasrv02</pre>
+<p>Adesso andiamo ad attivare il cluster sul secondo nodo:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">pcs cluster start
+pcs cluster enable</pre>
+<p><br />Sul primo nodo dovremmo visualizzare lo stato online di entrambi i nodi</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">Online: [ galasrv01 galasrv02 ]</pre>
+</div>
+<div class="crayon-line"> </div>
+<div class="crayon-line">Se voglia mettere un nodo in maintenence mode:</div>
+<div class="crayon-line">
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">pcs property set maintenance-mode=true</pre>
+</div>
+<div class="crayon-line">Per disabilitare il maintenence mode :</div>
+<div class="crayon-line">
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">pcs property unset maintenance-mode</pre>
+</div>
+<div class="crayon-line"> </div>
+<div class="crayon-line">A questo punto dovremmo avere la /var/www/html montata, e apache avviato!</div>
+<p>rif:</p>
+<p>http://jensd.be/156/linux/building-a-high-available-failover-cluster-with-pacemaker-corosync-pcs</p>
+<p>http://jensd.be/186/linux/use-drbd-in-a-cluster-with-corosync-and-pacemaker-on-centos-7</p>
+<p>http://clusterlabs.org/doc/</p>

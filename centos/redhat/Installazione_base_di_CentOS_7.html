@@ -1,0 +1,29 @@
+<p>Scaricare il CD di installazione <strong>minimal</strong> da uno dei <a href="http://isoredirect.centos.org/centos/7/isos/x86_64/">mirror più vicini</a>. Il CD può essere trasferito su chiavetta USB semplicemente con un <em>dd</em>:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">dd if=CentOS-7-x86_64-Minimal-1503-01.iso of=/dev/sdc</pre>
+<p> </p>
+<p>Se necessario (ad esempio per Zimbra) disabilitare il firewall e selinux:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">sed -i &#39;s/enforcing/disabled/g&#39; /etc/sysconfig/selinux
+systemctl disable firewalld
+systemctl stop firewalld
+</pre>
+<p>riavviare per rendere effettiva la modifica </p>
+<p> </p>
+<p>Aggiungiamo il repository EPEL per le utilità generiche:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">yum install -y epel-release</pre>
+<p> </p>
+<p>Installiamo le utilità principali:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">yum install -y tmux htop vim bind-utils ntp net-tools
+systemctl enable ntpd</pre>
+<pre class="brush: bash;fontsize: 100; first-line: 1; "><span style="font-size: 13px;"> sed -i &#39;s/\.centos\.ntp/\.it\.ntp/g&#39; /etc/ntp.conf</span></pre>
+<pre class="brush: bash;fontsize: 100; first-line: 1; "> systemctl start ntpd</pre>
+<p> </p>
+<p>Aggiungere in /etc/ssh/sshd_config le righe:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">Port 22
+Port 30022</pre>
+<p> </p>
+<p>Per effettuare l&#39;aggiornamento di tutti i pacchetti del server </p>
+<p> </p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">yum update</pre>
+<p> </p>
+<p>Nel caso si verificasse un incremento dei processi  acpi_pad, effettuare la segunete instruzione per disabilitare acpi_pad(link soluzione http://serverfault.com/questions/561190/unusual-load-average-for-an-idle-workstation link bug : https://access.redhat.com/solutions/508303</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">grubby --update-kernel=ALL --args="acpi_pad.disable=1"</pre>

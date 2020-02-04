@@ -1,0 +1,68 @@
+<p>Installare:</p>
+<p>&nbsp;</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">aptitude install ifenslave wpasupplicant</pre>
+<p>&nbsp;</p>
+<p>Nel file /etc/network/interfaces aggiungere la configurazione dell&#39;interfaccia <em>bond0</em> come segue:</p>
+<p>&nbsp;</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">auto bond0 
+iface bond0 inet static 
+        address 192.168.1.1 
+        netmask 255.255.255.0 
+        network 192.168.1.0 
+        broadcast 192.168.1.255 
+        gateway 192.168.1.254 
+        bond-slaves none 
+        bond-mode 2 
+        bond-miimon 100 
+
+        bond_downdelay 200 
+        bond_updelay 200 
+        bond_primary eth0 
+        slaves wlan0 eth0 
+
+auto eth0 
+iface eth0 inet manual 
+        bond-master bond0 
+        bond-primary eth0 wlan0 
+
+
+auto wlan0 
+iface wlan0 inet manual 
+        wpa-roam /root/wpa_supplicant.conf 
+        bond-master bond0 
+        bond-give-a-chance 10 
+        wpa-bridge bond0 
+</pre>
+<p>&nbsp;</p>
+<p>Creare il file /root/wpa_supplicant.conf con la configurazione della rete wifi, ad esempio:</p>
+<p>&nbsp;</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">network={ 
+               ssid="essid access point" 
+               scan_ssid=1 
+               key_mgmt=WPA-PSK 
+               psk="chiave wpa" 
+          } </pre>
+<p>&nbsp;</p>
+<p>Il risultato si potr&agrave; vedere nel file&nbsp;<em>/proc/net/bonding/bond0</em>:</p>
+<p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">Ethernet Channel Bonding Driver: v3.5.0 (November 4, 2008) 
+
+Bonding Mode: load balancing (xor) 
+Transmit Hash Policy: layer2 (0) 
+MII Status: up 
+MII Polling Interval (ms): 100 
+Up Delay (ms): 200 
+Down Delay (ms): 200 
+
+Slave Interface: eth0 
+MII Status: up 
+Link Failure Count: 0 
+Permanent HW addr: 00:19:66:bb:a9:c2 
+
+Slave Interface: wlan0 
+MII Status: up 
+Link Failure Count: 0 
+Permanent HW addr: f0:7d:68:63:b5:d6 </pre>
+</p>
+<p>&nbsp;</p>
+<p><a href="http://ubuntuforums.org/showthread.php?t=1299073">http://ubuntuforums.org/showthread.php?t=1299073</a><br /><a href="http://www.slacky.eu/wikislack/index.php?title=Linux_Bonding_Mini-Howto">http://www.slacky.eu/wikislack/index.php?title=Linux_Bonding_Mini-Howto</a></p>

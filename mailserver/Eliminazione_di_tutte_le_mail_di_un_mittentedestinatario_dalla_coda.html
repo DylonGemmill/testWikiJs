@@ -1,0 +1,25 @@
+<p>In caso si vogliano eliminare tutte le mail da e per un determinato indirizzo dalla coda di posta usare questo comando:</p>
+<p> </p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">postqueue -p | tail -n +2 | awk &#39;BEGIN { RS = "" } / byrdsnestquilt@bellsouth\.net/ { print $1 }&#39; | tr -d &#39;*!&#39; | postsuper -d -</pre>
+<p> </p>
+<p>Per verificare che la selezione sia corretta si può omettere l&#39;ultima parte (postsuper) per verificare quali ID verranno selezionati.</p>
+<p> </p>
+<p>Se questo comando non funziona c&#39;è una variante:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">mailq | tail -n +2 | awk &#39;BEGIN { RS = "" } { if ($7 == "webmaster@cosferserramenti.it") print $1 }&#39; | tr -d &#39;*!&#39;</pre>
+<p>Si possono usare questi parametri nella if:</p>
+<ul>
+<li>$7 = mittente</li>
+<li>$8 = destinatario</li>
+<li>$9 = secondo destinatario</li>
+</ul>
+<div>Per concatenare più condizioni:</div>
+<div>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">{ if ($8 == "you@yourdomain.com" &amp;&amp; $9 == "")
+print $1 }</pre>
+</div>
+<p> </p>
+<h2>Per cancellare tutte le mail in coda da MAILER-DAEMON</h2>
+<pre class="language-markup"><code>/opt/zimbra/postfix/sbin/mailq | grep MAILER | awk &#39;{print $1&#39;}  |  xargs -n 1 /opt/zimbra/postfix/sbin/postsuper -d</code></pre>
+<p>(la posizione dei comandi è di zimbra 7)</p>
+<p> </p>
+<p>rif: http://www.faqforge.com/linux/server/manage-the-postfix-mailqueue-with-postsuper-postqueue-und-mailq/</p>

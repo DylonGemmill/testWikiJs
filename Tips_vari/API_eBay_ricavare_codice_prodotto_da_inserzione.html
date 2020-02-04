@@ -1,0 +1,12 @@
+<p>Per poter ricavare l&#39;intera inserzione di un oggetto eBay dalle apposite API, occorre utilizzare la chiamata <em>GetSingleItem </em>passando (oltre all&#39;<em>itemID</em>) il parametro <em>IncludeSelector</em> settato a<em> Description</em>. Un esempio di XML</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;GetSingleItemRequest xmlns="urn:ebay:apis:eBLBaseComponents"&gt;
+&lt;ItemID&gt;140745087435&lt;/ItemID&gt;
+  &lt;IncludeSelector&gt;Description&lt;/IncludeSelector&gt;
+&lt;/GetSingleItemRequest&gt;?</pre>
+<p> </p>
+<p>Il dato viene poi tornato nella variabile <em>Description</em> dove i caratteri sono però codificati in caso di codice HTML (i.e. &amp;lt; al posto di &lt;).</p>
+<p> </p>
+<p>Un esempio di codice PHP per prelevare il codice prodotto</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">preg_match (&#39;/Product Code: ([^&amp;]+)&amp;/&#39;, $s, $m);</pre>
+<p>Il primo parametro è il pattern di ricerca in sintassi perl. Le parentesi tonde servono per indicare i valori da tornare come match ($m). Il secondo parametro è la stringa in cui viene effettuata la ricerca.</p>

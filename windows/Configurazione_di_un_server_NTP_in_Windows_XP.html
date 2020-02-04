@@ -1,0 +1,12 @@
+<ol>
+<li>Andare in <em>Pannello di controllo &gt; Data e ora</em>&nbsp;ed impostare un server NTP nel riquadro (<em>0.it.pool.ntp.org</em> ad esempio)</li>
+<li>Eseguire <em>regedit</em></li>
+<li>Modificare la voce&nbsp;<br /><em>HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\W32Time\Config\AnnounceFlags</em><br />a <strong>5</strong>&nbsp;</li>
+<li>Modificare la voce<br /><em>HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\W32Time\TimeProviders\NtpServer\Enabled</em><br />a <strong>1</strong></li>
+<li>Lanciare <em>cmd</em></li>
+<li>Nella shell eseguire<br />
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">net stop w32time &amp;&amp; net start w32time
+w32tm /resync /rediscover</pre>
+</li>
+</ol>
+<p>rif:&nbsp;<a href="http://support.microsoft.com/kb/314054/it">http://support.microsoft.com/kb/314054/it</a></p>

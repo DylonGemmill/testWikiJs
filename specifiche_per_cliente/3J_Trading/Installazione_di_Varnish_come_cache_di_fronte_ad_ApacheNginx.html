@@ -1,0 +1,20 @@
+<p>Installare l&#39;ultima versione disponibile (dal server ufficiale sono supportate <em>precise 12.04 </em>e <em>trusty 14.04</em>):</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">apt-get -y install apt-transport-https
+curl https://repo.varnish-cache.org/GPG-key.txt | apt-key add -
+echo "deb https://repo.varnish-cache.org/ubuntu/ %(lsb_release -cs) varnish-4.1" &gt;&gt; /etc/apt/sources.list.d/varnish-cache.list
+apt-get update
+apt-get install varnish</pre>
+<div>Modificare in /etc/default/varnish il parametro <em>-a</em> dell&#39;opzione <em>DAEMON_OPTIONS</em>, che indica la porta a cui è in ascolto Varnish. In fase di test si può lasciare la predefinita, in produzione si metterà <em>80. </em></div>
+<div>Modificare in /etc/varnish/default.vcl la stanza <em>backend default</em>, che indica IP e porta del server web. In fase di prova avremo probabilmente 127.0.0.1 e <em>80</em>. <span style="text-decoration: underline;"><br /></span></div>
+<div>Riavviare Varnish e accedere alla porta specificata nel primo passaggio.</div>
+<div> </div>
+<div>Per testare le performance si possono usare le utility di Apache:</div>
+<div>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">apt-get install apache2-utils -y
+ab -n 100 -c 10 http://demo.ufficyo.com:6081/yetopen_2015/
+ab -n 100 -c 10 http://demo.ufficyo.com:80/yetopen_2015/</pre>
+</div>
+<p> </p>
+<h3>Implementare un anti DDoS protection </h3>
+<p>Da testare: http://www.htpcguides.com/wordpress-ddos-attack-protection-with-varnish-3-firewall/</p>
+<p> </p>

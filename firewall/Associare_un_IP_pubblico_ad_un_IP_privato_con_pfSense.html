@@ -1,0 +1,10 @@
+<p>E&#39; possibile impostare una relazione 1 a 1 tra un IP pubblico ed un IP della LAN, in modo da evitare di dover effettuare il forward per ogni porta necessaria.</p>
+<p> </p>
+<ol>
+<li>configurare un IP in <em>Firewall &gt; Virtual IP</em> di tipo <em>Proxy ARP</em>, con l&#39;IP pubblico da utilizzare;</li>
+<li>andare in <em>Firewall &gt; NAT &gt; 1:1</em> ed aggiungere una regola con questi parametri:<br />Interface: <em>WAN</em><br />External subnet IP: <em>IP pubblico</em><br />Internal IP: <em>Single Host 10.22.22.x</em> (IP privato a cui inoltrare le porte) </li>
+<li><em>Firewall &gt; Rules &gt; WAN</em> e premere <em>+</em> per creare una nuova regola:<br />Action: <em>Pass</em><br />Interface: <em>WAN</em><br />Protocol: <em>any</em><br />Destination: <em>Single host or alias 10.22.22.x</em> (IP privato) </li>
+</ol>
+<div>Dopo queste operazioni qualunque porta dell&#39;IP pubblico dovrebbe essere direzionata a quello privato, e in uscita l&#39;host dovrebbe avere l&#39;IP pubblico specificato sopra.</div>
+<p> </p>
+<p><a href="http://forum.pfsense.org/index.php/topic,13507.0.html">http://forum.pfsense.org/index.php/topic,13507.0.html</a></p>

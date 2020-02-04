@@ -1,0 +1,376 @@
+<!--
+		@page { margin: 2cm }
+		P { margin-bottom: 0.21cm }
+-->
+<h3>Attenzione - non usare Debian Lenny</h3>
+<p>La versione di Samba in Debian Lenny NON FUNZIONA CON QUESTA PROCEDURA! Crasha smbd appena si tenta di fare login</p>
+<p><a href="http://www.zimbra.com/forums/administrators/32587-problems-integrating-samba.html#post151124">http://www.zimbra.com/forums/administrators/32587-problems-integrating-samba.html</a></p>
+<p>Da 3S siamo riusciti ad installare Samba 3.4.1 dai sorgenti, ma non è banale. Per questo scopo meglio usare Ubuntu server.</p>
+<h3>Preparazione del sistema</h3>
+<p>Prima di iniziare è indispensabile avere la password di LDAP di Zimbra, ottenibile con il comando</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">su - zimbra -c "zmlocalconfig -s zimbra_ldap_password"</pre>
+<p>Serviranno poi i file nis.ldif e samba.schema per aggiornare lo schema LDAP di Zimbra. Il primo è fornito da Zimbra stessa, e si trova in <em>/opt/zimbra/openldap/etc/openldap/schema/nis.ldif</em>. Il secondo dipende inancvece dalla versione di samba. In Debian/Ubuntu è fornito nel pacchetto samba-doc, per cui</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">aptitude install samba-doc</pre>
+<p>il che renderà disponibile il file /usr/share/doc/samba-doc/examples/LDAP/samba.schema.gz</p>
+<h3>Configurazione di LDAP</h3>
+<p>Il file <em>nis.ldif</em> è già convertito nel formato LDIF, quindi più semplice da importare</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">su - zimbra
+ldap stop
+cp /opt/zimbra/openldap/etc/openldap/schema/nis.ldif /opt/zimbra/data/ldap/config/cn\=config/cn\=schema/cn\=\{10\}nis.ldif
+cd /opt/zimbra/data/ldap/config/cn\=config/cn=\schema</pre>
+<p>modificare il file cn\=\{10\}nis.ldif e sostituire le righe (di solito sono le prime tre non commentate)</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">dn: cn=nis,cn=schema,cn=config
+objectClass: olcSchemaConfig
+cn: nis</pre>
+<p>con</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">dn: cn={10}nis
+objectClass: olcSchemaConfig
+cn: {10}nis</pre>
+<p>poi</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">chmod 600 cn\=\{10\}nis.ldif
+ldap start</pre>
+<p>Il file di samba va invece convertito:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">mkdir -p /tmp/ldap/schema
+cd /tmp/ldap
+cp /usr/share/doc/samba-doc/examples/LDAP/samba.schema.gz /tmp/ldap/schema
+gunzip /tmp/ldap/schema/samba.schema.gz
+</pre>
+<p>Creare un file <em>/tmp/ldap/test.conf</em> con il seguente contenuto</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">include /opt/zimbra/openldap/etc/openldap/schema/core.schema
+include /opt/zimbra/openldap/etc/openldap/schema/cosine.schema
+include /opt/zimbra/openldap/etc/openldap/schema/inetorgperson.schema
+include /tmp/ldap/schema/samba.schema</pre>
+<p>Quindi eseguire</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">/opt/zimbra/openldap/sbin/slaptest -f /tmp/ldap/test.conf -F /tmp/ldap
+cd /tmp/ldap/cn\=config/cn\=schema
+mv cn\=\{3\}samba.ldif cn\=\{11\}samba.ldif</pre>
+<p>Modificare il file <em>cn\=\{11\}samba.ldif</em> e sostituire le righe (sempre le prime tre)</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">dn: cn={3}samba
+objectClass: olcSchemaConfig
+cn: {3}samba</pre>
+<p>con</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">dn: cn={11}samba
+objectClass: olcSchemaConfig
+cn: {11}samba</pre>
+<p>ed ora modifichiamo lo schema LDAP:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">su - zimbra
+ldap stop
+cp /tmp/ldap/cn\=config/cn\=schema/cn\=\{11\}samba.ldif /opt/zimbra/data/ldap/config/cn\=config/cn\=schema/
+ldap start</pre>
+<p>Aggiungiamo ora gli indici LDAP</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">su - zimbra
+ldapmodify -x -H ldapi:/// -D cn=config -W</pre>
+<p>verrà richiesta la password: fornire la password di LDAP. Premuto invio non succederà nulla, è ok. Ci si trova ora nella shell di LDAP. Incollare il seguente testo</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">dn: olcDatabase={2}hdb,cn=config
+changetype:modify
+add: olcDbIndex
+olcDbIndex: uidNumber eq
+olcDbIndex: gidNumber eq
+olcDbIndex: memberUid eq</pre>
+<p>e premere CTRL+D per terminare.</p>
+<p>Riavviare zimbra e controllare che tutto sia ok</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">su - zimbra
+zmcontrol restart</pre>
+<h3>Creazione account LDAP per Samba</h3>
+<p>Ora dobbiamo generare due password per due account amministrativi di sistema, <em>zmposix</em> e <em>zmposixroot</em>.</p>
+<p>Per generare gli hash da inserire nel file LDIF, diamo questo comando</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">/opt/zimbra/openldap/sbin/slappasswd -s nuova_password</pre>
+<p>(ad ogni esecuzione il risultato potrebbe variare). Memorizzare sia le password in chiaro che gli hash generati.</p>
+<p>Creare un file <em>/tmp/posixusers.ldif</em> con il seguente contenuto, modificando ovviamente le righe "userPassword" con gli hashes ottenuti dal comando precedente (attenzione a mantenere la riga vuota in mezzo):</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">dn: uid=zmposix,cn=appaccts,cn=zimbra
+uid: zmposix
+objectClass: zimbraAccount
+objectClass: organizationalPerson
+cn: zmposix
+sn: zmposix
+zimbraAccountStatus: active
+zimbraIsSystemResource: TRUE
+zimbraId: 59BC2282-98CC-11DE-9492-C023E3CEB16B
+description: The zimbra posix account
+userPassword: {SSHA}5Yf0eys4jZBHGDK9od/mNZ50OdKn/FRZ
+
+dn: uid=zmposixroot,cn=appaccts,cn=zimbra
+uid: zmposixroot
+objectClass: zimbraAccount
+objectClass: organizationalPerson
+cn: zmposixroot
+sn: zmposixroot
+zimbraAccountStatus: active
+zimbraIsSystemResource: TRUE
+zimbraId: 6ED47B38-98CC-11DE-AAC1-9F159BA35B33
+description: The zimbra posix root account
+userPassword: {SSHA}yPfS85rjlKrI/3PjnsEqzuUxn/oi/c9D</pre>
+<p>ed eseguire</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">su - zimbra -c "ldapadd -f /tmp/posixusers.ldif -x -H ldapi:/// -D cn=config -W"</pre>
+<p>Creare il file <em>/tmp/acl.ldif</em> con il seguente contenuto, modificando <em>dc=steelgroup,dc=com</em> con il proprio dominio di Zimbra:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">dn: olcDatabase={2}hdb,cn=config
+changetype:modify
+delete: olcAccess
+olcAccess: {9}to attrs=entry  by dn.children="cn=admins,cn=zimbra" write  by * read
+-
+add: olcAccess
+olcAccess: {9}to attrs=entry  by dn.children="cn=admins,cn=zimbra" write  by dn.exact="uid=zmposixroot,cn=appaccts,cn=zimbra" write  by * read
+
+dn: olcDatabase={2}hdb,cn=config
+changetype:modify
+add: olcAccess
+olcAccess: {10}to dn.subtree="dc=steelgroup,dc=com"  by dn.children="cn=admins,cn=zimbra" write by dn.exact="uid=zmposixroot,cn=appaccts,cn=zimbra" write  by dn.exact="uid=zmposix,cn=appaccts,cn=zimbra" read  by * none
+olcAccess: {11}to dn.subtree="ou=machines,dc=steelgroup,dc=com"  by dn.children="cn=admins,cn=zimbra" write  by dn.exact="uid=zmposixroot,cn=appaccts,cn=zimbra" write  by dn.exact="uid=zmposix,cn=appaccts,cn=zimbra" read  by * none
+olcAccess: {12}to dn.subtree="ou=groups,dc=steelgroup,dc=com"  by dn.children="cn=admins,cn=zimbra" write  by dn.exact="uid=zmposixroot,cn=appaccts,cn=zimbra" write  by dn.exact="uid=zmposix,cn=appaccts,cn=zimbra" read  by * none
+olcAccess: {13}to dn.subtree="ou=people,dc=steelgroup,dc=com"  by dn.children="cn=admins,cn=zimbra" write  by dn.exact="uid=zmposixroot,cn=appaccts,cn=zimbra" write  by dn.exact="uid=zmposix,cn=appaccts,cn=zimbra" read  by * none
+
+</pre>
+<p>ed eseguire</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">su - zimbra -c "ldapmodify -f /tmp/acl.ldif -x -H ldapi:/// -D cn=config -W"</pre>
+<p>ed ancora</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">su - zimbra
+zmprov mcf +zimbraAccountExtraObjectClass posixAccount
+zmprov mcf +zimbraAccountExtraObjectClass sambaSamAccount</pre>
+<h3>Installazione delle estensioni <em>zimbra_posixaccount</em> e <em>zimbra_samba</em></h3>
+<p>E&#39; importante che venga implementata prima la posix e poi la samba, altrimenti nella creazione dei gruppi non ci saranno le opzioni di Samba.</p>
+<p>Creare una cartella sul proprio computer (es Scrivania/ita_tmp) e copiarci dentro il file dal server Zimbra <em>/opt/zimbra/zimlets-admin-extra/zimbra_posixaccount.zip</em>, e scompattare il file. Entrare nella sottocartella creata, e modificare il file <em>config_template.xml</em> adattando il parametro <em><strong>ldapSuffix</strong></em> con il dominio che andiamo a gestire (es <em>dc=steelgroup,dc=com</em>). Verificare che <strong>uidBase</strong> e <strong>gidBase</strong> non vadano in conflitto con utenti già esistenti in <em>/etc/passwd</em>. Alla fine creare un file zip senza sottodirectory</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">zip ../zimbra_posixaccount.zip *</pre>
+<p>Analogamente, prelevare il file <em>/opt/zimbra/zimlets-admin-extra/zimbra_samba.zip</em> ed eseguire le stesse operazioni.</p>
+<p>In questo config_template.xml modificare anche <strong>uidBase</strong> e <strong>gidBase</strong> in modo che siano uguali a quelli del file precedente.</p>
+<p>Collegarsi all&#39;interfaccia di amministrazione di Zimbra ed eseguire il deploy delle zimlet, dal menù <em>Configurazione &gt; Estensioni amministrazione</em>.</p>
+<p>ATTENZIONE! In caso di upgrade queste Zimlet andranno reimplementate, modificando la configurazione come in questo ultimo passaggio! Quindi una volta implementate conservare le due sottodirectory <em>/opt/zimbra/zimlets-deployed/zimbra*</em> da qualche parte.</p>
+<h3>Installazione libpam-ldap e libnss-ldap</h3>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">aptitude install libpam-ldap libnss-ldap</pre>
+<p>Saltare pure la configurazione automatica perché modificheremo i file a mano in seguito.</p>
+<p>In <em>/etc/ldap/ldap.conf </em>aggiungere la riga</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">TLS_REQCERT allow</pre>
+<p>Creare quindi da zero il file <em>/etc/ldap.conf</em> con il seguente contenuto, sostituendo opportunamente <em>NOMEHOST</em> con il nome della macchina, i parametri DNS con il dominio zimbra, e le password con quelle decise in precedenza</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">host NOMEHOST
+base dc=steelgroup,dc=com
+binddn uid=zmposix,cn=appaccts,cn=zimbra
+bindpw SmbZimbTS01   #password di zmposix
+rootbinddn uid=zmposixroot,cn=appaccts,cn=zimbra
+port 389
+bind_policy soft
+nss_reconnect_tries 2
+uri ldap://NOMEHOST/
+ssl start_tls
+#tls_cacertdir /opt/zimbra/conf/ca
+tls_cacertdir /opt/zimbra/conf/ca/ca.pem
+# tell to not check the server certificate
+tls_checkpeer no
+# optional
+pam_password md5
+# where nss find the information
+nss_base_passwd         ou=people,dc=steelgroup,dc=com?one
+nss_base_shadow         ou=people,dc=steelgroup,dc=com?one
+nss_base_group          ou=groups,dc=steelgroup,dc=com?one
+nss_base_hosts          ou=machines,dc=steelgroup,dc=com?one
+ldap_version 3
+</pre>
+<p>ed in <em>/etc/ldap.secret</em> mettere la password in chiaro di zmposixroot.</p>
+<p>Eseguire anche:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">cd /etc
+ln -s ldap.conf pam_ldap.conf
+ln -s ldap.secret pam_ldap.secret
+ln -s ldap.conf libnss-ldap.conf
+ln -s ldap.secret libnss-ldap.secret
+chmod 400 ldap.secret</pre>
+<p><span style="font-size: 15px; font-weight: bold;">Installazione di Samba</span></p>
+<p> </p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">apt-get install samba</pre>
+<p> </p>
+<p>Quindi aprire il file <em>/etc/samba/smb.conf</em>, e copiare il contenuto seguente. Sostituire i parametri di LDAP, il nome host, workgroup e le share</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">[global]
+  pid directory = /var/run/samba
+  workgroup = STEELGROUP
+  netbios name = srv01-yo
+  os level = 33
+  preferred master = yes
+  enable privileges = yes
+  server string = %h server (YetOpen)
+  wins support =yes 
+  dns proxy = no
+  name resolve order = wins bcast hosts
+  log file = /var/log/samba/log.%m
+  log level = 3
+#  ldap debug level = 1
+  max log size = 1000
+  syslog only = no
+  syslog = 0
+  panic action = /usr/share/samba/panic-action %d
+  security = user
+  encrypt passwords = true
+  ldap passwd sync = yes
+  passdb backend = ldapsam:ldap://srv01-yo.ita.local/
+  ldap admin dn = "uid=zmposixroot,cn=appaccts,cn=zimbra"
+  ldap suffix = dc=steelgroup,dc=com
+  ldap group suffix = ou=groups
+  ldap user suffix = ou=people
+  ldap machine suffix = ou=machines
+  # serve sulle versioni recenti di samba
+  ldap ssl = Off
+  obey pam restrictions = no
+  passwd program = /usr/bin/passwd %u
+  passwd chat = *Enter\snew\sUNIX\spassword:* %n\n *Retype\snew\sUNIX\spassword:* %n\n *password\supdated\ssuccessfully* .
+  domain logons = yes
+  logon path = \\srv01-yo.ita.local\%U\profile
+  logon home = \\srv01-yo.ita.local\%U
+  logon script = logon.cmd
+  add user script = /usr/sbin/adduser --quiet --disabled-password --gecos "" %u
+  add machine script = /usr/sbin/adduser --shell /bin/false --disabled-password --quiet --gecos "machine account" --force-badname %u
+  socket options = TCP_NODELAY
+  domain master = yes
+  local master = yes
+[homes]
+  comment = Home Directories
+  browseable =yes 
+  read only = No
+  valid users = %S
+[netlogon]
+  comment = Network Logon Service
+  path = /var/lib/samba/netlogon
+  guest ok = yes
+  locking = no
+[profiles]
+  comment = Users profiles
+  path = /var/lib/samba/profiles
+  read only = No
+[profdata]
+  comment = Profile Data Share
+  path = /var/lib/samba/profdata
+  read only = No
+  profile acls = Yes
+[printers]
+  comment = All Printers
+  browseable = no
+  path = /tmp
+  printable = yes
+  public = no
+  writable = no
+  create mode = 0700
+[print$]
+  comment = Printer Drivers
+  path = /var/lib/samba/printers
+  browseable = yes
+  read only = yes
+  guest ok = no
+
+[ufficio]
+  path = /home/ufficio
+  browseable = yes
+  writable = no
+  create mask = 0660
+  directory mask = 0770
+  # importante! per le share di gruppo, il gruppo deve essere prefissato con @ e non con +. + sono gruppi solo unix
+  valid users = @ufficio
+  write list = @ufficio
+  force group = ufficio</pre>
+<p>Riavvire samba</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">stop smbd
+start smbd
+stop nmbd
+start nmbd
+</pre>
+<p>Ora dobbiamo impostare la password per fare in modo che samba possa accedere ad LDAP</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">smbpasswd -w PASSWORD_DI_ZMPOSIXROOT</pre>
+<p>Riavviare di nuovo samba e portarsi sull&#39;interfaccia di amministrazione di Zimbra. Fare logout e di nuovo login.</p>
+<p>In "Manage samba domains" dovremmo trovare il dominio Samba configurato in smb.conf.</p>
+<p>Per abilitare la risoluzione dei nomi usando WinBind, seguire l&#39;articolo relativo: <a class="intfaqlink" href="index.php?action=artikel&amp;cat=8&amp;id=171&amp;artlang=it"> Risoluzione dei nomi host Windows su server Linux</a>.</p>
+<h3>Configurazione di libpam e libnss</h3>
+<p>creare il file <em>/etc/auth-client-config/profile.d/open_ldap</em> con il seguente contenuto:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">[open_ldap]
+nss_passwd=passwd: files ldap
+nss_group=group: files ldap
+nss_shadow=shadow: files ldap
+nss_netgroup=netgroup: files ldap
+pam_auth=auth       required     pam_env.so
+        auth       sufficient   pam_unix.so likeauth nullok
+#the following line (containing pam_group.so) must be placed before pam_ldap.so 
+#for ldap users to be placed in local groups such as fuse, plugdev, scanner, etc ...
+        auth       required     pam_group.so use_first_pass
+        auth       sufficient   pam_ldap.so use_first_pass
+        auth       required     pam_deny.so
+pam_account=account    sufficient   pam_unix.so
+        account    sufficient   pam_ldap.so
+        account    required     pam_deny.so
+pam_password=password   sufficient   pam_unix.so nullok md5 shadow
+        password   sufficient   pam_ldap.so use_first_pass
+        password   required     pam_deny.so
+pam_session=session    required     pam_limits.so
+        session    required     pam_mkhomedir.so skel=/etc/skel/
+        session    required     pam_unix.so
+        session    optional     pam_ldap.so</pre>
+<p>ed eseguire</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">auth-client-config -a -p open_ldap</pre>
+<p><span style="font-weight: bold;">Creazione automatica delle directory <em>home</em></span></p>
+<p>In teoria la riga di <em>pam_mkhomedir</em> in <em>smb.conf</em> dovrebbe provvedere a creare una directory per l&#39;utente al primo accesso. In realtà pare non andare.</p>
+<p>Per ovviare a questo inconvieniente dobbiamo modificare la configurazione di Samba.</p>
+<p>Creare la directory <em>/etc/samba/scripts</em> ed il file <em>/etc/samba/scripts/mk_sambadir</em> con il seguente contenuto:</p>
+<p> </p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">#!/bin/bash
+
+HOME=`getent passwd "$2"|cut -d &#39;:&#39; -f 6`
+
+if [ ! -d "$HOME" ]
+then
+mkdir "$HOME"
+fi
+chmod 770 "$HOME" -R
+chown "$2" "$HOME" -R
+chgrp "$3" "$HOME" -R</pre>
+<p>renderlo eseguibile con il comando</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">chmod +x /etc/samba/scripts/mk_sambadir</pre>
+<p>Modificare <em>/etc/samba/smb.conf</em>. Nella sezione <em>[homes]</em> aggiungere la riga</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">root preexec = /etc/samba/scripts/mk_sambadir "/home/%u" "%u" "%g"
+</pre>
+<p>ed infine riavviare samba</p>
+<p>(ref <a href="http://www.zimbra.com/forums/administrators/23590-samba-posix-zimlet-home-directory-creation.html#post138527">zimbra.com forum</a>)</p>
+<h3>Creazione utenti e gruppi</h3>
+<h4>Gruppi</h4>
+<p>Tornare alla console di amministrazione di <em>Samba &gt; Posix groups &gt; New group</em></p>
+<p style="padding-left: 30px;"><em><strong>Scheda "Posix Group"</strong></em><br />Name: nome gruppo</p>
+<p style="padding-left: 30px;"><em><strong>Scheda "Samba Group"</strong></em><br />Samba domain: selezionare il dominio<br />sambaGroupType: 2</p>
+<p>Salvato il gruppo, da linea di comando dare il comando</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">getent group</pre>
+<p>e nell&#39;elenco dovrebbe comparire il gruppo appena creato!</p>
+<h4>Utenti</h4>
+<p>In fase di creazione nuovo utente, occorre proseguire (Avanti) fino in fondo, dove troveremo le ultime due schermate di compilazione dei dati unix/samba.</p>
+<p style="padding-left: 30px;"><em><strong>Scheda "Posix account"</strong></em><br />Posix group: selezionare, o digitare a mano in gidNumber il gruppo di appartenenza (in questo secondo caso va digitato l&#39;id)<br />homeDirectory: /home/NOMEUTENTE<br />loginShell: /bin/false <em>(la shell purtroppo non vienem antenuta. può essere lasciata in bianco, ma dopo la creazione dell&#39;account occorre modifcare di nuovo e inserire il valore)</em></p>
+<p style="padding-left: 30px;"><em><strong>Scheda "Samba Account"</strong></em><br />Samba domain: selezionare dall&#39;elenco<br />Password does not exipre: selezionato (a volte crea problemi al login)</p>
+<h4>Domain admin</h4>
+<p>Rimuovere l&#39;alias "root" dal pannello di amministrazione di Zimbra.</p>
+<p>Tornare alla shell e digitare:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">smbpasswd -a root</pre>
+<p>e specificare una password per root di samba. Potrebbe dare degli errori, si possono ignorare.</p>
+<p>Creare un gruppo <em><strong>Domain admins</strong></em> che serve per aggiungere le macchine al dominio. Dal pannello di amministrazione di Zimbra: <em>Posix groups &gt; New group</em></p>
+<p style="padding-left: 30px;"><strong>Scheda "Posix Group"</strong><br />Name: Domain Admins</p>
+<p style="padding-left: 30px;"><strong>Scheda "Samba Group"</strong><br />Samba domain: selezionare<br />Abilitare la spunta su "Special Windows group" e selezionare il tipo "Domain Admins"<br />sambaGroupType: 2</p>
+<p>Concedere al gruppo i permessi per gestire le macchine del gruppo. Da console:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">net rpc rights grant "STEELGROUP\Domain Admins" SeAddUsersPrivilege SeMachineAccountPrivilege SePrintOperatorPrivilege</pre>
+<p>fornire la password impostata prima con <em>smbpasswd -a root</em>.</p>
+<p>Creare un utente (o usare l&#39;utente <em><strong>admin</strong></em>), e nei gruppi Samba specificare che appartiene al nuovo gruppo "Domain admins".</p>
+<p><strong>Importante:</strong> per associare una macchina XP al dominio, assicurarsi che il DHCP fornisca la macchina Samba come server WINS. E che XP risolva il nome della macchina. In DNSMASQ, il primo requisito si soddisfa con l&#39;opzione</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">dhcp-option=44,ip_samba</pre>
+<p>Il secondo, sempre con dnsmasq, assicurandosi che il file <em>/etc/hosts</em> contenga il nome della macchina.</p>
+<p>Creare le estensioni samba e posix all&#39;utente admin (attenzione: per trovare il <em><strong>sambaSID</strong></em> corretto andare nell&#39;interfaccia di amministrazione, modificare l&#39;account <em>admin</em>, andare in <em>Samba Account</em>, selezionare il dominio Samba, e nella text area sotto comparirà il <em>sid</em>):</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">zmprov ma admin +objectClass posixAccount uidNumber 10001 gidNumber 10001 homeDirectory /home/admin loginShell /bin/bash
+zmprov ma admin +objectClass sambaSamAccount sambaDomainName DOMINIOSAMBA sambaSID S-1-5-21-3745602466-621825477-2613676135-21006 sambaAcctFlags [UX]
+</pre>
+<p><span style="font-size: 15px; font-weight: bold;">Cambio password Samba da Zimbra</span></p>
+<p>Per fare in modo che quando si cambia la password di Zimbra venga aggiornata anche quella di NT (Windows), occorre usare un&#39;estensione. Scaricare l&#39;estensione zimbraSambaPassword da</p>
+<p><a href="http://gallery.zimbra.com/type/extra/zimbrasambapassword-extension">http://gallery.zimbra.com/type/extra/zimbrasambapassword-extension</a></p>
+<p>ed eseguire:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">aptitude install build-essential
+unzip zimbraSambaPassword.zip
+chmod +x install.sh
+./install.sh -i</pre>
+<p>Al cambio password di un utente via web si dovrebbe vedere in /op/zimbra/log/audit.log qualcosa di simile:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">2012-09-17 15:59:46,948 INFO  [btpool0-21://localhost/service/soap/ChangePasswordRequest] [ip=127.0.0.1;ua=zclient/6.0.9_GA_2686;] security - cmd=SambaChangePasswordListener.preModify; lmPassword=AC7DFCD5D9AAFF1CC2265B23734E0DAC;
+2012-09-17 15:59:46,949 INFO  [btpool0-21://localhost/service/soap/ChangePasswordRequest] [ip=127.0.0.1;ua=zclient/6.0.9_GA_2686;] security - cmd=SambaChangePasswordListener.preModify; ntPassword=6A7941BCF65ACBAF3875C68268EA2A38;
+</pre>
+<p>se non ci sono queste righe significa che il listener non è attivo. Provare a modificare il parametro del dominio:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">su - zimbra -c "zmprov md NOMEDOMINIO.COM zimbraPasswordChangeListener sambapassword " </pre>
+<p> </p>
+<p> </p>
+<p>REF: <a href="http://wiki.zimbra.com/index.php?title=UNIX_and_Windows_Accounts_in_Zimbra_LDAP_and_Zimbra_Admin_UI_6.0">wiki.zimbra.com</a></p>
+<p> </p>
+<h2>Problemi comuni</h2>
+<p>In caso nei log compaiano messaggi come:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">nss-ldap: do_open: do_start_tls failed:stat=-1</pre>
+<p>per risolvere occorre commentare la riga <em>"ssl start_tls"</em> in <strong>/etc/ldap.conf</strong>.</p>

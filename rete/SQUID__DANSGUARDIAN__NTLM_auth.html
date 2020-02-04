@@ -1,0 +1,68 @@
+<p>&nbsp;</p>
+<p>* Installare il sistema base<br />* aptitude install clamav-daemon clamav-freshclam<br />* aptitude install ntp<br />Il server Squid deve essere sincronizzato con il dominio, quindi rimuovere le righe "server" presenti e mettere unicamente<br />server domaincontroller.dominio.local iburst<br />* aptitude install squid<br />Modificare squid.conf<br />http_port 127.0.0.1:3128 transparent<br />http_port 8080</p>
+<p>cache_peer 127.0.0.1 parent 8081 0 no-query login=*:nopassword.</p>
+<p>(decommentare le righe "auth_param ntlm")<br />auth_param ntlm program /usr/bin/ntlm_auth --helper-protocol=squid-2.5-ntlmssp<br />auth_param ntlm children 5<br />auth_param ntlm keep_alive on</p>
+<p>(decommentare le righe "auth_param basic")<br />auth_param basic program /usr/bin/ntlm_auth --helper-protocol=squid-2.5-ntlmssp<br />auth_param basic children 5<br />auth_param basic realm Squid proxy-caching web server<br />auth_param basic credentialsttl 2 hours<br />auth_param basic casesensitive off</p>
+<p>acl ntlm_auth proxy_auth REQUIRED<br />http_access allow ntlm_auth<br />forwarded_for off</p>
+<p>* aptitude install samba<br />Fornire i dati del dominio a cui ci si legher&agrave;. Alla domanda di usare WINS per DHCP rispondere "No".<br />Modificare in smb.conf:</p>
+<ul>
+<li>security = ads</li>
+<li>decommentare le righe <tt>idmap uid</tt> e <tt>idmap gid</tt></li>
+<li>decommentare le righe <tt>winbind enum groups</tt> e <tt>winbind enum users</tt></li>
+<li>aggiungere le seguenti righe, configurate opportunamente<br />
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">realm = dominio.local
+preferred master = no
+winbind use default domain = Yes
+winbind separator = +<br />winbind cache time = 3600
+</pre>
+</li>
+</ul>
+<p>&nbsp;</p>
+<p><br />* aptitude install krb5-config<br />Ad entrambe le domande fornire il FQDN del controller di dominio (es: nomeserver.DOMINIO.LOCAL).<br />Immediatamente dopo lanciare<br />dpkg-reconfigure krb5-config<br />Default Kerberos version 5 realm: &lt;-- DOMINIO.LOCAL<br />Does DNS contain pointers to your realm&#39;s Kerberos Servers? &lt;-- Yes</p>
+<p>Quindi eseguire:</p>
+<p>net ads join -U Administrator</p>
+<p>e digitare la password di Administrator del dominio. E&#39; possibile usare un altro utente che abbia i permessi di domain admin. Il comando dovrebbe restituire che il PC &egrave; stato correttamente unito al dominio. Se dice che non &egrave; stato possibile aggiornare i DNS &egrave; un errore trascurabile.</p>
+<p>wbinfo -t </p>
+<p>dovrebbe restituire <em>checking the trust secret via RPC calls succeeded</em>. Se non lo fa occorre riavviare i demoni di samba o winbind (in un caso ho riavviato la macchina...).</p>
+<p>Per ottenere la lista degli utenti e dei gruppi del dominio usare i comandi</p>
+<p>wbinfo -u<br />wbinfo -g</p>
+<p>Squid deve avere accesso a /var/run/samba/winbindd_privileged, ma i permessi vengono resettati al riavvio. Quindi occorre crare uno script che mantenga la situazione. Creare il file /etc/init.d/winbind-ch.sh con il seguente contenuto:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">#!/bin/sh
+#set -x
+WINBINDD_PRIVILEGED=/var/run/samba/winbindd_privileged
+chmodgrp() {
+chgrp proxy $WINBINDD_PRIVILEGED || return 1
+chmod g+w $WINBINDD_PRIVILEGED || return 1
+}
+case "$1" in
+start)
+chmodgrp
+;;
+restart|reload|force-reload)
+echo "Error: argument &#39;$1&#39; not supported" &gt;&amp;2
+exit 3
+;;
+stop)
+;;
+*)
+echo "Usage: $0 start|stop" &gt;&amp;2
+exit 3
+;;
+esac</pre>
+<p> quindi eseguire</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">chmod +x /etc/init.d/winbind-ch.sh
+update-rc.d winbind-ch.sh start 21 2 3 4 5 .
+/etc/init.d/winbind-ch.sh start</pre>
+<p>Aprire /etc/dansguardian/dansguardian.conf e </p>
+<ul>
+<li>commentare la riga <em>UNCONFIGURED</em></li>
+<li>language = &#39;italian&#39;</li>
+<li>filterport = 8080</li>
+<li>filtergroups = 3 (o il numero di gruppi che si vuole gestire)</li>
+<li>decommentare la riga authplugin = &#39;/etc/dansguardian/authplugins/proxy-basic.conf&#39;</li>
+</ul>
+<p>&nbsp;</p>
+<p>Liste:</p>
+<p>http://www.shallalist.de/helpers.html</p>
+<p>&nbsp;</p>
+<p>http://howtoforge.com/dansguardian-with-multi-group-filtering-and-squid-with-ntlm-auth-on-debian-etch<br />http://wiki.squid-cache.org/ConfigExamples/Authenticate/Ntlm</p>

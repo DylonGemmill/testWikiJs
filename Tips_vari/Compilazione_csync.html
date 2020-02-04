@@ -1,0 +1,20 @@
+<p>Installare le dipendeze</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">aptitude install cmake libsqlite3-dev build-essential libsmbclient-dev liblog4c-dev libssh-2-dev</pre>
+<p>Scaricare e compilare iniparser</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">cd /usr/src
+wget http://ndevilla.free.fr/iniparser/iniparser3.0b.tar.gz
+tar xzf iniparser*
+cd iniparser*
+make
+cp libiniparser.* /usr/local/lib/
+ldconfig</pre>
+<p>Scaricare e scompattare http://www.csync.org/ in /usr/src</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">cd /usr/src
+mkdir csync-build<br />cd csync-build
+ccmake ../csync-0.44.0</pre>
+<p>Impostare il parametro <em>INIPARSER_INCLUDE_DIR</em> a <em><strong>/usr/src/iniparser3.0b/src</strong></em>.&nbsp;</p>
+<p>
+Premere c per configurare e g per generare il makefile.<br />Tornati al prompt lanciare</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">make 
+make install 
+ldconfig</pre>

@@ -1,0 +1,76 @@
+<h2 class="western" lang="it-IT" align="JUSTIFY">Installazione del sistema</h2>
+<p lang="it-IT" align="JUSTIFY">Per questa demo utilizziamo Ubuntu server 10.04 LTS. Il sistema di prova viene installato su una macchina virtualizzata con KVM. Creiamo quindi il <em>logical volume</em> per l&#39;installazione con il comando <strong>lvcreate</strong>:</p>
+<p lang="it-IT" align="JUSTIFY">&nbsp;</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; "># lvcreate -L 50G -n aio VMvg</pre>
+<p lang="it-IT" align="JUSTIFY">&nbsp;</p>
+<p lang="it-IT" align="JUSTIFY">dove <strong>50G</strong> &egrave; la dimensione del disco e <strong>VMvg</strong> &egrave; il <em>logical group</em> di riferimento.</p>
+<p lang="it-IT" align="JUSTIFY">Creiamo poi la macchina virtuale con il comando <strong>virt-install</strong>:</p>
+<p lang="it-IT" align="JUSTIFY">&nbsp;</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; "># virt-install -r 1024 -n aio -f /dev/VMvg/aio --cdrom \
+/var/lib/libvirt/images/ubuntu-10.04-server-amd64.iso \
+--graphics vnc,listen=0.0.0.0</pre>
+<p lang="it-IT" align="JUSTIFY">&nbsp;</p>
+<p lang="it-IT" align="JUSTIFY">dove <strong>1024</strong> &egrave; il quantitativo (in MB) di ram assegnato alla macchina, <strong>aio</strong> &egrave; il nome assegnato e con <strong>--cdrom</strong> specifichiamo l&#39;immagine del disco con cui effettuare la prima installazione. Sappiamo gi&agrave; che la ram assegnata non sar&agrave; abbastanza, vedremo poi come aumentarla.</p>
+<p lang="it-IT" align="JUSTIFY">L&#39;opzione <strong>--graphics</strong> serve per abilitare l&#39;accesso VNC alla macchina (necessario per eseguire l&#39;installazione e il primo accesso). L&#39;opzione <strong>listen=0.0.0.0</strong> permette l&#39;accesso a VNC da qualsiasi pc della rete, comodo per una macchina di test o comunque in ambiente sicuro, da valutare se la macchina &egrave; in produzione.</p>
+<p lang="it-IT" align="JUSTIFY">Una volta lanciato il comando parte l&#39;installazione di Ubuntu. Per connettersi alla macchina occorre un normale <em>client VNC</em>. KVM crea una sessione VNC per ogni macchina che ne ha bisogno, e le mette in ascolto in sequenza sulle porte 5900, 5901, ecc... Per scoprire la porta che interessa a noi, utilizzare il comando</p>
+<p lang="it-IT" align="JUSTIFY">&nbsp;</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; "># virsh vncdisplay aio
+:1
+</pre>
+<p lang="it-IT" align="JUSTIFY">come da esempio, dovremo quindi connetterci in VNC a <strong>localhost:5901</strong>. Se non siamo in localhost (il sistema dove gira il <em>client VNC</em> non &egrave; lo stesso dove gira la macchina virtuale) e non &egrave; stata settata l&#39;opzione <strong>listen=0.0.0.0</strong>, occorre utilizzare un <em>tunnel </em><em>ssh</em> per con il comando</p>
+<p align="JUSTIFY">&nbsp;</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; "># ssh -L 5901:127.0.0.1:5901 root@macchina-della-virtualizzazione -N</pre>
+<p align="JUSTIFY">&nbsp;</p>
+<p lang="it-IT" align="JUSTIFY">e poi connettersi a <strong>localhost:5901</strong> con il <em>client VNC</em> (terminare il comando con <em>Ctrl-C</em> quando non servir&agrave; pi&ugrave; connettersi con VNC).</p>
+<p lang="it-IT" align="JUSTIFY">Una volta terminata l&#39;installazione del sistema, la macchina si spegne. Occorre riavviarla con il comando</p>
+<p lang="it-IT" align="JUSTIFY">&nbsp;</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; "># virsh start aio</pre>
+<p lang="it-IT" align="JUSTIFY">&nbsp;</p>
+<p lang="it-IT" align="JUSTIFY">e riconnettersi con VNC. Dopo essersi loggati, installare <strong>openssh-server</strong></p>
+<p lang="it-IT" align="JUSTIFY">&nbsp;</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">$ sudo apt-get install openssh-server</pre>
+<p lang="it-IT" align="JUSTIFY">&nbsp;</p>
+<p lang="it-IT" align="JUSTIFY">e abilitare l&#39;utente root</p>
+<p lang="it-IT" align="JUSTIFY">&nbsp;</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">$ sudo -i
+# passwd
+Inserire nuova password UNIX:
+Reinserire la nuova password UNIX:
+passwd: password updated successfully
+</pre>
+<p lang="it-IT" align="JUSTIFY">Ora occorre verificare l&#39;indirizzo ip della macchina col comando <strong>ifconfig</strong></p>
+<p lang="it-IT" align="JUSTIFY">&nbsp;</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; "># ifconfig eth0 
+eth0 Link encap:Ethernet HWaddr 52:54:00:2c:46:bd
+indirizzo inet:10.22.22.142 Bcast:10.22.22.255 Maschera:255.255.255.0 
+indirizzo inet6: fe80::5054:ff:fe2c:46bd/64 Scope:Link 
+UP BROADCAST RUNNING MULTICAST MTU:1500 Metric:1 
+RX packets:437229 errors:0 dropped:0 overruns:0 frame:0 
+TX packets:235239 errors:0 dropped:0 overruns:0 carrier:0 
+collisioni:0 txqueuelen:1000
+Byte RX:614315588 (614.3 MB) Byte TX:26192995 (26.1 MB) 
+Interrupt:10 Indirizzo base:0xc000
+</pre>
+<p lang="it-IT" align="JUSTIFY">una volta scoperto l&#39;indirizzo (<strong>10.22.22.142</strong>) &egrave; possibile uscire dalle varie sessioni col comando <em>exit</em>, chiudere il <em>client VNC</em> e il <em>tunnel ssh</em> con <em>Ctrl-C</em>.</p>
+<p lang="it-IT" align="JUSTIFY">Proseguiamo quindi la nostra installazione da ssh: copiamo la nostra chiave pubblica (ed eventualmente anche quelle di altri amministratori) col comando</p>
+<p align="JUSTIFY">&nbsp;</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">$ ssh-copy-id -i .ssh/id_dsa.pub root@10.22.22.142</pre>
+<p align="JUSTIFY">&nbsp;</p>
+<p lang="it-IT" align="JUSTIFY">e logghiamoci in ssh come root per continuare l&#39;installazione</p>
+<p align="JUSTIFY">&nbsp;</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">$ ssh root@10.22.22.142</pre>
+<p align="JUSTIFY">&nbsp;</p>
+<p lang="it-IT" align="JUSTIFY">Cancelliamo l&#39;utente creato di default da Ubuntu</p>
+<p lang="it-IT" align="JUSTIFY">&nbsp;</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; "># userdel -r username</pre>
+<p lang="it-IT" align="JUSTIFY">&nbsp;</p>
+<p lang="it-IT" align="JUSTIFY">Per aumentare la memoria ram, occorre spegnere la macchina ed aumentare la memoria massima asssegnabile alla macchina</p>
+<p lang="it-IT" align="JUSTIFY">&nbsp;</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; "># virsh shutdown aio
+# virsh setmaxmem aio 2000000
+# virsh start aio
+</pre>
+<p lang="it-IT" align="JUSTIFY">Ora, a macchina accesa, possiamo assegnare fino a 2000000 kilbytes di ram effettivi con il comando</p>
+<p lang="it-IT" align="JUSTIFY">&nbsp;</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; "># virsh setmem aio 2000000</pre>
+<p lang="it-IT" align="JUSTIFY">&nbsp;</p>

@@ -1,0 +1,25 @@
+<h2>XenServer 6.5</h2>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">mkdir apc
+cd apc
+wget http://www.flurweg.net/linux/xenserver/apcupsd/xenserver6_apcupsd.tar
+wget ftp://fr2.rpmfind.net/linux/dag/redhat/el5/en/x86_64/dag/RPMS/apcupsd-3.14.10-1.el5.rf.x86_64.rpm
+tar xvf xenserver6_apcupsdl.tar
+yum localinstall --enablerepo base --nogpgcheck apcupsd-3.14.10-1.el5.rf.x86_64.rpm
+mkdir -p /etc/apcupsd/ORIG
+cp /etc/apcupsd/* /etc/apcupsd/ORIG
+cp -f etc/apcupsd/* /etc/apcupsd/
+cp usr/bin/sendemail /usr/bin
+chmod +x /usr/bin/sendemail</pre>
+<p>Personalizzare /etc/apcupsd/sendemail.conf per le notifiche ed /etc/apcupsd/apcupsd.conf se la connessione non è USB.</p>
+<p>rif: <a href="https://pantsmanuk.org/2015/04/apcupsd-running-on-citrix-xenserver-7-0/">https://pantsmanuk.org/2015/04/apcupsd-running-on-citrix-xenserver-7-0/</a></p>
+<h2>XenServer 6.2</h2>
+<p>Se non ancora installato, fornire il pacchetto mailx:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">yum install mailx --enablerepo base --enablerepo centosplus</pre>
+<p>Il pacchetto di installazione è allegato a questo articolo, ma l&#39;ultima versione è sempre reperibile presso il progetto di <a href="http://sourceforge.net/projects/apcupsd/files/rpms%20-%20Stable/">SourceForge</a>, importante è prendere la versione <strong>el5-i386</strong>.</p>
+<p>Installare il file allegato con il comando</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">rpm -i apcupsd-3.14.0-3.el5.i386.rpm
+mv /etc/rc3.d/K99apcupsd /etc/rc3.d/S98apcupsd </pre>
+<p><span style="font-family: &#39;courier new&#39;, courier;"> </span></p>
+<p>configurare quindi /etc/apcupsd/apcupsd.conf come necessario.</p>
+<p> </p>
+<p>Ulteriori info e debug: <a href="http://kiekeboe100.hoefman.be/blog/2010/01/apc-ups-management-on-xenserver/">http://kiekeboe100.hoefman.be/blog/2010/01/apc-ups-management-on-xenserver/</a></p>

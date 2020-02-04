@@ -1,0 +1,84 @@
+<p>Procedere con l&#39;installazione del pacchetto squid3(che contiente anche clamav) </p>
+<p> </p>
+<p>Quindi andare del menù System-&gt;Packages-&gt;Available Packages, cercare Squid3 e premere sul button di lato (Install Squid 3 package)</p>
+<p> </p>
+<p>Collegarsi in ssh alla macchina (eventualmente se non è possibile farlo esesguire i comandi da Diagnostic-&gt;Command Prompt),</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">pw useradd clamav -G wheel
+pw usermod clamav -G wheel 
+mkdir /var/log/clamav
+chmod 775 /var/log/clamav
+mkdir /var/db/clamav
+chmod 775 /var/db/clamav
+mkdir /var/run/clamav
+chmod 775 /var/run/clamav
+chmod 775 /usr/local/www/squid_clwarn.php</pre>
+<p> </p>
+<p> Dopo aver creato le directory ed avere assegnato i permessi necessari, è necessario aggiornare la definizione dei virus.(Inizialmente si presenterà un errore <span>WARNING: Clamd was NOT notified: Can’t connect to clamd through /var/run/clamav/clamd.sock che poi scoparirà una volta avviato clamd)</span></p>
+<p> </p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">freshclam</pre>
+<p> </p>
+<p>Effettuare la configurazione del servizio proxy, accedendo nel menù Services-&gt;ProxyServer-&gt;General è possibile procedere alla configurazione del proxy:</p>
+<p> </p>
+<p>Proxy interface -&gt; LAN</p>
+<p>Proxy port-&gt; 3128 </p>
+<p>Trasparent HTTP proxy-&gt; Abilitare o Disabilitare a seconda della modalità desiderata</p>
+<p>Trasparent Proxy interface-&gt;Se abilitato il proxy trasparente selezionare LAN</p>
+<p>Visible hostname -&gt;localhost</p>
+<p>Administrator email-&gt; support@yetopen.it</p>
+<p> </p>
+<p>Salvare le impostazioni, tutte le impostazioni non citate vanno mantenute di default.</p>
+<p> </p>
+<p>Adesso dobbiamo procedere alla configurazione di clamav e c-icap dal menù Services-&gt;Proxy server-&gt;Antivirus</p>
+<p> </p>
+<p>Inizialmente tutti i conf risulteranno vuoti, quidi procedere all&#39;abilitazione di clamav</p>
+<p>Enable-&gt;Enable squid antivirus check using clamav.</p>
+<p>Client forward option-&gt;Send Both client username and ip info</p>
+<p>Salvare</p>
+<p> </p>
+<p>Adesso vedremo comparire tutte le configurazioni.</p>
+<p> </p>
+<p>Quindi andiamo a modiifcare per primo il parametro redirect inserendo l&#39;host di pfsense corretto in <span>squidclamav.conf</span></p>
+<p> </p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">redirect http://ippfsense/squid_clwarn.php</pre>
+<p> </p>
+<p> </p>
+<p>E nella finestra dedicata a c-icap.conf inserire in fondo </p>
+<p> </p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">Service squid_clamav squidclamav.so</pre>
+<p> </p>
+<p>Salvare </p>
+<p> </p>
+<p>Dopo aver effettuato il salvataggio si potrebbero riscontrare dei problemi sulla configurazio dell&#39;LDAP, eliminare definitivamente le stringhe relative ad ldap (effettuare una copia del file per sicurezza).</p>
+<p> </p>
+<p><strong>Configurazione aggiuntiva </strong></p>
+<p> </p>
+<p>Se vogliamo settare tramite dhcp il nostro proxy, andiamo ad inserire nella document root del web server un file chiamato wpad.dat, contenente le seguenti stringhe:</p>
+<p> </p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">function FindProxyForURL(url,host)
+ {
+ return "PROXY IPPFSENSE:3128";
+ }</pre>
+<p> </p>
+<p>ed impostiamo nella configurazione di dnsmasq il parametro </p>
+<p> </p>
+<p>dhcp-option=252,http://IPWEBSERVER/wpad.dat</p>
+<p> </p>
+<p> Per evitare che le operazioni di scansione  e aggiornamento causino problemi alla rete è consigliabile inserire nel file squidclamav.conf (è consigliabile effettuare la modifica nei settings e non direttamente sul file )le seguenti strighe:</p>
+<p> </p>
+<pre># White list some sites<br />whitelist .*\.clamav.net<br />whitelist .*\.avast.com<br />whitelist .*\.symantec.com<br />whitelist .*\.symantecliveupdate.com<br />whitelist .*\.kaspersky.*<br />whitelist .*\.drweb.com<br />whitelist .*\.mcafee.com<br />whitelist .*\.estnod32.ru<br />whitelist .*\.fsecure.com<br />whitelist .*\.sophos.com<br />whitelist .*\.avg.com<br /><br />whitelist .*\.windowsupdate.com<br />whitelist .*\.download.windowsupdate.com<br />whitelist .*\.download.microsoft.com<br />whitelist .*\.update.microsoft.com<br /><br />whitelist .*\.cdn.mozilla.net<br />whitelist .*\.googlevideo.com<br />whitelist .*\.youtube.com</pre>
+<p> </p>
+<p> Effettuare il restart dei servizi</p>
+<p> </p>
+<p> </p>
+<p> </p>
+<p> </p>
+<p> </p>
+<p> </p>
+<p> </p>
+<p> </p>
+<p> </p>
+<p> </p>
+<p> </p>
+<p> </p>
+<p> </p>
+<p><span><br /></span></p>

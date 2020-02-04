@@ -1,0 +1,11 @@
+<p>Abbiamo implementato delle modifche per evidenziare che il prodotto sia finito.</p>
+<p>Nel file /root/web/sherpaonline_new/plugins/vmcustom/stockable/stockable.php</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">riga 421 
+ $(".addtocart-bar").append(\&#39;&lt;/br&gt;&lt;img  src="./images/out_of_stock.jpg" height="150" width="170"&gt;\&#39;);
+riga 427
+$(".addtocart-bar img:last-child").remove();</pre>
+<p> Nel file /root/web/sherpaonline_new/templates/atomic/html/com_virtuemart/productdetails/default_addtocart.php</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">riga 99
+&lt;img src="./images/out_of_stock.jpg" height="150" width="170" /&gt;
+</pre>
+<p> <strong>(File immagine in allegato)</strong></p>

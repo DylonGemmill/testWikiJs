@@ -1,0 +1,38 @@
+<p>rif:</p>
+<p>http://forum.nas-central.org/viewtopic.php?f=243&amp;t=11883</p>
+<p>http://forum.nas-central.org/viewtopic.php?f=243&amp;t=8671#p39783</p>
+<p>http://lars.karlslund.dk/2011/11/recovering-iomega-ix2-200-nas-after-failed-upgrade/</p>
+<p>http://iomega.nas-central.org/wiki/Category:Ix2-200</p>
+<p>http://zepman.tweakblogs.net/blog/3552/iomega-ix2-200-bad-flash-recovery-and-hdd-replacement.html</p>
+<p> </p>
+<table>
+<tbody>
+<tr>
+<td>Pin 1</td>
+<td>VCC (3.3V)</td>
+</tr>
+<tr>
+<td>Pin 2</td>
+<td>TxD</td>
+</tr>
+<tr>
+<td>Pin 3</td>
+<td>GND</td>
+</tr>
+<tr>
+<td>Pin 4</td>
+<td>RxD</td>
+</tr>
+</tbody>
+</table>
+<p>Pin 1 is marked with the label "JP1", it is the pin farthest from the battery.</p>
+<p><br />SCHEMA COLORI cavo usb to TTL PL2303HX<br />Black cable-----GND<br />Green cable----TXD<br />White cable----RXD<br />Red cable ---- VCC (5V)</p>
+<p><br />Recovering IOmega ix2-200 NAS after failed upgrade<br />Posted on 16/11/2011 by lkarlslund<br />The following was my solution to fixing a bad NAND flash, after an upgrade failed halfway through. YMMV but you could at least give it a try.</p>
+<p>You’ll get access to the bootloader, and be able to upload a new image via TFTP …</p>
+<p><br />I tried the instructions for recovering a bad flash from this page, but it wasn’t working as it should. I saw no access to my USB key, and having tried several different USB keys I was convinced that wasn’t the problem.</p>
+<p>You’ll need:</p>
+<p>RS232 to TLL level shifter 3.3V (I used a PL2303 based clone from Ebay costing about $5,- incl. shipping)<br />Philips #2 screwdriver, hobby knife<br />Computer with TFTP server installed, configured at 192.168.1.100<br />Decrypted firmware for the unit – see this page for instructions. You should get the files linked here, or try an upgrade to Cloud Edition with the instructions for generating the upgrade file here (the latter page requires you to run a script from your now-dead-ix2, so you can just do this from a Linux machine).<br />Prepare a USB key as described on the pages linked above (where you got the decrypted upgrade image from). Basically a FAT32 formatted USB key with the upgrade file placed in /emctools/ix2-200d_images/ix2-boot.tgz<br />Place zImage and initrd (from the ix2-boot.tgz file) on your TFTP server.<br />Procedure:</p>
+<p>Connect the USB key to any port on your ix2<br />Connect your TTL level shifter to JP1 – see this page for pinout.<br />Connect your ethernet cable from the ix2 to your computer.<br />At the Marvell&gt;&gt; prompt, do the following:</p>
+<p>tftpboot 0x2000000 zImage<br />tftpboot 0x5400000 initrd<br />nand erase 0x100000 0x300000<br />nand erase 0x540000 0x300000<br />nand write.e 0x2000000 0x100000 0x300000<br />nand write.e 0x5400000 0x540000 0x300000<br />That will load the kernel and initrd into memory, and write them to the NAND of the ix2. Now you can either powercycle the unit, or just issue</p>
+<p>boot<br />As I had totally clean drives in my unit the upgrade/wipe happened automatically, just wait 5-10 minutes. Also you can connect to your DHCP enabled network and access the unit (when the procedure completes).</p>
+<p>Also you can take a look at Nigels page here, if you want to tinker more and install a full Debian on the unit.</p>

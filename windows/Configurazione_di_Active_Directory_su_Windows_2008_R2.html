@@ -1,0 +1,142 @@
+<h1 style="font-size: 30px; font-weight: normal; margin: 0px; color: #333333; font-family: arial; font-style: normal; font-variant: normal; letter-spacing: normal; line-height: normal; orphans: auto; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: auto; word-spacing: 0px; -webkit-text-stroke-width: 0px;">Installing Active Directory on Windows Server 2008 R2 Enterprise 64-bit</h1>
+<ul class="byline" style="margin: 14px 0px; padding: 0px; list-style: none; color: #333333; font-family: arial; font-size: 13px; font-style: normal; font-variant: normal; font-weight: normal; letter-spacing: normal; line-height: normal; orphans: auto; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: auto; word-spacing: 0px; -webkit-text-stroke-width: 0px;">
+<ul class="byline" style="margin: 14px 0px; padding: 0px; list-style: none; color: #333333; font-family: arial; font-size: 13px; font-style: normal; font-variant: normal; font-weight: normal; letter-spacing: normal; line-height: normal; orphans: auto; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: auto; word-spacing: 0px; -webkit-text-stroke-width: 0px;">
+<li style="display: inline; margin-right: 10px; padding-right: 13px; border-right-width: 1px; border-right-style: solid; border-right-color: #aaaaaa;">Article ID:<span class="Apple-converted-space"> </span><strong>356</strong></li>
+</ul>
+</ul>
+<p><span class="Apple-converted-space"> </span></p>
+<ul class="byline" style="margin: 14px 0px; padding: 0px; list-style: none; color: #333333; font-family: arial; font-size: 13px; font-style: normal; font-variant: normal; font-weight: normal; letter-spacing: normal; line-height: normal; orphans: auto; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: auto; word-spacing: 0px; -webkit-text-stroke-width: 0px;">
+<ul class="byline" style="margin: 14px 0px; padding: 0px; list-style: none; color: #333333; font-family: arial; font-size: 13px; font-style: normal; font-variant: normal; font-weight: normal; letter-spacing: normal; line-height: normal; orphans: auto; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: auto; word-spacing: 0px; -webkit-text-stroke-width: 0px;">
+<li style="display: inline; margin-right: 10px; padding-right: 13px; border-right-width: 1px; border-right-style: solid; border-right-color: #aaaaaa;">Last updated on<span class="Apple-converted-space"> </span><strong>January 11, 2013</strong></li>
+</ul>
+</ul>
+<p><span class="Apple-converted-space"> </span></p>
+<ul class="byline" style="margin: 14px 0px; padding: 0px; list-style: none; color: #333333; font-family: arial; font-size: 13px; font-style: normal; font-variant: normal; font-weight: normal; letter-spacing: normal; line-height: normal; orphans: auto; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: auto; word-spacing: 0px; -webkit-text-stroke-width: 0px;">
+<li style="display: inline; margin-right: 10px; padding-right: 13px; border-right-style: none;">Authored by:<span class="Apple-converted-space"> </span><strong>Rackspace Support</strong></li>
+</ul>
+<hr style="color: #333333; font-family: arial; font-size: 13px; font-style: normal; font-variant: normal; font-weight: normal; letter-spacing: normal; line-height: normal; orphans: auto; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: auto; word-spacing: 0px; -webkit-text-stroke-width: 0px;" />
+<div class="region region-content" style="color: #333333; font-family: arial; font-size: 13px; font-style: normal; font-variant: normal; font-weight: normal; letter-spacing: normal; line-height: normal; orphans: auto; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: auto; word-spacing: 0px; -webkit-text-stroke-width: 0px;">
+<div id="block-system-main" class="block block-system">
+<div class="content">
+<div class="content">
+<div class="field field-name-body field-type-text-with-summary field-label-hidden">
+<div class="field-items">
+<div class="field-item even">
+<table id="toc" class="toc" style="border-spacing: 0px; border-collapse: collapse; max-width: 700px; word-wrap: break-word;" summary="Contents">
+<tbody>
+<tr>
+<td style="padding: 5px; border: 1px solid #999999;">
+<h2 style="color: #514c4c; font-size: 18px; font-weight: bold; margin: 0px;">Contents</h2>
+<ul>
+<li class="toclevel-1"><a style="text-decoration: none; color: #c40022;" href="http://www.rackspace.com/knowledge_center/article/installing-active-directory-on-windows-server-2008-r2-enterprise-64-bit#Installing_Active_Directory_on_Windows_Server_2008_R2_Enterprise_64-bit">1 Installing Active Directory on Windows Server 2008 R2 Enterprise 64-bit</a></li>
+<li class="toclevel-1"><a style="text-decoration: none; color: #c40022;" href="http://www.rackspace.com/knowledge_center/article/installing-active-directory-on-windows-server-2008-r2-enterprise-64-bit#Preparation_for_Active_Directory">2 Preparation for Active Directory</a></li>
+<li class="toclevel-1"><a style="text-decoration: none; color: #c40022;" href="http://www.rackspace.com/knowledge_center/article/installing-active-directory-on-windows-server-2008-r2-enterprise-64-bit#Installation_of_Active_Directory_Domain_Services_.28DCPROMO.29">3 Installation of Active Directory Domain Services (DCPROMO)</a>
+<ul>
+<li class="toclevel-2"><a style="text-decoration: none; color: #c40022;" href="http://www.rackspace.com/knowledge_center/article/installing-active-directory-on-windows-server-2008-r2-enterprise-64-bit#.21.21.21Congratulations.21.21.21_You_have_installed_an_Active_Directory_Domain_Controller.">3.1 !!!Congratulations!!! You have installed an Active Directory Domain Controller.</a></li>
+</ul>
+</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p style="line-height: 1.4em;"><a id="Installing_Active_Directory_on_Windows_Server_2008_R2_Enterprise_64-bit" style="text-decoration: none; color: #c40022;" name="Installing_Active_Directory_on_Windows_Server_2008_R2_Enterprise_64-bit"></a></p>
+<h2 style="color: #514c4c; font-size: 18px; font-weight: bold; margin: 0px;">Installing Active Directory on Windows Server 2008 R2 Enterprise 64-bit</h2>
+<p style="line-height: 1.4em;">From The Rackspace Cloud -- Cloud Servers Knowledge Base</p>
+<p style="line-height: 1.4em;">This article will address how to prepare and install Active Directory Domain Services (AD) on Windows Server 2008 R2 Enterprise 64-bit (W2K8).</p>
+<dl><dd>This article is<span class="Apple-converted-space"> </span><em><strong>not</strong></em><span class="Apple-converted-space"> </span>intended for adding a Domain Controller (DC) to an already existing Active Directory Forest Infrastructure.</dd></dl>
+<p style="line-height: 1.4em;"><a id="Preparation_for_Active_Directory" style="text-decoration: none; color: #c40022;" name="Preparation_for_Active_Directory"></a></p>
+<h2 style="color: #514c4c; font-size: 18px; font-weight: bold; margin: 0px;">Preparation for Active Directory</h2>
+<p style="line-height: 1.4em;">Installing Active Directory Domain Services on a Rackspace Cloud Server is a relatively easy process. There are a few requirements that must be present first to ensure a smooth installation however.</p>
+<dl><dd><strong>1. Have your domain name selected along with the Domain Administrator Password that you wish to use.</strong><br /><dl><dd>
+<ul>
+<li>Note- Though it is not a requirement, It is recommended you use a multiple name format for you domain name. Example would be, domainName.com or domainName.local rather than simply domainName.</li>
+</ul>
+</dd></dl></dd><dd><strong>2. A properly configured and available DNS server. This can be installed locally on the DC, and will be the case with this installation scenario.</strong><br /><dl><dd>
+<ul>
+<li>W2K8 can properly install and configure DNS during the AD installation if it knows that DNS is to be local.</li>
+<li>This is accomplished by having the Private network adapter’s Preferred DNS server address point to the already assigned IP address of the same Private network adapter.</li>
+</ul>
+</dd><dd>To do this, select View Network Connections within the Server Summary of Server Manager.</dd></dl></dd></dl>
+<p style="line-height: 1.4em;"><img src="http://c0625232.cdn.cloudfiles.rackspacecloud.com/2K8_64R2_ADDS.jpg" alt="2K8_64R2_ADDS.jpg" /></p>
+<p style="line-height: 1.4em;"> </p>
+<dl><dd><dl><dd>Right click on the Private adapter and select Properties. Or Double click the Private adapter and select Properties.</dd></dl></dd></dl>
+<p style="line-height: 1.4em;"><img src="http://c0625232.cdn.cloudfiles.rackspacecloud.com/2K8_64R2_ADDS(1).jpg" alt="2K8_64R2_ADDS(1).jpg" /></p>
+<p style="line-height: 1.4em;"> </p>
+<dl><dd><dl><dd>Double click Internet Protocal Version 4, or select it and click Properties.</dd></dl></dd></dl>
+<p style="line-height: 1.4em;"><img src="http://c0625232.cdn.cloudfiles.rackspacecloud.com/2K8_64R2_ADDS(7).jpg" alt="2K8_64R2_ADDS(7).jpg" /></p>
+<p style="line-height: 1.4em;"> </p>
+<dl><dd><dl><dd>Now copy your assigned IP address: displayed in the top box into the Preferred DNS server: box and click “OK”.</dd></dl></dd></dl>
+<p style="line-height: 1.4em;"><img src="http://c0625232.cdn.cloudfiles.rackspacecloud.com/2K8_64R2_ADDS(2).jpg" alt="2K8_64R2_ADDS(2).jpg" /></p>
+<p style="line-height: 1.4em;"> </p>
+<dl><dd><dl><dd>Now click OK again for the private Properties and close the Network Connection window.</dd></dl></dd></dl>
+<p style="line-height: 1.4em;"> </p>
+<dl><dd><strong>3. The last step for prepping W2K8 for AD is adding the proper Server Role.</strong><br /><dl><dd>
+<ul>
+<li>New to W2K8 is the ability to configure the server to perform specific roles.. The “Active Directory Domain Services” Role will be added. This only installs the framework for W2K8 to become a DC and run AD. It does not promote the server to DC or install AD.</li>
+</ul>
+</dd></dl></dd><dd>To add the “Active Directory Domain Services” Role click on the Role Directory within Server Manager and select Add Roles in the Roles Summary.</dd></dl>
+<p style="line-height: 1.4em;"><img src="http://c0625232.cdn.cloudfiles.rackspacecloud.com/2K8_64R2_ADDS(3).jpg" alt="2K8_64R2_ADDS(3).jpg" /></p>
+<p style="line-height: 1.4em;"> </p>
+<dl><dd>Click Next at the “Before You Begin” section.</dd><dd>Now simply check mark Active Directory Domain Services and click “Next” twice, “Install” and finally “Close” when complete.</dd></dl>
+<p style="line-height: 1.4em;"><img src="http://c0625232.cdn.cloudfiles.rackspacecloud.com/2K8_64R2_ADDS(4).jpg" alt="2K8_64R2_ADDS(4).jpg" /><img src="http://c0625232.cdn.cloudfiles.rackspacecloud.com/2K8_64R2_ADDS(5).jpg" alt="2K8_64R2_ADDS(5).jpg" /><img src="http://c0625232.cdn.cloudfiles.rackspacecloud.com/2K8_64R2_ADDS(6).jpg" alt="2K8_64R2_ADDS(6).jpg" /></p>
+<p style="line-height: 1.4em;"><a id="Installation_of_Active_Directory_Domain_Services_.28DCPROMO.29" style="text-decoration: none; color: #c40022;" name="Installation_of_Active_Directory_Domain_Services_.28DCPROMO.29"></a></p>
+<h2 style="color: #514c4c; font-size: 18px; font-weight: bold; margin: 0px;">Installation of Active Directory Domain Services (DCPROMO)</h2>
+<p style="line-height: 1.4em;">Now that the Server has been prepared the installation of AD we can proceed. You now have three different ways we can begin the installation.</p>
+<dl><dd>1. Within Server Manager, if you expand the Roles directory you will see the Active Directory Domain Services directory. Select that and you will find in the Summary “Run the Active Directory Domain Services Installation Wizard (dcpromo.exe)” Simply click that to begin the installation.</dd></dl>
+<p style="line-height: 1.4em;"><img src="http://c0625232.cdn.cloudfiles.rackspacecloud.com/2K8_64R2_ADDS(8).jpg" alt="2K8_64R2_ADDS(8).jpg" /></p>
+<p style="line-height: 1.4em;"> </p>
+<dl><dd>2. The comandline equivilant to Active Directory Domain Services Installation Wizard is - Servermanagercmd.exe –I ADDS-Domain-Controller</dd></dl><dl><dd>3. The last and probably the most recognized method is typing DCPROMO.exe at the command prompt.</dd></dl>
+<p style="line-height: 1.4em;"><img src="http://c0625232.cdn.cloudfiles.rackspacecloud.com/2K8_64R2_ADDS(9).jpg" alt="2K8_64R2_ADDS(9).jpg" /></p>
+<p style="line-height: 1.4em;"> </p>
+<dl><dd>Whichever way you choose, You should get to this point. Simply click Next. You do not check advanced mode.</dd></dl>
+<p style="line-height: 1.4em;"><img src="http://c0625232.cdn.cloudfiles.rackspacecloud.com/2K8_64R2_ADDS(10).jpg" alt="2K8_64R2_ADDS(10).jpg" /></p>
+<p style="line-height: 1.4em;"> </p>
+<dl><dd>Click Next again.</dd></dl>
+<p style="line-height: 1.4em;"><img src="http://c0625232.cdn.cloudfiles.rackspacecloud.com/2K8_64R2_ADDS(11).jpg" alt="2K8_64R2_ADDS(11).jpg" /></p>
+<p style="line-height: 1.4em;"> </p>
+<dl><dd>Now select “Create a new domain in a new forest” and click Next.</dd></dl>
+<p style="line-height: 1.4em;"><img src="http://c0625232.cdn.cloudfiles.rackspacecloud.com/2K8_64R2_ADDS(12).jpg" alt="2K8_64R2_ADDS(12).jpg" /></p>
+<p style="line-height: 1.4em;"> </p>
+<dl><dd>Now enter the domain name you have chosen.</dd></dl>
+<p style="line-height: 1.4em;"><img src="http://c0625232.cdn.cloudfiles.rackspacecloud.com/2K8_64R2_ADDS(13).jpg" alt="2K8_64R2_ADDS(13).jpg" /></p>
+<p style="line-height: 1.4em;"> </p>
+<dl><dd>After the installation verifies that the NetBIOS Name, you will choose the Forest function level. I chose 2008 R2. After selecting click Next.</dd></dl>
+<p style="line-height: 1.4em;"><img src="http://c0625232.cdn.cloudfiles.rackspacecloud.com/2K8_64R2_ADDS(14).jpg" alt="2K8_64R2_ADDS(14).jpg" /></p>
+<p style="line-height: 1.4em;"> </p>
+<dl><dd>It will examine and verify you DNS setting. DNS server should already be checked. Now click Next.</dd></dl>
+<p style="line-height: 1.4em;"><img src="http://c0625232.cdn.cloudfiles.rackspacecloud.com/2K8_64R2_ADDS(15).jpg" alt="2K8_64R2_ADDS(15).jpg" /></p>
+<p style="line-height: 1.4em;"> </p>
+<dl><dd>You will now be prompted with the following message. This is OK. Just click Yes.</dd></dl>
+<p style="line-height: 1.4em;"><img src="http://c0625232.cdn.cloudfiles.rackspacecloud.com/2K8_64R2_ADDS(16).jpg" alt="2K8_64R2_ADDS(16).jpg" /></p>
+<p style="line-height: 1.4em;"> </p>
+<dl><dd>Click Next Again.</dd></dl>
+<p style="line-height: 1.4em;"><img src="http://c0625232.cdn.cloudfiles.rackspacecloud.com/2K8_64R2_ADDS(17).jpg" alt="2K8_64R2_ADDS(17).jpg" /></p>
+<p style="line-height: 1.4em;"> </p>
+<dl><dd>Now enter your Domain Administrator Password that you chose. This is not your Admin Password that emailed to you during the creation of you Server, unless you want to use it. It is your decision.</dd></dl>
+<p style="line-height: 1.4em;"><img src="http://c0625232.cdn.cloudfiles.rackspacecloud.com/2K8_64R2_ADDS(18).jpg" alt="2K8_64R2_ADDS(18).jpg" /></p>
+<p style="line-height: 1.4em;"> </p>
+<dl><dd>Click Next.</dd></dl>
+<p style="line-height: 1.4em;"><img src="http://c0625232.cdn.cloudfiles.rackspacecloud.com/2K8_64R2_ADDS(19).jpg" alt="2K8_64R2_ADDS(19).jpg" /></p>
+<p style="line-height: 1.4em;"> </p>
+<dl><dd>The installation will now complete. You can check the reboot on completion if you like.</dd></dl>
+<p style="line-height: 1.4em;"><img src="http://c0625232.cdn.cloudfiles.rackspacecloud.com/2K8_64R2_ADDS(20).jpg" alt="2K8_64R2_ADDS(20).jpg" /></p>
+<p style="line-height: 1.4em;"> </p>
+<dl><dd>If not, you will need to click Finish here. Then restart your server.</dd></dl>
+<p style="line-height: 1.4em;"><img src="http://c0625232.cdn.cloudfiles.rackspacecloud.com/2K8_64R2_ADDS(21).jpg" alt="2K8_64R2_ADDS(21).jpg" /></p>
+<p style="line-height: 1.4em;"> </p>
+<dl><dd>After a few minutes, reconnect to your server via the Console in your Control Panel or RDP.</dd></dl><dl><dd>To log in, you will need to select “Switch User”, then Other User. Type in your full domain name you picked followed by a back slash and Administrator for user. Then enter the password that was emailed to you when you first built the server. If you had already changed your password for the local admin account to this server before your began the install for AD, use that password.</dd></dl>
+<p style="line-height: 1.4em;"><img src="http://c0625232.cdn.cloudfiles.rackspacecloud.com/2K8_64R2_ADDS(22).jpg" alt="2K8_64R2_ADDS(22).jpg" /></p>
+<p style="line-height: 1.4em;"> </p>
+<p style="line-height: 1.4em;"><a id=".21.21.21Congratulations.21.21.21_You_have_installed_an_Active_Directory_Domain_Controller." style="text-decoration: none; color: #c40022;" name=".21.21.21Congratulations.21.21.21_You_have_installed_an_Active_Directory_Domain_Controller."></a></p>
+<h3>!!!Congratulations!!! You have installed an Active Directory Domain Controller.</h3>
+<p style="line-height: 1.4em;"> </p>
+<p style="line-height: 1.4em;"> </p>
+<p style="line-height: 1.4em;"><a href="http://www.rackspace.com/knowledge_center/article/installing-active-directory-on-windows-server-2008-r2-enterprise-64-bit">http://www.rackspace.com/knowledge_center/article/installing-active-directory-on-windows-server-2008-r2-enterprise-64-bit</a></p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>

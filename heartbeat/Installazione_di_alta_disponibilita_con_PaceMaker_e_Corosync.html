@@ -1,0 +1,284 @@
+<p><strong>PaceMaker</strong> è il CRM, Cluster Resource Manager, che gestisce appunto le risorse dell&#39;alta disponibilità. <strong>Corosync</strong> è un gestore di cluster.</p>
+<p> </p>
+<p>Prima di cominciare sincronizzare il file /etc/hosts in modo che entrambi contengano gli IP di rete dei due host, ed il loro hostname. Ad esempio</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">192.168.1.10 server1.dominio.com server1
+192.168.1.11 server2.dominio.com server2</pre>
+<p> </p>
+<p>E&#39; anche indispensabile che gli orologi siano sincronizzati tra i due server. Seguire l&#39;howto per l&#39;<a href="https://mail.ufficyo.com/kb/index.php?action=artikel&amp;cat=4&amp;id=107&amp;artlang=it">installazione base</a> prima di procedere.</p>
+<p>ATTENZIONE: essendo che i due server condividono i file gli utenti del sistema devono essere gli stessi! Ad esempio l&#39;utente <em>mysql</em> deve avere lo stesso <em><strong>uid/gid</strong></em> sia su <em>server1</em> che su <em>server2</em>!</p>
+<p>In fase di installazione eseguire gli stessi passaggi su entrambi i server, oppure creare prima gli utenti. </p>
+<p>Se uno dei sever è già insallato è possibile modificare gli id sul secondo usando uno script presente in <em><a href="http://dev.ufficyo.com/redmine/projects/youtils/repository/revisions/b423a330fc366130b88a7721d40d0c3fa46a55b0/changes/serverutils/cambiaperm.sh">git</a></em>.</p>
+<p> </p>
+<p>Il <em>corosync </em>di Ubuntu Lucid 10.04 non è in grado di gestire i servizi upstart, ma solo quelli di init.d. Per avere una versione aggiornata appoggiarsi ad un ppa con i seguenti comandi:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">apt-get install python-software-properties
+apt-add-repository ppa:ubuntu-ha-maintainers/ppa
+apt-get update </pre>
+<p> </p>
+<p>Nel caso di Ubuntu 12.04 la versione del modulo drbd (8.4.2) non è compatibile con il pacchetto delle utility (8.3.11). C&#39;è un bug aperto con in allegato una versione ricompilata dei tools 8.4.3 sul <a href="https://bugs.launchpad.net/ubuntu/+source/drbd8/+bug/1185756">bug 1185756</a> (e qui allegata).</p>
+<p> </p>
+<p>Installiamo quindi il software con il comando</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">apt-get install pacemaker psmisc</pre>
+<p>Questo installerà anche le dipendenze. Generiamo la chiave per <em>corosync</em> e copiamola sul secondo server. Attenzione, il comando di keygen usa /dev/random per generare la chiave, quindi per generare entropia conviene lanciare durante l&#39;esecuzione dei comandi che ad esempio causino attività sul disco, come una <em>find</em> o <em>grep</em>:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">corosync-keygen
+scp /etc/corosync/authkey SERVER2:/etc/corosync/</pre>
+<p>su SERVER2:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">chown root:root /etc/corosync/authkey
+chmod 400 /etc/corosync/authkey</pre>
+<p>Andiamo ora a configurare Corosync, aprendo il file <strong>/etc/corosync/corosync.conf</strong>, modificando il parametro <em>bindnetaddr</em> secondo la rete:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">interface {
+		ringnumber: 0
+		bindnetaddr: 192.168.1.0
+		mcastaddr: 226.94.1.1
+		mcastport: 5405
+	}</pre>
+<p>E&#39; possibile far coesistere due installazioni separate di CoroSync sulla stessa subnet modificando il parametro <em>mcastaddr</em>, impostando per ad esempio <em>226.94.2.1 </em>per la seconda installazione. (rif <a href="http://lists.linux-ha.org/pipermail/linux-ha/2011-October/043913.html">linux-ha</a>)</p>
+<p> </p>
+<p>In caso di netmask differente dalla solita <em>/24</em> si deve mettere l&#39;IP iniziale della classe. Ad esempio se l&#39;host ha IP 10.0.0.174/255.255.255.128 l&#39;IP da mettere sarà 10.0.0.128. Per calcolare la sottorete si può usare <a href="http://jodies.de/ipcalc">ipcalc</a>, e prendere il valore della riga <em>Network</em> (senza netmask). In alternativa è possibile mettere direttamente l&#39;IP dell&#39;host.</p>
+<h5>Uso di unicast</h5>
+<p>La configurazione predefinita di corosync è in multicast, ovvero i pacchetti di comunicazione vengono inviati in rete in modalità simile al broadcast. Nel caso ci si trovi in presenza di una rete <em>managed</em> con degli switch intermedi che magari non sono configurati per far passare i pacchetti mutlicast i nodi potrebbero avere problemi di comunicazione. In queste situazioni occorre passare ad <em>unicast</em>, specificando i nodi partecipanti al cluster. Per attivare questa modalità nella stanza <em>interfaces</em> aggiungere:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">interface {<br />member {
+memberaddr 10.0.0.174
+}
+member {
+memberaddr 10.0.0.175
+}<br />[...]<br />}<br />transport: udpu</pre>
+<p><em>(fine unicast)</em></p>
+<p> </p>
+<p>Modificare <strong>/etc/default/corosync</strong> impostando il parametro <em><strong>start=yes</strong></em> e quindi riavviare corosync su entrambi i nodi. Controlliamo lo stato del cluster con il comando </p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">crm_mon --one-shot -V</pre>
+<p>che dovrebbe restituire:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">crm_mon[32290]: 2011/06/17_10:15:23 ERROR: unpack_resources: Resource start-up disabled since no STONITH resources have been defined
+crm_mon[32290]: 2011/06/17_10:15:23 ERROR: unpack_resources: Either configure some or disable STONITH with the stonith-enabled option
+crm_mon[32290]: 2011/06/17_10:15:23 ERROR: unpack_resources: NOTE: Clusters with shared data need STONITH to ensure data integrity
+============
+Last updated: Fri Jun 17 10:15:23 2011
+Current DC: NONE
+0 Nodes configured, unknown expected votes
+0 Resources configured.
+============</pre>
+<p>Configuriamo il CRM, lanciando <strong>crm</strong>. Entreremo nella shell di Pacemaker.</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">crm configure
+(quindi nella shell crm)
+property no-quorum-policy=ignore
+property stonith-enabled=false 
+property default-resource-stickiness=1000 
+commit
+bye</pre>
+<p><span style="text-decoration: underline;">Stonith è essenziale</span>, è il componente che controlla che una risorsa sia in esecuzione su una sola macchina, ma lo configureremo dopo.</p>
+<p> </p>
+<h3>Concetti fondamentali</h3>
+<p>Pacemaker è in grado di gestire delle risorse in senso lato. In genere noi lo installiamo in modalità Active/Standby, ovvero dove c&#39;è un server con i servizi attivi e l&#39;altro con i dati sincronizzati in attesa. Questo significa che i servizi dovranno risiedere sempre sullo stesso servizio, per evitare che ad esempio il server samba sia attivo dove la partizione dei dati non è montata. Per gestire questo tipo di vincolo esistono le <em>colocation</em>, da associare spesso all&#39;ordine di caricamento dei servizi. In particolare nell&#39;esempio di prima dovremo avviare samba solo dopo che la partizione dati è stata montata.</p>
+<p>Come funzionano:</p>
+<h5>colocation</h5>
+<p>Questa direttiva serve a specificare che una risorsa deve essere sullo stesso server dove una seconda risorsa ha un determinato stato, ovvero che la risorsa <em>samba</em> deve risiedere dove la risorsa<em> mountpoint1</em> è <strong>avviata</strong>.</p>
+<p>La definizione è di questo tipo:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">colocation NomeDefinizioneColocation01 inf: RisorsaDipendente RisorsaDaCuiDipende[:Master]</pre>
+<p>NomeDefinizione: è un nome univoco nell&#39;installazione della risorsa di colocation. </p>
+<p>inf:: è il peso di questo vincolo, che può essere un valore numerico ma solitamente è <em>inf:</em> o <em>-inf:</em>; nel primo caso significa <em>infinito</em> (e l&#39;opposto nel secondo), quindi il match andrà sempre verificato.</p>
+<p>RisorsaDipendente: è il nome della risorsa <em>figlio</em>, quella che dipende.</p>
+<p>RisorsaDaCuiDipende: è il nome della risorsa <em>padre</em>, quella a cui associare <em>RisorsaDipendente</em>.</p>
+<p>L&#39;opzione <em>:Master</em> da associare alla RisorsaDaCuiDipende è usata nel caso la risorsa (come ad esempio DRBD) puàò essere in uno stato <em>Master</em> oppure <em>Slave</em>.</p>
+<p> </p>
+<h5>order</h5>
+<p>Queste direttive stabiliscono l&#39;ordine con cui vengono avviate le risorse definite nel cluster. Ad esempio se abbiamo un servizio su uno storage condiviso prima di avviare il servizio la directory deve essere montata. </p>
+<p>La definizione è come segue:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">order NomeDefinizioneOrder01 inf: RisorsaPrima:start RisorsaDopo:start</pre>
+<p>NomeDefinizione: è un nome univoco nell&#39;installazione della risorsa di order. </p>
+<p>inf:: è il peso di questo vincolo.</p>
+<p>RisorsaPrima: è il nome della risorsa che deve essere avviata per prima.</p>
+<p>RisorsaDopo: è il nome della risorsa che deve essere avviata dopo l&#39;avvio di RisorsaPrima.</p>
+<p>L&#39;opzione <em>:start</em> può essere <em>:promote </em>nel caso si tratti di risorsa <em>ms</em>.</p>
+<p> </p>
+<p> </p>
+<h3>Configurazione di un mountpoint condiviso</h3>
+<p>Configuriamo una risorsa OCFS2, ovvero un mount point condiviso tra i due host heartbeat. Lanciamo il comando crm configure e digitiamo le seguenti istruzioni:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">primitive Cluster-FS-DRBD ocf:linbit:drbd params drbd_resource="NOMERISORSA" operations $id="Cluster-FS-DRBD-ops" op monitor interval="20" role="Master" timeout="20" op monitor interval="30" role="Slave" timeout="20" meta target-role="started"
+ms Cluster-FS-DRBD-Master Cluster-FS-DRBD meta resource-stickines="100" master-max="2" notify="true" interleave="true"
+primitive Cluster-FS-Mount ocf:heartbeat:Filesystem params device="/dev/drbd/by-res/NOMERISORSA" directory="/cluster" fstype="ocfs2" meta target-role="started"
+clone Cluster-FS-Mount-Clone Cluster-FS-Mount meta interleave="true" ordered="true"
+order Cluster-FS-After-DRBD inf: Cluster-FS-DRBD-Master:promote Cluster-FS-Mount-Clone:start<br />commit </pre>
+<p>In dettaglio:</p>
+<ol>
+<li>configuriamo una risorsa DRBD nel crm. Il <em>NOMERISORSA</em> deve essere il nome della risorsa che abbiamo configurato in drbd. Il valore <em>Cluster-FS-DRBD</em> è il nome della risorsa, per corosync</li>
+<li>definizione della risorsa master, che controlla lo stato</li>
+<li>la primitiva che imposta il montaggio della partizione drbd sulla directory <em>/cluster</em> (in questo caso)</li>
+<li>il <em>clone</em> della risorsa, che consente di applicare questa risorsa ad entrambi i nodi con un&#39;unica definizione</li>
+<li>una restrizione (<em>constraint</em>) che vincola il montaggio solo dopo che drbd è stato avviato</li>
+<li>ed infine l&#39;applicazione (<em>commit</em>) delle modifiche</li>
+</ol>
+<p>A questo punto la directory <em>/cluster</em> dovrebbe essere montata su entrambi i nodi. Lanciando il comando <strong>crm configure show</strong> dovremmo ottenere un output simile a questo:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">node xensrv01
+node xensrv02
+primitive Config-FS-DRBD ocf:linbit:drbd \
+        params drbd_resource="NOMERISORSA" \
+        operations $id="Config-FS-DRBD-ops" \
+        op monitor interval="20" role="Master" timeout="20" \
+        op monitor interval="30" role="Slave" timeout="20" \
+        meta target-role="started"
+primitive Config-FS-Mount ocf:heartbeat:Filesystem \
+        params device="/dev/drbd/by-res/config" directory="/cluster" fstype="ocfs2" \
+        meta target-role="started"
+ms Config-FS-DRBD-Master Config-FS-DRBD \
+        meta resource-stickines="100" master-max="2" notify="true" interleave="true"
+clone Config-FS-Mount-Clone Config-FS-Mount \
+        meta interleave="true" ordered="true"
+order Config-FS-After-DRBD inf: Config-FS-DRBD-Master:promote Config-FS-Mount-Clone:start
+property $id="cib-bootstrap-options" \
+        dc-version="1.0.9-74392a28b7f31d7ddc86689598bd23114f58978b" \
+        cluster-infrastructure="openais" \
+        expected-quorum-votes="2" \
+        no-quorum-policy="ignore" \
+        stonith-enabled="false" \
+        default-resource-stickiness="1000"
+</pre>
+<p>In caso sia necessario apportare modifiche alla configurazione, è possibile usare il comando <strong>crm configure edit</strong>.</p>
+<p>Apriamo il file /etc/default/xendomains modificando i seguenti parametri come specificato. Questo previene l&#39;avvio automatico delle VM da parte del sistema, che saranno invece gestite da CoroSync:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">XENDOMAINS_SAVE=
+XENDOMAINS_SHUTDOWN_ALL=
+XENDOMAINS_RESTORE=false
+XENDOMAINS_AUTO=
+XENDOMAINS_AUTO_ONLY=true</pre>
+<p>quindi rimuoviamo l&#39;avvio dei domini da init:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">update-rc.d -f xendomains remove</pre>
+<p> </p>
+<h3>Configurazione della VM come risorsa di CoroSync</h3>
+<p>I passaggi sono:</p>
+<ul>
+<li>impostazione della risorsa drbd in modalità active/active;</li>
+<li>configurazione risorsa Xen;</li>
+<li>configurazione restrizione che vincola l&#39;esecuzione su uno solo dei due server. Questa operazione è possibile solo con drbd &gt; 8.3.2.</li>
+</ul>
+<p>Lanciamo <strong>crm configure</strong>. </p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">primitive DRBD-firewall ocf:linbit:drbd params drbd_resource="firewall" operations $id="DRBD-firewall-ops" op monitor interval="20" role="Master" timeout="20" op monitor interval="30" role="Slave" timeout="20" meta target-role="started"
+ms firewall-MS DRBD-firewall meta resource-stickines="100" master-max="2" notify="true" interleave="true"
+primitive XEN-firewall ocf:heartbeat:Xen params config="/etc/xen/firewall.sxp" meta allow-migrate="true" meta target-role="started" operations $id="XEN-firewall-ops" op monitor interval="10s" op start interval="0" timeout="240s" op stop interval="0" timeout="240s"
+colocation firewall-Xen-DRBD inf: XEN-firewall firewall-MS:Master
+commit</pre>
+<p>In dettaglio:</p>
+<ol>
+<li>definiamo la risorsa drbd condivisa;</li>
+<li>definiamo le regole per la risorsa;</li>
+<li>definiamo la risorsa della vm gestita con <em>libvirt</em>. Esiste anche una funzionalità specifica per Xen, se si usano i file di configurazione tradizionali;</li>
+<li>definiamo la restirzione che vincola drbd ad essere attivo prima di accettre la VM.</li>
+</ol>
+<p>Per i dettagli di configurazione della primitiva <em>VirtualDomain</em> vedere <a href="http://www.linux-ha.org/wiki/VirtualDomain_(resource_agent)">linux-ha.org</a>.</p>
+<h3>Configurazione di un IP condiviso</h3>
+<p>Lanciamo la shell di crm con il comando omonimo, e digitiamo:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">primitive ip1 ocf:heartbeat:IPaddr params ip="192.168.1.118" nic="br0" cidr_netmask="255.255.255.0"</pre>
+<p>quindi digitare <em>commit</em> ed uscire con <em>exit</em>.</p>
+<h3>Configurazione di un mountpoint su singolo nodo</h3>
+<p>Diversamente a quanto fatto prima con ocfs2, possiamo aver necessità di configurare un mountpoint in esecuzione su un singolo nodo, con filesystem ext3/ext4.</p>
+<p>Lanciamo <strong>crm configure</strong> e quindi definiamo la risorsa</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">primitive Cluster-FS-DRBD ocf:linbit:drbd \
+        params drbd_resource="dati" \
+        meta target-role="started"
+primitive Cluster-FS-Mount ocf:heartbeat:Filesystem \
+        params device="/dev/drbd/by-res/dati" directory="/dati" fstype="ext3" \
+        meta target-role="started"
+ms Cluster-FS-DRBD-Master Cluster-FS-DRBD \
+        meta resource-stickines="100" master-max="1" master-node-max="1" notify="true" interleave="true"
+colocation fs_on_drbd inf: Cluster-FS-Mount Cluster-FS-DRBD-Master:Master
+order Cluster-FS-After-DRBD inf: Cluster-FS-DRBD-Master:promote Cluster-FS-Mount:start
+</pre>
+<p>In dettaglio:</p>
+<ul>
+<li>Definiamo una risorsa DRBD da gestire</li>
+<li>Definiamo una risorsa filesystem per la risorsa drbd <em>dati</em> da montare sulla directory <em>/dati</em></li>
+<li>Definiamo che il filesystem possa essere in modalità <em>Master</em> al massimo su un nodo contemporaneamente</li>
+<li>Definiamo che la risorsa <em>Cluster-FS-Mount</em> (il montaggio) deve essere dove è attiva la risorsa <em>Cluster-FS-DRBD-Master</em> (drbd)</li>
+<li>Definiamo che la risorsa di Mount debba essere eseguita solo dopo che drbd è stato avviato</li>
+</ul>
+<p> </p>
+<h3>Creazione di una risorsa di <em>bind mount</em></h3>
+<p>Quando si gestisce Zimbra su DRBD spesso non è possibile avere l&#39;installazione in /opt/zimbra, quindi si usa un <em>bind mount</em>. In questo caso però dobbiamo eseguire il montaggio solo dopo che la nostra <em>/dati</em> (o dove risiede realmente Zimbra) sia montata!</p>
+<p>In questo esempio creeremo il mount da /dati/zimbra in /opt/zimbra. Lanciamo <strong>crm configure</strong> quindi:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">primitive Cluster-Zimbra-FS ocf:heartbeat:Filesystem \
+        params device="/dati/zimbra" directory="/opt/zimbra" fstype="none" options="bind"
+colocation Zimbra-FS-on-Dati inf: Cluster-Zimbra-FS Cluster-FS-Mount
+order Zimbra-FS-after-Dati inf: Cluster-FS-Mount Cluster-Zimbra-FS
+</pre>
+<p>Molto semplice. In dettaglio:</p>
+<ul>
+<li>Definiamo la primitiva <em>Cluster-Zimbra-FS</em> di tipo Filesystem. Notare in particolare <em>fstype="none"</em> e <em>options="bind"</em>;</li>
+<li>Restringiamo l&#39;esecuzione del mount di Zimbra SOLO dove è già presente il mount di dati, la cui relativa risorsa si chiama <em>Cluster-FS-Mount</em>;</li>
+<li>Forziamo quindi l&#39;esecuzione del montaggio solo dopo aver montato <em>/dati</em></li>
+</ul>
+<h3>Configurazione Zimbra </h3>
+<p>Per quanto riguarda Zimbra occorre una menzione particolare. Lo script LSB predefinito di zimbra funziona in ha, ma non è ottimale in quanto non implementa correttamente la funzione <em>status</em>. <span style="font-size: 13px;">Per questo usiamo uno script di resource manager scritto da <a href="http://www.btactic.com/">btactic</a>. Lo script si trova in zimbrautils, copiare la directory <em>btactic</em> in /usr/lib/ocf/resource.d/ dei server HA.</span></p>
+<p><span style="font-size: 13px;">Per definire la risorsa heartbeat:</span></p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">primitive Cluster-Zimbra ocf:btactic:zimbra \
+        op start interval="0" timeout="360s" \
+        op stop interval="0" timeout="360s"</pre>
+<p> </p>
+<p><span style="font-size: 13px;">Se vogliamo poi condizionare l&#39;avvio di Zimbra dopo che è stata montata la /opt/zimbra (vedi h3 precedente):</span></p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">colocation c_zimbra_con_zimbrafs inf: Cluster-Zimbra Cluster-ZimbraFS
+order o_zimbra_dopo_zimbrafs inf: Cluster-ZimbraFS:start Cluster-Zimbra:start</pre>
+<p> </p>
+<p>Zimbra però ha anche una schedulazione via cron che deve essere eseguita solo dove viene effettivamente montata la /opt/zimbra. Per questo abbiamo uno script LSB nostro che allo stop rimuove il crontab e allo start lo ripristina.</p>
+<p>Copiare sempre da serverutils il file zimbra-crontab in /etc/init.d/zimbra-crontab e definire la risorsa in questo modo:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">primitive Cluster-ZimbraCron lsb:zimbra-crontab \
+        op start interval="0" timeout="120s" \
+        op stop interval="0" timeout="120s" 
+colocation c_zimbracron_con_zimbrafs inf: Cluster-ZimbraCron Cluster-ZimbraFS
+order o_zimbracron_dopo_zimbrafs inf: Cluster-ZimbraFS:start Cluster-ZimbraCron:start</pre>
+<p>Come per zimbra dobbiamo condizionare l&#39;avvio della risorsa solo dopo che la /opt/zimbra si è resa disponibile.</p>
+<p> </p>
+<h3>Monitorare lo stato dei servizi</h3>
+<p>E&#39; possibile configurare l&#39;invio di una mail ad ogni cambio di stato dei servizi. Per questo configuriamo una risorsa in PaceMaker:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">primitive resMON ocf:pacemaker:ClusterMon \ 
+	operations $id="resMON-operations" \ 
+	op monitor interval="180" timeout="20" \ 
+	params extra_options="--mail-to &lt;support@yetopen.it&gt;" </pre>
+<p> </p>
+<h3>Problemi di rete</h3>
+<p>E&#39; capitato in una situazione che ci fossero saltuari problemi di rete, che venivano ripristinati in pochi secondi. Questo però causava un inizio di takeover, ed uno split-brain di drbd. Per dare al sistema un <em>grace-time</em> prima di intervenire si può agire sul parametro <em>crmd-transition-delay</em>, che dice a corosync di attivare il takeover solo se il problema perdura per <em>n</em> secondi. Per modificare il parametro:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">crm configure property crmd-transition-delay="60s"</pre>
+<p> </p>
+<p> </p>
+<h3>Comandi utili</h3>
+<p>Per sospendere la gestione di una risorsa da PaceMaker, lanciare il comando</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">crm resource myResource stop</pre>
+<p>questo consente di eseguire operazioni di amministrazione, senza dover fermare tutto il cluster. Al termine, eseguire lo stesso comando con <em>start</em>.</p>
+<p> </p>
+<h2>Migrazione di una risorsa</h2>
+<p>Per spostare una risorsa dall&#39;host in esecuzione lanciare il comando</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">crm resource migrate myResource</pre>
+<p>la risorsa resterà in esecuzione sul nodo secondario fino all&#39;esecuzione del comando che rimuove la costrizione di migrazione:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">crm resource unmigrate myResource</pre>
+<p>Si può anche indicare verso quale nodo effettuare la migrazione, con il comando</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">crm resource migrate host3</pre>
+<h2>Sospensione delle attività per un nodo</h2>
+<p>Se si vogliono effettuare operazioni di manutenzione su un nodo, quindi rimuovendolo dal cluster, non è necessario spegnere Pacemaker, ma è meglio metterlo in stato di standby con il comando</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">crm node standby host1</pre>
+<p>per ripristinare le attività</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">crm node online host1</pre>
+<h2>Dare maggiore peso all&#39;host con la connettività migliore</h2>
+<p>E&#39; possibile condizionare il posizionamento delle risorse nel cluster in base alla connettività. In pratica vengono eseguiti dei <em>ping</em> periodici a degli host prefissati, ed in caso il nodo su cui sono in esecuzione le risorse ottenga meno risposte dei un altro è possibile migrare automaticamente l&#39;esecuzione altrove.</p>
+<p>Le operazioni da fare sono: definire la risorsa di ping distribuita su tutto il cluster e aggiungere il punteggio derivato dai ping come valore per le risorse.</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">crm configure resPing ocf:pacemaker:pingd \
+  params host_list="host1 host2 host3" multiplier="10" dampen="5s"
+crm configure clone clonePing resPing
+crm configure location locMyOST myResource rule $id="locMyOST" pingd: defined pingd</pre>
+<p>In questo modo si favorisce l&#39;esecuzione di <em>myResource</em> sul nodo con la connettività migliore. E&#39; possibile vincolare l&#39;esecuzione anche di un gruppo di risorse.</p>
+<p> </p>
+<h2>Modalità manutenzione</h2>
+<p>In alcuni casi può essere utile mettere il cluster in <em>maintenance-mode</em>: questa modalità toglie le funzionalità di HA al cluster, per cui corosync non effettua più i controlli sui servizi e sul loro stato. E&#39; molto utile in caso di <strong>aggiornamenti</strong> dei servizi gestiti dall&#39;alta disponibilità.</p>
+<p>Per entrare in modalità manutenzione: </p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">crm configure property maintenance-mode=true</pre>
+<p>per tornare all&#39;operatività normale</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">crm configure property maintenance-mode=false</pre>
+<p> </p>
+<h2>Verifica connettività del cluster</h2>
+<p>Lo stato di connettività del cluster è verificabile con il comando:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">corosync-cfgtool -s</pre>
+<p>In un cluster di due nodi però potrei avere su entrambi gli host due <em>ring</em> con un singolo nodo. Si può controllare l&#39;elenco dei membri di un cluster anche con il comando:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">corosync-objctl | grep member</pre>
+<p> </p>
+<p> </p>
+<p> </p>
+<p>rif: <a href="http://wiki.lustre.org/index.php/Using_Pacemaker_with_Lustre">http://wiki.lustre.org/index.php/Using_Pacemaker_with_Lustre</a></p>
+<p>rif: <a href="http://publications.jbfavre.org/virtualisation/cluster-xen-corosync-pacemaker-drbd-ocfs2.en">http://publications.jbfavre.org/virtualisation/cluster-xen-corosync-pacemaker-drbd-ocfs2.en</a></p>
+<p>rif: <a href="http://www.rabbitmq.com/pacemaker.html">http://www.rabbitmq.com/pacemaker.html</a></p>
+<p>rif: <a href="http://clusterlabs.org/wiki/PostgresHowto">http://clusterlabs.org/wiki/PostgresHowto</a> (howto con postgres)</p>
+<p>rif: <a href="http://www.hastexo.com/resources/hints-and-kinks/managing-cron-jobs-pacemaker">http://www.hastexo.com/resources/hints-and-kinks/managing-cron-jobs-pacemaker</a> (cron e pacemaker)</p>
+<p>rif: <a href="http://www.hastexo.com/resources/hints-and-kinks">http://www.hastexo.com/resources/hints-and-kinks</a> (vari howto e spiegazioni su pacemaker/corosync)</p>

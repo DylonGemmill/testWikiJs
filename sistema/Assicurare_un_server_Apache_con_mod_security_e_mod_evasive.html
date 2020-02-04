@@ -1,0 +1,43 @@
+<h3>Installazione di mod_security</h3>
+<p>Installare il pacchetto con</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">apt-get install libapache2-mod-security</pre>
+<p>attivare le regole predefinite con</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">cp /etc/modsecurity/modsecurity.conf{-recommended,}</pre>
+<p>Modificare in /etc/modsecurity/modsecurity.conf</p>
+<ul>
+<li>SecRuleEngine On</li>
+<li>SecRequestBodyLimit 16384000</li>
+<li>SecRequestBodyInMemoryLimit 16384000</li>
+</ul>
+<p>Gli ultimi due parametri indicano la dimensione massima di un file di upload, modificare secondo le esigenze.</p>
+<p>Scarichiamo le regole:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">cd /tmp
+wget https://github.com/root25/MODSEC/raw/master/modsecurity-crs_2.2.5.tar.gz
+tar -zxvf modsecurity-crs_2.2.5.tar.gz
+cp -R modsecurity-crs_2.2.5/* /etc/modsecurity/
+rm -fr modsecurity-crs_2.2.5*
+cp /etc/modsecurity/modsecurity_crs_10_setup.conf{.example,}
+
+cd /etc/modsecurity/base_rules
+for f in * ; do sudo ln -s /etc/modsecurity/base_rules/$f /etc/modsecurity/activated_rules/$f ; done
+</pre>
+<p>Modificare it /etc/apache2/mods-available/mod-security.conf aggiungendo (se non già presente):</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">Include "/etc/modsecurity/activated_rules/*.conf"</pre>
+<p>Abilitare i moduli con:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">a2enmod headers
+a2enmod mod-security </pre>
+<p>verificare che la configurazione di apache sia corretta con</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">apachec2ctl configtest</pre>
+<p>se tutto ok</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">service apache2 restart</pre>
+<p> </p>
+<p>http://www.root25.com/2012/11/how-to-install-modsecurity-on-apache-ubuntu12-stepbystep-tutorial.html</p>
+<p><span style="font-size: 13px;">http://www.thefanclub.co.za/how-to/how-install-apache2-modsecurity-and-modevasive-ubuntu-1204-lts-server</span></p>
+<p> </p>
+<p>// FIXME integrare la guida con questa</p>
+<p>http://www.tecmint.com/protect-apache-using-mod_security-and-mod_evasive-on-rhel-centos-fedora/</p>
+<p>// FIXME integrare con documentazione sulla modalità anomaly</p>
+<p>http://stackoverflow.com/questions/8236736/mod-security-false-positives</p>
+<p> </p>
+<p>// FIXME integrare con mod_evasive + fail2ban</p>
+<p><span>Per quanto riguada mod_evasive ho visto che può eseguire un comando per bloccare un IP bannato. Visto che abbiamo già fail2ban sarebbe carino usare quello invece di regole custom di iptables. Con fail2ban-client puoi aggiungere un ip al ban, dovrebbe essere "banip" se guardi il man.</span><br /><span>Questo link invece usa una regola di fail2ban per monitorare i log di evasive. In teoria però è più onerosa del comando, in termini di cpu</span><br /><span id="OBJ_PREFIX_DWT716_com_zimbra_url" class="Object"><a href="http://www.rigacci.org/wiki/doku.php/doc/appunti/linux/sa/fail2ban" target="_blank">http://www.rigacci.org/wiki/doku.php/doc/appunti/linux/sa/fail2ban</a></span><br /><br /></p>

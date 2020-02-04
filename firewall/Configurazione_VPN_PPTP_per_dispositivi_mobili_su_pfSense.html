@@ -1,0 +1,13 @@
+<p><span style="text-decoration: underline;"><strong>ATTENZIONE</strong></span>! Meglio usare IPSec con le estensioni mobili piuttosto che pptp! <a class="intfaqlink" href="index.php?action=artikel&amp;cat=6&amp;id=377&amp;artlang=it"> Configurazione VPN IPSec per dispositivi mobili su pfSense</a></p>
+<p> </p>
+<p>Andare in VPN &gt; PPTP &gt; Configurazione</p>
+<p>Selezionare la spunta <strong>Enable PPTP server</strong></p>
+<p>Server address: impostare un IP libero della rete LAN</p>
+<p>Remote address range: IP iniziale da assegnare ai client</p>
+<p><span>No. PPTP users: numero di client massimi</span></p>
+<p>Salvare ed applicare la configurazione</p>
+<p> </p>
+<p>Aggiungere un utente andando in VPN &gt; PPTP &gt; Users.</p>
+<p>Andare in Firewall &gt; Rules &gt; PPTP VPN ed aggiungere una regola con sorgente, destinazione e protocollo impostati ad <strong><em>any</em></strong>.</p>
+<p> </p>
+<p>rif: <a href="http://captain-slow.dk/2010/10/09/iphone-and-vpn-with-pfsense/">http://captain-slow.dk/2010/10/09/iphone-and-vpn-with-pfsense/</a></p>

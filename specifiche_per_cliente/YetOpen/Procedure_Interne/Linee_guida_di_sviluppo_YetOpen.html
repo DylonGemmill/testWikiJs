@@ -1,0 +1,128 @@
+<h2>Linee guida di sviluppo del codice</h2>
+<p><strong>Usare molto i commenti</strong>, commentare anche le cose che potrebbero essere banali, per facilitare l&#39;apprendimento di chi legge il codice per la prima volta. Commentare sempre tutte le funzioni: funzionamento, parametri in ingresso, valore di ritorno.</p>
+<p>Usiamo la sintassi di <a href="https://www.phpdoc.org">PhpDoc</a>, che viene proposta in automatico da NetBeans (una volta definita la <em>signature</em> e l&#39;eventuale <em>return</em> di una funzione, andando sopra la definizione e scrivendo <em>/** </em>e premendo <em>invio </em>NetBeans creerà in automatico il codice di documentazione). <br />È molto importante descrivere <a href="https://www.phpdoc.org/docs/latest/guides/types.html">i parametri (con tipo e formato)</a>, che vengono usati anche da NB stesso per i suggerimenti e l&#39;autocompletamento.<br />Un esempio di come va documentata una funzione:</p>
+<pre class="language-markup"><code>/**
+ * La funzione serve a unire data ed ora in una stringa unica. Se passato $separatore
+ * usa quel valore come separatore tra i due.
+ * @param string $data Data nel formato PHP Y-m-d
+ * @param string $ora Ora nel formato PHP H:i:s
+ * @param string $separatore Viene usato per separare data ed ora. Se non specificato 
+ *   usa uno spazio
+ * @return string Data ed ora concatenate dal separatore specificato 
+ */
+function nome_non_comprensibile ($data, $ora, $separatore = " ")
+{
+   $valore = $data.$separatore.$ora;
+   return $valore;
+}</code></pre>
+<ol>
+<li>Nomi variabili/campi privati devono essere scritti in minuscolo e con i trattini_bassi di separazione<br />
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">lower_case_with_under_scores </pre>
+<p>Usare nomi variabili che siano chiari e possibilimente parlanti, o comunque dichiararne lo scopo con un commento, per chiarire meglio</p>
+</li>
+<li>Proprietà, eventi e metido/funzioni devono essere scritti in <a href="http://it.wikipedia.org/wiki/CamelCase">CamelCase</a>:<br />
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">UpperCaseStartingLetter</pre>
+</li>
+<li>Mettere sempre uno spazio prima delle parentesi di funzioni/metodi o condizioni:<br />
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">      if (condition) {
+            CallSomeFunction (args);
+      }
+</pre>
+</li>
+<li>Mettere sempre uno spazio prima delle graffe sulla stessa linea:<br />
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">      while (condition) {
+            ...
+      }</pre>
+</li>
+<li>Graffe di Namespace, Classi e Metodi su una nuova linea:<br />
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">      namespace Foo
+      {
+            public class Bar
+            {
+                  private void Method ()
+                  {
+                        if (condition) {
+                              ...
+                        }
+                  }
+            }
+      }</pre>
+</li>
+<li>Eccezione alla regola 5 per le Proprietà. La graffa sulla stessa linea con la get/set:<br />
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">      public string Something {
+            get { return "yay"; }
+      }</pre>
+</li>
+<li>Se il blocco di proprietà (get/set) è più di una linea, usare la sintassi alternativa:<br />
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">      public string Something {
+            set {
+                  DoSomething ();
+                  something = value;
+            }
+      }</pre>
+</li>
+<li>Uno spazio prima dei parametri generici:<br />
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">Dictionary&lt;K, V&gt; not Dictionary&lt;K,V&gt;</pre>
+</li>
+<li>Usare 4 spazi per l&#39;indentazione, non TAB;</li>
+<li>Osservare una largezza testo di 120 caratteri. Se la riga supera questo limite, spezzarle ed indentarle in modo logico.</li>
+</ol>
+<p>Un .vimrc di base può essere il seguente (preso da <a href="http://gergap.wordpress.com/2009/05/29/minimal-vimrc-for-cc-developers/">qui</a>):</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">" YetOpen VIM Configuration File
+
+" set UTF-8 encoding
+set enc=utf-8
+set fenc=utf-8
+set termencoding=utf-8
+" disable vi compatibility (emulation of old bugs)
+set nocompatible
+" use indentation of previous line
+set autoindent
+" use intelligent indentation for C
+set smartindent
+" configure tabwidth and insert spaces instead of tabs
+set tabstop=4        " tab width is 4 spaces
+set shiftwidth=4     " indent also with 4 spaces
+set expandtab        " expand tabs to spaces
+" wrap lines at 120 chars. 80 is somewaht antiquated with nowadays displays.
+set textwidth=120
+" turn syntax highlighting on
+syntax on
+" turn line numbers on
+set number
+" highlight matching braces
+set showmatch
+" intelligent comments
+set comments=sl:/*,mb:\ *,elx:\ */
+" Enhanced keyboard mappings
+"
+" in normal mode F2 will save the file
+nmap &lt;F2&gt; :w&lt;CR&gt;
+" in insert mode F2 will exit insert, save, enters insert again
+imap &lt;F2&gt; &lt;ESC&gt;:w&lt;CR&gt;i
+" switch between header/source with F4
+map &lt;F4&gt; :e %:p:s,.h$,.X123X,:s,.cpp$,.h,:s,.X123X$,.cpp,&lt;CR&gt;
+" recreate tags file with F5
+map &lt;F5&gt; :!ctags -R --c++-kinds=+p --fields=+iaS --extra=+q .&lt;CR&gt;
+
+" goto definition with F12
+map &lt;F12&gt; &lt;C-]&gt;
+
+" PHP parser check (CTRL-L)
+:autocmd FileType php noremap &lt;C-L&gt; :!/usr/bin/php -l %&lt;CR&gt;
+</pre>
+<p> </p>
+<p>Tra le funzioni aggiuntive fornite da questo file di configurazione:</p>
+<ul>
+<li>F2: salva</li>
+<li>F5: ricrea le Ctags (da installare)</li>
+<li>F12: va alla definizione della funzione</li>
+<li>CTRL+L: controllo sintassi PHP</li>
+</ul>
+<h2>Ctags</h2>
+<p><em><strong>FIXME</strong></em> Le <em>Ctags</em> sono una funzionalità di Vim 7 che permette l&#39;autocompletamento dei nomi. </p>
+<p>Maggiori informazioni presso:</p>
+<p><a href="http://weierophinney.net/matthew/archives/123-Vim-7-code-completion.html">http://weierophinney.net/matthew/archives/123-Vim-7-code-completion.html</a><br /><a href="http://www.davedevelopment.co.uk/2006/03/13/vim-ctags-and-php-5/">http://www.davedevelopment.co.uk/2006/03/13/vim-ctags-and-php-5/</a></p>
+<h2>Project</h2>
+<p><em><strong>FIXME</strong></em> Project è il nome di un plugin di Vim che semplifica la navigazione tra i file di un progetto mediante l&#39;utilizzo di una <em>finestra</em> laterale con l&#39;elenco dei file.</p>
+<p><a href="http://weierophinney.net/matthew/archives/164-Vim-Productivity-Tips-for-PHP-Developers.html">http://weierophinney.net/matthew/archives/164-Vim-Productivity-Tips-for-PHP-Developers.html</a><br /><br /></p>

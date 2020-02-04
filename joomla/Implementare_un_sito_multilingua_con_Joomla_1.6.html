@@ -1,0 +1,19 @@
+<p>Joomla permette di implementare un sito multilingua senza bisogno di utilizzare plugin esterni. E&#39; stata infatti introdotto l&#39;attributo "lingua" su tutti gli elementi di Joomla, in modo da poterli distinguere per lingua.</p>
+<p>Per far funzionare la differenziazione dei contenuti in base alla lingua occorre abilitare il plugin "System - Language Filter" ed avere tutte le lingue necessarie in "Estensioni" &gt; "Gestione Lingua" &gt; "Contenuti". Se dovesse mancare qualche lingua, occorre cercarla (i.e. joomla extensions o joomla code) ed installarla come un normale plugin (serve per tradurre le descrizioni standard di joomla). La lingua comparir&agrave; quindi nelle lingue installate ma non nei contenuti, per farla comparire anche come contenuti bisogna crearla a mano (Nuovo &gt; compilare la form).</p>
+<p>E&#39; inoltre presente un modulo per la selezione delle varie lingue. In Joomla 1.6, selezionando la lingua da tale modulo, si viene mandati alla home page di tale lingua.</p>
+<p>Occorre quindi creare un menu per ogni lingua, ed ogni menu deve avere un&#39;home page. Le voci del menu devono mandare ai contenuti della lingua specificata. Il modulo del menu deve avere l&#39;attributo "lingua" settato correttamente per permettere a Joomla di visualizzare solamente il menu della lingua relativa.</p>
+<h2>Esempio pratico - sito in inglese con l&#39;aggiunta dell&#39;italiano</h2>
+<h3>Creazione del sito in inglese, ma preimpostato per l&#39;aggiunta dell&#39;italiano</h3>
+<p>Creo il menu principale: ogni voce del menu sar&agrave; in inglese ma avr&agrave; settata come lingua "All" (Tutte) perch&egrave; joomla vuole almeno un menu di questo tipo. Ricordiamoci inoltre di impostare la home page.</p>
+<p>Creo il modulo per la visualizzazione del menu, il modulo avr&agrave; la lingua settata come "Inglese".</p>
+<p>Creo i contenuti (articoli o moduli) delle pagine in inglesi: questi oggetti avranno la lingua impostata su "Inglese".</p>
+<h3>Creazione della parte italiana</h3>
+<p>Creo il menu principale: ogni voce del menu sar&agrave; in italiano e avr&agrave; settata come lingua "Italiano". Ricordiamoci inoltre di impostare la home page.</p>
+<p>Creo il modulo per la visualizzazione del menu, il modulo avr&agrave; la lingua settata come "Italiano".</p>
+<p>Creo i contenuti (articoli o moduli) delle pagine in italiano: questi oggetti avranno la lingua impostata su "Italiano".</p>
+<p>Creiamo il modulo per la selezione della lingua: come tipo di modulo selezionare "Lingua", compilare la form relativa e pubblicare il modulo.</p>
+<p>A questo punto selezionando una lingua viene caricato il menu relativo e la home page di tale lingua.</p>
+<p>&nbsp;</p>
+<p>link utili</p>
+<p><a href="http://cocoate.com/joomla-16-english/multi-language-websites">http://cocoate.com/joomla-16-english/multi-language-websites</a><br /><a href="http://docs.joomla.org/Language_Switcher_Tutorial_for_Joomla_1.6#The_structure_of_the_site.2C_simple_rules">http://docs.joomla.org/Language_Switcher_Tutorial_for_Joomla_1.6#The_structure_of_the_site.2C_simple_rules</a><br /><a href="http://wiki.joomla.it/index.php?title=Multilingua_in_un_sito_Joomla_1.6">http://wiki.joomla.it/index.php?title=Multilingua_in_un_sito_Joomla_1.6</a></p>
+<p>&nbsp;</p>

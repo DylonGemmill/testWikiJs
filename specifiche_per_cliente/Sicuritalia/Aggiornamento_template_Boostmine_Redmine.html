@@ -1,0 +1,20 @@
+<p>Per aggiornare il template Boostmine:</p>
+<ul>
+<li>Scaricare la nuova versione dal sito ufficiale di Boostmine.</li>
+<li>Creare un backup della versione precedente, la cartella dei temi è {redmine_root}/public/themes/)</li>
+<li>Estrarre lo .zip della nuova versione nella cartella dei temi</li>
+<li>Dalla cartella appena estratta rimuovere le cartelle /favicon/ e /customize/ e sostituirle con quelle della vecchia versione, in modo che personalizzazioni non vengano sovrascritte.</li>
+<li>Ricaricare nginx/apache.</li>
+<li>Su redmine accedere a <em>Impostazioni &gt; Impostazioni &gt; Mostra</em>, selezionare il nuovo plugin e salvare.</li>
+</ul>
+<h2>Modifiche manuali</h2>
+<p>Per fare in modo che l&#39;elenco dei progetti si mostri di default come non espanso bisogna modificare il file boostmine-210/javascripts/theme.js alla riga 163</p>
+<pre class="language-javascript"><code>if(localStorage.getItem("project_"+number)=="closed"){</code></pre>
+<p>in questo modo:</p>
+<pre class="language-javascript"><code>if(localStorage.getItem("project_"+number)=="closed" || localStorage.getItem("project_"+number) === null){</code></pre>
+<p> </p>
+<p>In una nuova installazione di una versione dalla 2.2 in su, per far sì che la sidebar non faccia andare il resto del contenuto delle pagine su una nuova riga, modificare il file {boostmine_folder}/customize/customize.css nella sezione sulla sidebar:</p>
+<p><code class="code highlight css"><span id="LC1" class="line"><span class="c">/* SIDEBAR WIDTH */</span></span>
+<span id="LC2" class="line"><span class="c">/**********************************************************/</span></span><br /><br /><span id="LC3" class="line"></span>
+<span id="LC4" class="line"><span class="c">/* Sum of both widths has to be 91%. Recommended is 12% for sidebar and 79% for content */</span></span><br /><br /><span id="LC6" class="line"><span class="nt">body</span><span class="nd">:not</span><span class="o">(</span><span class="nc">.action-login</span><span class="o">)</span><span class="nd">:not</span><span class="o">(</span><span class="nc">.action-register</span><span class="o">)</span><span class="nd">:not</span><span class="o">(</span><span class="nc">.action-lost_password</span><span class="o">) </span><span class="nf">#sidebar</span><span class="p">{<br /></span></span><span id="LC7" class="line"><span class="nl">    width</span><span class="p">:</span><span class="m">14%</span><span class="p">;<br /></span></span><span id="LC8" class="line"><span class="p">}</span></span><br /><br /><span id="LC10" class="line"><span class="nt">body</span><span class="nd">:not</span><span class="o">(</span><span class="nc">.action-login</span><span class="o">)</span><span class="nd">:not</span><span class="o">(</span><span class="nc">.action-register</span><span class="o">)</span><span class="nd">:not</span><span class="o">(</span><span class="nc">.action-lost_password</span><span class="o">) </span><span class="nf">#content</span><span class="p">{</span></span><br />    <span id="LC11" class="line"><span class="nl">width</span><span class="p">:</span><span class="m">77%</span><span class="p">;</span></span><br /><span id="LC12" class="line"><span class="p">}</span></span>
+</code></p>

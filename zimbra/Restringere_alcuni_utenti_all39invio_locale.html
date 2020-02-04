@@ -1,0 +1,21 @@
+<p>In questo documento viene spiegato come fare in modo che certi utenti Zimbra possano inviare email solo ad un numero predefinito di domini, ad esempio solo quello locale.</p>
+<p>Modificare il file&nbsp;<em>/opt/zimbra/conf/postfix_recipient_restrictions.cf</em> aggiungendo in cima la riga</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">check_sender_access hash:/opt/zimbra/postfix/conf/restricted_senders </pre>
+<p>Poi modificare il file&nbsp;<em>/opt/zimbra/conf/zmmta.cf</em>, in fondo alla sezione&nbsp;<em>SECTION mta DEPENDS amavis</em>, prima di&nbsp;</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">POSTCONF always_add_missing_headers           LOCAL postfix_always_add_missing_headers</pre>
+<p>aggiungere</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">    POSTCONF    smtpd_restriction_classes      local_only
+    POSTCONF    local_only                              FILE  postfix_check_recipient_access.cf</pre>
+<p>Creare il file&nbsp;<em>/opt/zimbra/conf/postfix_check_recipient_access.cf</em> con il seguente contenuto</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">check_recipient_access hash:/opt/zimbra/postfix/conf/local_domains, reject</pre>
+<p>Creare il file&nbsp;<em>/opt/zimbra/postfix/conf/restricted_senders</em> con l&#39;elenco degli utenti che avranno le restrizioni</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">user@yourdomain.com            local_only</pre>
+<p>Creare il file&nbsp;/opt/zimbra/postfix/conf/local_domains con l&#39;elenco dei domini a cui gli utenti ristretti potranno scrivere</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">yourdomain.com                   OK 
+otheralloweddomain.com      OK</pre>
+<p>Ed infine eseguire</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">postmap /opt/zimbra/postfix/conf/restricted_senders
+postmap /opt/zimbra/postfix/conf/local_domains 
+zmmtactl restart</pre>
+<p>&nbsp;</p>
+<p>ref:&nbsp;<a href="http://wiki.zimbra.com/wiki/Restrict_users_to_certain_domain">http://wiki.zimbra.com/wiki/Restrict_users_to_certain_domain</a></p>

@@ -1,0 +1,24 @@
+<h3>Installazione</h3>
+<p>Scaricare il software MegaCLI dal sito <a href="http://www.lsi.com/downloads/Public/MegaRAID%20Common%20Files/8.07.07_MegaCLI.zip">lsi.com</a> oppure da workarea/prodotti-e-servizi/xen-citrix/MegaCli.zip</p>
+<p> </p>
+<p>Copiare il file sullo XenServer in /tmp ed eseguire</p>
+<p>tutto con il comando:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">cd /tmp<br /> unzip MegaCli.zip
+rpm -i linux/*.rpm</pre>
+<p>Una volta installato, verificare la presenza dei file in /opt/MegaRAID.</p>
+<p>Copiare lo script di monitoraggio da <em><strong>ufficio/workarea/prodotti-servizi/server/megacli-statusd.sh</strong></em> in <em>/root/bin</em>, ed in <em>/etc/crontab</em> aggiungere:</p>
+<p> </p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">32 */2 * * *  root    /root/bin/megacli-statusd.sh</pre>
+<p>Verificare in /etc/ssmtp/ssmtp.conf la configurazione (<a class="intfaqlink" href="index.php?action=artikel&amp;cat=1&amp;id=122&amp;artlang=it">Installazione di nullmailer, per la consegna della posta</a>) ed inviare una mail di test.</p>
+<p> </p>
+<h3>Comandi utili</h3>
+<p>Mostra informazioni sulla scheda raid:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">/opt/MegaRAID/MegaCli/MegaCli -AdpAllInfo -aAll</pre>
+<p>Lista di tutti i drive logici:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">/opt/MegaRAID/MegaCli/MegaCli -LDInfo -LALL -aAll</pre>
+<p>Lista di tutte le informazioni fisiche:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">/opt/MegaRAID/MegaCli/MegaCli -PDList -aAll</pre>
+<p> </p>
+<p> </p>
+<p><a href="http://www.bxtra.net/articles/2008-09-16/Dell-Perc6i-RAID-Monitoring-Script-using-MegaCli-LSI-CentOS-52-64-bits">http://www.bxtra.net/articles/2008-09-16/Dell-Perc6i-RAID-Monitoring-Script-using-MegaCli-LSI-CentOS-52-64-bits</a></p>
+<p><a href="http://microrants.blogspot.com/2008/04/nagios-checks-for-lsi-raid-with-megacli.html">http://microrants.blogspot.com/2008/04/nagios-checks-for-lsi-raid-with-megacli.html</a></p>

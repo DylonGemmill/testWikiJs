@@ -1,0 +1,6 @@
+<h1>Aumentare sessione phpMyAdmin</h1>
+<p>Per aumentare la validit&agrave; della sessione di pMA occorre aggiungere in fondo al file /etc/phpmyadmin/config.inc.php la riga:</p>
+<pre class="brush: php;fontsize: 100; first-line: 1; ">$cfg[&#39;LoginCookieValidity&#39;] = 180000; // 50 * 60 * 60</pre>
+<p> dove 180000 &egrave; la validit&agrave; del cookie in secondi (nell&#39;esempio 50 ore). </p>
+<p>Controllare inoltre l&#39;opzione session.gc_maxlifetime in php.ini che potrebbe limitarne la durata; si consiglia quindi di adottare un valore almeno uguale a quello del cookie.</p>
+<p>fonte: <a href="http://wiki.phpmyadmin.net/pma/Config#LoginCookieValidity">http://wiki.phpmyadmin.net/pma/Config#LoginCookieValidity</a></p>

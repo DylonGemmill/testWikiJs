@@ -1,0 +1,14 @@
+<p>Peplink produce apparati di rete multi-wan, con supporto anche per chiavette USB. Il <strong><em>Balance 20</em></strong> &egrave; un entry level con due wan ethernet ed una usb.</p>
+<p>Come prima cosa configurare le due WAN secondo le impostazioni del service provider. Quindi, per configurare il bilanciamento, andare in Network &gt; Outbound policy ed impostare <strong><em>Managed by custom rules</em></strong>. Aggiungere una regola con i seguenti parametri:</p>
+<ul>
+<li>Service name: Bilanciamento</li>
+<li>Enable: Yes</li>
+<li>Source: Any</li>
+<li>Destination: Any</li>
+<li>Protocol: Any</li>
+<li>Algorithm: Weighted Balance</li>
+</ul>
+<p>Quindi premere <em>Salva</em>, ed infine <em>Applica</em>.</p>
+<p>Effettuare una prova con <a href="http://speedtest.net">speedtest.net</a>, la velocit&agrave; della banda dovrebbe essere la somma delle due connessioni.</p>
+<p>&nbsp;</p>
+<p>Fonte: <a href="http://www.peplink.com/index.php?view=faq&amp;id=110&amp;path=19">http://www.peplink.com/index.php?view=faq&amp;id=110&amp;path=19</a></p>

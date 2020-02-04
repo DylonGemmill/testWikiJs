@@ -1,0 +1,16 @@
+<p>Come prima cosa installare il pacchetto principale</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">apt-get install iscsitarget
+sed -i &#39;s/ISCSITARGET_ENABLE=false/ISCSITARGET_ENABLE=true/&#39; /etc/default/iscsitarget</pre>
+<p>se compare un errore che manca il modulo iscsi_trgt installare anche il pacchetto relativo</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">apt-get install iscsitarget-dkms</pre>
+<p> </p>
+<p>Modificare il file /etc/iet/ietd.conf aggiungendo in fondo una configurazione come questa:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">Target iqn.2012-11.it.yetopenlab:storage.lvmiscsi
+        IncomingUser utente password
+        OutgoingUser
+        Lun 0 Path=/dev/VolGroup/LVName,Type=fileio,ScsiId=23456765432345
+</pre>
+<p>in questo caso stiamo condividendo il volume LVName nel gruppo VolGroup.</p>
+<p>Riavviare il servizio iscsitarget ed avremo una condivisione iscsi disponibile sulla rete.</p>
+<p> </p>
+<p><a href="http://www.heath-bar.com/blog/?p=203">http://www.heath-bar.com/blog/?p=203</a></p>

@@ -1,0 +1,96 @@
+<h4>SSL certificate installation via Zimbra Administration Console</h4>
+<ol>
+<ol>
+<li>In the next window, click <strong>Certificates</strong> and pick up <strong>Install Certificate</strong>:</li>
+</ol>
+</ol>
+<p><img class="kb-image" src="https://namecheap.simplekb.com//SiteContents/2-7C22D5236A4543EB827F3BD8936E153E/media/instzim2.png" alt="instzim2" width="700" height="250" /></p>
+<ol>
+<ol>
+<li>You will see a separate window where you need to choose the required mail server. Click <strong>Next</strong> afterwards:</li>
+</ol>
+</ol>
+<p><img class="kb-image" src="https://namecheap.simplekb.com//SiteContents/2-7C22D5236A4543EB827F3BD8936E153E/media/instzim3.png" alt="instzim3" width="700" height="250" /></p>
+<ol>
+<ol>
+<li>Pick <strong>Install the commercially signed certificate</strong> to start the installation process:</li>
+</ol>
+</ol>
+<p><img class="kb-image" src="https://namecheap.simplekb.com//SiteContents/2-7C22D5236A4543EB827F3BD8936E153E/media/instzim4.png" alt="instzim4" width="700" height="290" /></p>
+<ol>
+<ol>
+<li>Review all information that was used for CSR generation. If the information is correct, click <strong>Next</strong>:</li>
+</ol>
+</ol>
+<p><img class="kb-image" src="https://namecheap.simplekb.com//SiteContents/2-7C22D5236A4543EB827F3BD8936E153E/media/instzim5.png" alt="instzim5" width="700" height="290" /></p>
+<ol>
+<ol>
+<li>Upload the SSL certificate file, root certificate and intermediate certificates received from the Certificate Authority. If intermediate and root certificates were received in one bundled file, you can download them separately: <a href="https://support.sectigo.com/Com_KnowledgeDetailPage?Id=kA01N000000rfBO" target="_blank" rel="noopener">for RSA certificate</a> and <a href="https://support.sectigo.com/Com_KnowledgeDetailPage?Id=kA01N000000rfGE" target="_blank" rel="noopener">for ECC certificate</a>.
+<p><img class="kb-image" src="https://namecheap.simplekb.com//SiteContents/2-7C22D5236A4543EB827F3BD8936E153E/media/instzim6.png" alt="instzim6" width="700" height="290" /></p>
+</li>
+<li>On the next step, click <strong>Install</strong> to install the chosen SSL certificate. The installation process can take a few minutes:</li>
+</ol>
+</ol>
+<p><img class="kb-image" src="https://namecheap.simplekb.com//SiteContents/2-7C22D5236A4543EB827F3BD8936E153E/media/instzim7.png" alt="instzim7" width="700" height="290" /></p>
+<ol>
+<ol>
+<li>When the SSL installation process is completed, you will see the notification:</li>
+</ol>
+</ol>
+<p><img class="kb-image" src="https://namecheap.simplekb.com//SiteContents/2-7C22D5236A4543EB827F3BD8936E153E/media/instzim8.png" alt="instzim8" width="700" height="250" /></p>
+<ol>
+<ol>
+<li>To apply changes, you need to restart Zimbra services like zimbra user in a CLI session:</li>
+</ol>
+</ol>
+<p><strong>sudo su</strong><br /><strong>su zimbra</strong></p>
+<p>Once the default user is switched to the zimbra user, run this command to restart services:</p>
+<p><strong>zmcontrol restart</strong></p>
+<ol>
+<ol>
+<li>When all services are restarted, new SSL certificate details can checked here:</li>
+</ol>
+</ol>
+<p><img class="kb-image" src="https://namecheap.simplekb.com//SiteContents/2-7C22D5236A4543EB827F3BD8936E153E/media/instzim9.png" alt="instzim9" width="700" height="250" /></p>
+<p>The SSL certificate has been successfully installed for the following services:</p>
+<p>LDAP service: port 389 <br />Mailbox service: ports 8443, 7071 <br />MTA service: ports 25 (SMTP TLS), 465 (SMTP SSL), 7110 (POP3 TLS), 7143 (IMAP TLS), 7993 (IMAP SSL), 7995 (POP3 SSL) <br />Proxy service: 443, 110 (POP3 TLS), 143 (IMAP TLS), 993 (IMAP SSL), 995 (POP3 SSL).</p>
+<p><img class="kb-image" src="https://namecheap.simplekb.com//SiteContents/2-7C22D5236A4543EB827F3BD8936E153E/media/instzim10.png" alt="instzim10" width="660" height="340" /></p>
+<p>It is possible to check SSL installation by using this online tool: <a href="https://decoder.link/sslchecker/" target="_blank" rel="noopener">https://decoder.link/sslchecker/</a>.</p>
+<h4>SSL certificate installation via Zimbra Certificate Manager (command line interface)</h4>
+<p><strong>By default the order for the bundle is the following: 1 intermediate, 2 intermediate and the root one.</strong></p>
+<p><strong>For the Zimba server the reversed order should be: the root one, 1 intermediate, 2 intermediate.</strong></p>
+<p>A Zimbra package has the <strong>zmcertmgr</strong> tool to manage SSL certificates. <br />For version 8.6 or lower, this tool must be run as root. Run this command in the terminal to switch from the default user to the root:</p>
+<p><strong>sudo su</strong></p>
+<p>Starting from version 8.7 this tool should be run as zimbra user. <br />Run these commands to switch from the default user to the zimbra user:</p>
+<p><strong>sudo su</strong><br /><strong>su zimbra</strong></p>
+<ol>
+<ol>
+<li>To start the installation process, you need to upload the SSL certificate file (server_domain_com.crt) and CA bundle file (server_domain_com.ca-bundle) to any folder to your hosting server on the temporary basis. For this example, SSL files have been uploaded to the /opt/ directory.</li>
+<li>Verify that your certificate received from the Certificate Authority matches the private key generated along with the CSR: <strong>/opt/zimbra/bin/zmcertmgr verifycrt comm <br />/opt/zimbra/ssl/zimbra/commercial/commercial.key /opt/server_domain_com.crt /opt/server_domain_com.ca-bundle</strong></li>
+</ol>
+</ol>
+<p>The output should look like:</p>
+<p><img class="kb-image" src="https://namecheap.simplekb.com//SiteContents/2-7C22D5236A4543EB827F3BD8936E153E/media/instzim11.png" alt="instzim11" width="820" height="44" /></p>
+<ol>
+<ol>
+<li>Deploy your commercial certificate. <br /><strong>/opt/zimbra/bin/zmcertmgr deploycrt comm /opt/server_domain_com.crt /opt/server_domain_com.ca-bundle</strong></li>
+</ol>
+</ol>
+<p>The successful output should look like:</p>
+<p><img class="kb-image" src="https://namecheap.simplekb.com//SiteContents/2-7C22D5236A4543EB827F3BD8936E153E/media/instzim12.png" alt="instzim12" width="850" height="180" /></p>
+<ol>
+<ol>
+<li>Verify that the correct certificate has been deployed. <br /><strong>/opt/zimbra/bin/zmcertmgr viewdeployedcrt</strong></li>
+</ol>
+</ol>
+<p>For example, the details of the <a href="https://www.namecheap.com/security/ssl-certificates/comodo/positivessl.aspx">PositiveSSL</a> certificate will look like:</p>
+<p><img class="kb-image" src="https://namecheap.simplekb.com//SiteContents/2-7C22D5236A4543EB827F3BD8936E153E/media/instzim13.png" alt="instzim13" width="790" height="240" /></p>
+<ol>
+<li>To apply changes, you need to restart Zimbra services like zimbra user:</li>
+</ol>
+<p><strong>sudo su</strong><br /><strong>su zimbra</strong></p>
+<p>Once the default user is switched to zimbra user, run this command to restart services:</p>
+<p><strong>zmcontrol restart</strong></p>
+<p>When all services are restarted, new SSL certificate details can checked by using this online tool: <a href="https://decoder.link/sslchecker/" target="_blank" rel="noopener">https://decoder.link/sslchecker/</a>.</p>
+<p> </p>
+<p> </p>

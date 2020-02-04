@@ -1,0 +1,24 @@
+<p>Coova ha la possibilità di eseguire diverse istanze del demone, il che consente di avere diversi NAS su uno stesso apparato.</p>
+<p> </p>
+<p>Normalmente la configurazione di coova viene fatta in /etc/chilli/config. Per averne diverse:</p>
+<p> </p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; "># Creazione directory
+mkdir /etc/chilli/eth1
+mkdir /etc/chilli/eth2
+# Copia configurazione esistente 
+cp /etc/chilli/config /etc/chilli/eth1/config
+cp /etc/chilli/config /etc/chilli/eth2/config
+# Spostamento configurazione esistente
+mv /etc/chilli/config{,_ORIG}
+mv /etc/chilli/defaults{,_ORIG}
+echo -e "include /etc/chilli/eth1/main.conf\ninclude /etc/chilli/eth1/hs.conf\ninclude /etc/chilli/eth1/local.conf\nipup /etc/chilli/up.sh\nipdown /etc/chilli/down.sh" &gt; /etc/chilli/eth1/chilli.conf
+echo -e "include /etc/chilli/eth2/main.conf\ninclude /etc/chilli/eth2/hs.conf\ninclude /etc/chilli/eth2/local.conf\nipup /etc/chilli/up.sh\nipdown /etc/chilli/down.sh" &gt; /etc/chilli/eth1/chilli.conf</pre>
+<p>Modificare quindi i file <em>/etc/chilli/eth1/config</em> ed <em>/etc/chilli/eth2/config </em>facendo attenzione ai parametri</p>
+<ul>
+<li>HS_LANIF</li>
+<li>HS_NETWORK</li>
+<li>HS_UAMLISTEN</li>
+<li>HS_NASID</li>
+</ul>
+<div>che non devono coincidere tra le due configurazioni.</div>
+<div>rif: <a href="http://manajung.blogspot.com/2010/11/setup-vlan-in-coova.html">http://manajung.blogspot.com/2010/11/setup-vlan-in-coova.html</a></div>

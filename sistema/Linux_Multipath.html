@@ -1,0 +1,16 @@
+<p><a href="http://clutterbox.de/2010/09/multipathing-on-ibm-bladecenter-with-ibm-ds3200/">http://clutterbox.de/2010/09/multipathing-on-ibm-bladecenter-with-ibm-ds3200/</a></p>
+<p><a href="http://www.tchetch.net/wiki/debian/multipath_ibm_ds4000">http://www.tchetch.net/wiki/debian/multipath_ibm_ds4000</a></p>
+<p> </p>
+<p>Aggiungere l&#39;host in Configure &gt; Configure host access (Manual).</p>
+<p>Quindi andare in Modify &gt; Edit host topology, espandere il gruppo e aggiungere un initiator iscsi. Senza questo il dm e iscsi sull&#39;host non vedrà i dischi!.</p>
+<p> </p>
+<p>Come prima cosa dobbiamo ottenere le stringhe di vendor e product ID del dispositivo multipath:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">/lib/udev/scsi_id --page=0x80 --whitelisted --export --device=/dev/sg2</pre>
+<p>/dev/sg2 è il nome che vedo comparire in <em>dmesg</em> dopo aver fatto login con iscsi.</p>
+<p> </p>
+<p> </p>
+<p># iscsiadm -m node --targetname "iqn.1992-01.com.lsi:1535.600a0b80007584ba000000004ca079e2" --portal 10.22.22.123  --login<br />Logging in to [iface: default, target: iqn.1992-01.com.lsi:1535.600a0b80007584ba000000004ca079e2, portal: 10.22.22.123,3260]<br />Login to [iface: default, target: iqn.1992-01.com.lsi:1535.600a0b80007584ba000000004ca079e2, portal: 10.22.22.123,3260]: successful<br /># iscsiadm -m node --targetname "iqn.1992-01.com.lsi:1535.600a0b80007584ba000000004ca079e2" --portal 10.22.22.124  --login<br />Logging in to [iface: default, target: iqn.1992-01.com.lsi:1535.600a0b80007584ba000000004ca079e2, portal: 10.22.22.124,3260]<br />Login to [iface: default, target: iqn.1992-01.com.lsi:1535.600a0b80007584ba000000004ca079e2, portal: 10.22.22.124,3260]: successful</p>
+<p> </p>
+<p># modprobe dm_mod</p>
+<p># modprobe dm_multipath</p>
+<p># multipath -ll</p>

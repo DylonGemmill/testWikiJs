@@ -1,0 +1,26 @@
+<p>Questo documento si basa sul PDF&nbsp;<em><a href="http://files.zimbra.com/website/docs/ZimbraBESConnector-655-AdminGuide.pdf">Zimbra Connector
+for
+BlackBerry Enterprise Server
+Administrator?&rsquo;s Guide</a></em>&nbsp;versione 6.5.6, disponibile nell&#39;<a href="http://www.zimbra.com/downloads/zcb-downloads.html">area download ZCB di Zimbra.com</a>.</p>
+<ul>
+<li>Creare un account di amministrazione globale sul server Zimbra (ad esempio <strong><em>besadmin@dominio.it</em></strong>), per l&#39;amministrazione dei BlackBerry. Questo account non &egrave; strettamente necessario, ma consente di monitorare l&#39;utilizzazione del BES e la generazione di statistiche relative</li>
+<li>Installare <strong>Office 2007</strong> (attenzione, solo questa versione &egrave; supportata! Nell&#39;acquisto delle licenze Office 2010 &egrave; solitamente incluso il downgrade a 2007), ed assicurarsi che venga aggiornato alla versione <strong>SP2</strong></li>
+<li>Verificare che sia installato l&#39;aggiornamento delle TimeZone, reperibile su&nbsp;<a href="http://support.microsoft.com/kb/981793">http://support.microsoft.com/kb/981793</a></li>
+<li>Installare il connettore Zimbra per Blackberry, reperibile nell&#39;<a href="http://www.zimbra.com/downloads/zcb-downloads.html">area download ZCB di Zimbra.com</a>&nbsp;</li>
+<li>Andare quindi in <em>Pannello di controllo &gt; Posta elettronica &gt; Mostra profili</em>&nbsp;</li>
+<li>Premere <em>Aggiungi</em>, e come nome dare&nbsp;<strong>BlackBerryServer_MailStoreProfile</strong>. Premere OK, alla richiesta dei dati dell&#39;account mettere la spunta su <em>Configura manualmente le impostazioni...</em>&nbsp;quindi premere <em>Avanti</em>. Come tipo di server selezionare <strong>Altro</strong>&nbsp;e quindi <strong>Zimbra Collaboration Server</strong>. Impostare quindi i seguenti parametri:<br /><em>Nome server:</em> <strong>hostname.zimbra.com:7071</strong> <em>(impostare il nome host del mailbox server, compreso di porta lato admin)</em><br />Usa connessione sicura: <strong>SI</strong><br />Indirizzo email: <strong>besadmin@dominio.it</strong> <em>(l&#39;account amministrativo del BES creato in precedenza)<br /></em>Password:<em> *** (la password dell&#39;account besadmin)</em></li>
+<li>Sempre dalla funzione <em>Mostra profili</em>&nbsp;aggiungere un nuovo account identico al precedente, con il nome di <strong>BlackBerryServer</strong></li>
+<li>Installare la versione standalone di Microsoft&reg; Collaboration Data Objects 1.2.1 (CDO) dal <a href="http://www.microsoft.com/downloads/en/details.aspx?FamilyID=2714320d-c997-4de1-986f-24f081725d36&amp;DisplayLang=en">sito microsoft</a></li>
+</ul>
+<p>Siamo pronti per installare il BES.</p>
+<p>Lanciare l&#39;installazione, inserire i dati di intestazione della societ&agrave; ed accettare la licenza.</p>
+<p>Selezionare l&#39;installazione di un <strong>Blackberry Server</strong>.<br />Ignorare l&#39;avviso della versione di MDAC non corrispondente, immettere la password di Administrator ed il nome del server (hostname?) quando richiesto e procedere con l&#39;installazione.</p>
+<h3>Pagina <em>Informazioni Blackberry CAL e SRP</em></h3>
+<p>Inserire i dati ricevuti dalla registrazione su BB.</p>
+<h3>Pagina <em>Impostazione MAPI</em></h3>
+<p>Inserire il server Zimbra, e lasciare la cassetta postale come &egrave;. Non effettuare la verifica, e proseguire.</p>
+<h3>Pagina <em>Impostazione server Active Directory</em></h3>
+<p>Inserire la pw di amministrazione del dominio</p>
+<p>&nbsp;</p>
+<ul>
+</ul>

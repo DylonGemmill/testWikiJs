@@ -1,0 +1,180 @@
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">apt-get install fail2ban</pre>
+<p> </p>
+<p> </p>
+<p>Se siamo su Ubuntu 12.04 o inferiori è possibile installare un <em>backport</em> da <a href="http://neuro.debian.net/install_pkg.html?p=fail2ban">neuro.debian.net</a> che consente l&#39;unban dinamico da linea di comando. Per la 12.04:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">wget -O- http://neuro.debian.net/lists/precise.de-m.full |  tee /etc/apt/sources.list.d/neurodebian.sources.list
+apt-key adv --recv-keys --keyserver hkp://pgp.mit.edu:80 0xA5D32F012649A5A9
+apt-get update
+apt-get install fail2ban</pre>
+<p>(se si installa questa versione il filtro <em>sasl</em> si chiama <em>postfix-sasl</em>)</p>
+<p> </p>
+<p>il file principale di gestione è jail.conf, ma non si modifica direttamente. Invece creare il file /etc/fail2ban/jail.local con il seguente contenuto, modificando opportunamente i parametri <strong>ignoreip</strong>, <strong>bantime</strong>, <strong>maxretry</strong>, <strong>destemail</strong>:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">[DEFAULT]
+
+# elenco di ip, netmask per cui il ban non ha effetto. di solito si inserisce la rete locale, o degli ip fissi fidati
+ignoreip = 127.0.0.1 10.22.22.0/24
+bantime  = 1200
+maxretry = 3
+
+# "backend" specifies the backend used to get files modification. Available
+# options are "gamin", "polling" and "auto".
+# yoh: For some reason Debian shipped python-gamin didn&#39;t work as expected
+#      This issue left ToDo, so polling is default backend for now
+backend = polling
+
+destemail = admin@yetopen.it
+
+# Default action to take: ban only
+action = %(banaction)s[name=%(__name__)s, port="%(port)s", protocol="%(protocol)s]
+
+
+[ssh]
+
+enabled = true
+port    = ssh
+filter  = sshd
+logpath  = /var/log/auth.log
+maxretry = 5
+
+
+[apache]
+
+enabled = true
+port    = http
+filter  = apache-auth
+logpath = /var/log/apache*/*error.log
+maxretry = 5
+
+
+[apache-noscript]
+
+enabled = false
+port    = http
+filter  = apache-noscript
+logpath = /var/log/apache*/*error.log
+maxretry = 5
+
+
+[vsftpd]
+
+enabled  = false
+port     = ftp
+filter   = vsftpd
+logpath  = /var/log/auth.log
+maxretry = 5
+
+
+[proftpd]
+
+enabled  = false
+port     = ftp
+filter   = proftpd
+logpath  = /var/log/auth.log
+failregex = proftpd: \(pam_unix\) authentication failure; .* rhost=&lt;HOST&gt;
+maxretry = 5
+
+
+[wuftpd]
+
+enabled  = false
+port     = ftp
+filter   = wuftpd
+logpath  = /var/log/auth.log
+maxretry = 5
+
+
+[postfix]
+
+enabled  = false
+port     = smtp
+filter   = postfix
+logpath  = /var/log/mail.log
+maxretry = 5
+
+
+[sasl]
+
+enabled  = true
+port     = smtp
+filter   = sasl <br />logpath  = /var/log/mail.log
+maxretry = 5
+</pre>
+<p> </p>
+<p>Per Zimbra vedere la FAQ apposita.</p>
+<p>Visti gli innumerevoli tentativi di <em>sfondare </em>phpmyadmin in alcuni casi è opportuno anche bloccare gli host che effettuano test alla cieca sulle pagine del server, visibili dagli errori 404 (file not found) in <em>access.log</em>. Per questo in jail.local aggiungere:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">[apache-404block]
+enabled = true
+port = http
+filter = apache-404block
+logpath = /var/log/apache2/*access.log
+bantime = 180
+maxretry = 5
+</pre>
+<p>modificando in base alle proprie esigenze <em>port</em> e <em>bantime</em>. Quindi creare il file <em>/etc/fail2ban/filter.d/apache-404block.conf</em> con il seguente contenuto</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">[Definition]
+failregex = ^&lt;HOST&gt; - - \[.*\] "GET /.* HTTP/1\.[01]" 404 [0-9]+.*$
+
+ignoreregex =</pre>
+<p>Per mettere sotto controllo anche asterisk, aggiungere la seguente sezione al file <em>jail.conf</em></p>
+<p> </p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">[asteriskiptables]
+enabled  = true
+filter   = asterisk
+action   = iptables-allports[name=ASTERISK, protocol=all]
+logpath  = /var/log/asterisk/messages
+maxretry = 5
+bantime = 4000</pre>
+<p> </p>
+<p>e creare il file <em>/etc/fail2ban/filter.d/asterisk.conf</em> con il seguente contenuto</p>
+<p> </p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; "># Fail2Ban configuration file
+#
+#
+# $Revision: 250 $
+#
+
+[INCLUDES]
+
+# Read common prefixes. If any customizations available -- read them from
+# common.local
+#before = common.conf
+
+
+[Definition]
+
+#_daemon = asterisk
+
+# Option:  failregex
+# Notes.:  regex to match the password failures messages in the logfile. The
+#          host must be matched by a group named "host". The tag "&lt;HOST&gt;" can
+#          be used for standard IP/hostname matching and is only an alias for
+#          (?:::f{4,6}:)?(?P&lt;host&gt;\S+)
+# Values:  TEXT
+#
+
+failregex = NOTICE.* .*: Registration from &#39;.*&#39; failed for &#39;&lt;HOST&gt;&#39; - Wrong password
+            NOTICE.* .*: Registration from &#39;.*&#39; failed for &#39;&lt;HOST&gt;&#39; - No matching peer found
+            NOTICE.* .*: Registration from &#39;.*&#39; failed for &#39;&lt;HOST&gt;&#39; - Username/auth name mismatch
+            NOTICE.* .*: Registration from &#39;.*&#39; failed for &#39;&lt;HOST&gt;&#39; - Device does not match ACL
+            NOTICE.* .*: Registration from &#39;.*&#39; failed for &#39;&lt;HOST&gt;&#39; - Peer is not supposed to register
+            NOTICE.* &lt;HOST&gt; failed to authenticate as &#39;.*&#39;$
+            NOTICE.* .*: No registration for peer &#39;.*&#39; \(from &lt;HOST&gt;\)
+            NOTICE.* .*: Host &lt;HOST&gt; failed MD5 authentication for &#39;.*&#39; (.*)
+            NOTICE.* .*: Failed to authenticate user .*@&lt;HOST&gt;.*
+
+# Option:  ignoreregex
+# Notes.:  regex to ignore. If this regex matches, the line is ignored.
+# Values:  TEXT
+#
+ignoreregex =</pre>
+<p> </p>
+<p>Riavviare fail2ban.</p>
+<p>Se in fail2ban.log appare un errore 400 sulla riga con <em>iptables</em> e <em>multiport</em>, assicurarsi che il modulo <em><strong>xt_multiport</strong></em> sia caricato.</p>
+<p> </p>
+<p>Per lo sblocco manuale di un IP:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">fail2ban-client set pureftpd unbanip 188.186.9.132</pre>
+<p>dove <em>pureftpd</em> è il nome del filtro. Per vedere l&#39;elenco dei filtri:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">fail2ban-client status</pre>
+<p> </p>
+<p> </p>
+<p><a href="http://howtoforge.com/fail2ban_debian_etch">http://howtoforge.com/fail2ban_debian_etch</a></p>

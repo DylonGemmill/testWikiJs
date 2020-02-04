@@ -1,0 +1,19 @@
+<p>ATTENZIONE: dove possibile si consiglia di usare <strong><em>nullmailer</em></strong>&nbsp;invece di sSMTP, in quanto pi&ugrave; affidabile e funzionale<br /><a class="intfaqlink" href="index.php?action=artikel&amp;cat=1&amp;id=122&amp;artlang=it"> Installazione di nullmailer, per la consegna della posta</a>&nbsp;</p>
+<p>&nbsp;</p>
+<p>sSMTP &egrave; un semplice pacchetto che simula la presenza di un MTA sulla macchina e consegna la posta ad un server SMTP.</p>
+<p>Per installarlo eseguire il comando&nbsp;</p>
+<p>&nbsp;</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">aptitude install ssmtp</pre>
+<p>&nbsp;</p>
+<p>Quindi aprire il file di configurazione /etc/ssmtp/ssmtp.conf e modificare i seguenti parametri:</p>
+<ul>
+<li>root=postmaster (da <strong>COMMENTARE</strong>)</li>
+<li>mailhub=nome del server SMTP <em>(dipende dalla connessione)</em></li>
+<li>hostname=mydomain.it (dominio da cui si vuol far provenire la mail, per evitare che venga rimbalzata dai mailserver)</li>
+</ul>
+<p>Siccome l&#39;SMTP &egrave; dipendente dalla connessione si pu&ograve; usare il mailserver di YetOpen che consente il relay tramite username e password. Per fare questo, modificare sempre ssmtp.conf con i seguenti parametri:</p>
+<ul>
+<li>mailhub=uffizio.dyndns.org</li>
+<li>AuthUser=username zimbra</li>
+<li>AuthPass=password zimbra</li>
+</ul>

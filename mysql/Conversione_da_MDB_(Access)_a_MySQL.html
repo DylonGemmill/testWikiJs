@@ -1,0 +1,9 @@
+<p>Come prima cosa installare gli mdb-tools</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">apt-get install mdbtools</pre>
+<p>quindi creare lo schema con il comando</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">mdb-schema database.mdb mysql | grep -v ^DROP | grep -v ^- | mysql -u user_name -p new_mysql_database</pre>
+<p>ed importare i dati con</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">mdb-export -I database.mdb table_name | sed -e &#39;s/;/\;/g&#39;| sed -e &#39;s/)$/);/&#39; | mysql -u user_name -p new_mysql_database</pre>
+<p> Uso base <br /> mdb-tables elenca le tabelle contenute nel file access<br /> mdb-export invece dato file e nome della tabella stampa il contenuto del file in formato csv (occhio a reinderizzare l&#39;output)</p>
+<p>rif: <a href="http://blog.levhita.net/2007/12/12/how-to-import-a-msaccess-database-into-mysql-under-linux/">http://blog.levhita.net/2007/12/12/how-to-import-a-msaccess-database-into-mysql-under-linux/</a></p>
+<p>https://linux.die.net/man/1/mdb-export</p>

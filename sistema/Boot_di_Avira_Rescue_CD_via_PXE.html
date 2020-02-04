@@ -1,0 +1,59 @@
+<p>//TODO!</p>
+<p> </p>
+<p><span>Now, here&#39;s what you need to do! Don&#39;t worry, those are easy steps. I&#39;ve included too many rather that not enough, along with comments so you understand each one of them. If all goes well, you&#39;ll be done in 15 minutes.</span></p>
+<ol>
+<li>Download rescue_system-common-en.iso from Avira website (<a class="externalURL" href="http://www.avira.com/pt-br/download/product/avira-antivir-rescue-system">http://www.avira.com/pt-br/download/prod…r-rescue-system</a>)</li>
+<li>Use 7zip to extract the content of the large file to another temporary folder</li>
+<li>Now, start your Linux environment and get access to the extracted iso files, where initrd.gz is located. We need to unzip it, resize it so there&#39;s space left for updates, mount it, include the needed files in it, unmount it, and zip it back.</li>
+<li><span>su</span> Everything should be done as root</li>
+<li><span>gzip -d initrd.gz</span> this will unzip initrd</li>
+<li><span>dd if=/dev/zero bs=1M count=250 &gt;&gt; initrd</span> this will add 250MB of free space to initrd</li>
+<li><span>e2fsck -fp initrd</span> This will check the file to make sure everything&#39;s fine and fix anything wrong</li>
+<li><span>resize2fs initrd</span> This will make the filesystem included in initrd use the extra space</li>
+<li><span>mkdir iso</span> Make a temporary mount location</li>
+<li><span>mount -o loop initrd iso</span> Mounts the initrd filesystem to iso</li>
+<li><span>mkdir -p iso/media/Devices/sr0</span> (make this directory tree Case sensitive)</li>
+<li>In the extracted ISO files, there should be a folder named "antivir", "avupdate" and "system". Always as root, copy the entire content of this folders to the sr0 folder you just made. (<span>cp -r antivir/ avupdate/ system/ iso/media/Devices/sr0/</span>)</li>
+<li>Is necessary change some permission, do the command (<span>chmod 555 -R iso/media/Devices/sr0/</span>)</li>
+<li><span>umount iso</span> Unmount the filesystem</li>
+<li><span>ls -lk initrd</span> This will tell you the size of initrd. Take note of it.</li>
+<li><span>gzip -9 initrd</span> Zips the initrd file using maximum compression.</li>
+<li>Now, copy the newly tweaked <span>initrd.gz</span> file, AND the original vmlinuz file form the extracted iso files to your PXE server.</li>
+<li>edit your <span>pxelinux.cfg/default</span> (or whatever) file and add an entry based on this one:</li>
+<li>
+<div class="border codeBox">
+<div>
+<table>
+<tbody>
+<tr>
+<td class="codeLineNumbers container-3"><img src="http://forum.avira.com/wcf/icon/codeS.png" alt="" /></td>
+<td class="codeLines container-4">
+<h3>Codice sorgente</h3>
+</td>
+</tr>
+<tr>
+<td class="codeLineNumbers container-3">
+<pre>1
+2
+3
+4
+</pre>
+</td>
+<td class="codeLines container-4">
+<pre>LABEL AntiVir
+  MENU LABEL Antivir Rescue System
+  kernel AntiVir/vmlinuz
+  append vga=scan initrd=AntiVir/initrd.gz ramdisk_size=364000 root=/dev/ram0 rw console=/dev/vc/4</pre>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</li>
+<li>Change the value of "<span>ramdisk_size</span>" to the value noted at step 15 plus a few. I had 363020 so I put 364000.</li>
+</ol>
+<p> </p>
+<p> </p>
+<p><a href="http://forum.avira.com/wbb/index.php?page=Thread&amp;postID=1187050#post1187050">http://forum.avira.com/wbb/index.php?page=Thread&amp;postID=1187050#post1187050</a></p>
+<p><a href="http://jerther.blogspot.it/2010/03/avira-antivir-rescue-over-pxe.html">http://jerther.blogspot.it/2010/03/avira-antivir-rescue-over-pxe.html</a></p>

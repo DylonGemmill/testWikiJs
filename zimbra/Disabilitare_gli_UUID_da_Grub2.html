@@ -1,0 +1,7 @@
+<p>E&#39; possibile evitare che Grub2 utilizzi gli UUID inserendo (o decommentando se presente) l&#39;opzione</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">GRUB_DISABLE_LINUX_UUID=true</pre>
+<p><span style="font-size: 13px;">nel file /etc/default/grub</span></p>
+<p>Per rendere effettive le modifiche occorre poi aggiornare grub col comando</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">sudo update-grub</pre>
+<p> </p>
+<p>fonte: <a href="http://www.reliableembeddedsystems.com/wiki/index.php?title=Grub2/Ubuntu_remove_UUID_stuff">http://www.reliableembeddedsystems.com/wiki/index.php?title=Grub2/Ubuntu_remove_UUID_stuff</a></p>

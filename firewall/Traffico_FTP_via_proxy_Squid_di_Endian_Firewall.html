@@ -1,0 +1,11 @@
+<p>La richiesta è la possibilità di veicolare il traffico FTP tramite il proxy HTTP di Squid.</p>
+<p> </p>
+<p>Creare il file /var/efw/proxy/custom.tmpl con questo contenuto:</p>
+<pre>acl ftp port 21<br />acl ftp port 50000-50100<br />http_access allow ftp <br />always_direct allow ftp</pre>
+<p>Andare nel pannello web di EFW e nelle opzioni del proxy aggiungere nelle <strong>Porte SSL consentite</strong> queste righe:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">21 # ftp
+50000-50100</pre>
+<p>salvare la configurazione e riavviare il proxy http.</p>
+<p> </p>
+<p>Per la configurazione del client (ad esempio FileZilla):</p>
+<p><em>Connessione &gt; Proxy generico</em><br /><span>Tipo: HTTP/1.1</span><br /><span>Host proxy: 192.168.1.5</span><br /><span>Porta proxy: 8080</span><br /><br /><em>Connessione &gt; FTP &gt; Modalità attiva</em><br /><span>ABILITA Limita le porte locali usate da filezilla</span><br /><span>Bassa: 50000</span><br /><span>Massima: 50100</span><br /><br /><span>In ultimo nella connessione devi andare nella scheda <em>Impostazioni di trasferimento</em> e selezionare la <em>Modalità attiva</em>.</span></p>

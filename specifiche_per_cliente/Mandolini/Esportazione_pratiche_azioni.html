@@ -1,0 +1,6 @@
+<p class="western">La funzione dedicata è <em>exportAzioni</em>. A differenza delle altre azioni questa non è schedulata e viene lanciata a mano da YetOpen su richiesta del cliente.</p>
+<p class="western">La procedura si occupa di ricavare tutte le pratiche che hanno il gruppo di documenti <em>80_DOCUMENTI_AZIONI</em> (ID_tipo = 30) e per ognuna creare il PDF con i documenti del gruppo. Il path di destinazione va passato come parametro.</p>
+<p class="western">Attenzione che il gruppo <em>80_DOCUMENTI_AZIONI</em> non ha id 80, quello è solo un numero aggiunto dal cliente per avere i gruppi ordinati.</p>
+<p class="western">Per effettuare l&#39;esportazione quindi bisogna lanciare il seguente comando (path su richiesta del cliente):</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">/dati/www/gestionale/protected/yiic batch exportAzioni –path=/dati/www/gestionale/doc/estrazione_2016.03.21/</pre>
+<p>La seguente procedura è descritta nel documento allegato DocumentazioneGenerale presente in owncloud.</p>

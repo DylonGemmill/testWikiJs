@@ -1,0 +1,10 @@
+<p><a href="https://nextcloud.com/collaboraonline/">https://nextcloud.com/collaboraonline/</a></p>
+<p>https://www.linuxbabe.com/cloud-storage/integrate-collabora-online-server-nextcloud-ubuntu-16-04</p>
+<p>Guida per nginx: <a href="https://icewind.nl/entry/collabora-online/">https://icewind.nl/entry/collabora-online/</a></p>
+<p> </p>
+<p>Per aggiornare l&#39;istanza Collabora di Docker:</p>
+<pre class="language-markup"><code>docker pull collabora/code
+docker ps
+docker stop CONTAINER_ID
+docker rm CONTAINER_ID
+docker run -t -d -p 127.0.0.1:9980:9980 -e &#39;domain=cloud\\.ufficyo\\.com&#39; --restart always --cap-add MKNOD collabora/code</code></pre>

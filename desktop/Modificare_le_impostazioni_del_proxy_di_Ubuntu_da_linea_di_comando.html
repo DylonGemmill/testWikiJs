@@ -1,0 +1,29 @@
+<p>Per impostare il proxy su un desktop ubuntu, per apt e per tutti i parametri da linea di comando</p>
+<p> </p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">#! /bin/bash
+HTTP_PROXY_HOST=proxy.example.com
+HTTP_PROXY_PORT=3128
+HTTPS_PROXY_HOST=proxy.example.com
+HTTPS_PROXY_PORT=3128
+
+gsettings set org.gnome.system.proxy mode manual
+gsettings set org.gnome.system.proxy.http host "$HTTP_PROXY_HOST"
+gsettings set org.gnome.system.proxy.http port "$HTTP_PROXY_PORT"
+gsettings set org.gnome.system.proxy.https host "$HTTPS_PROXY_HOST"
+gsettings set org.gnome.system.proxy.https port "$HTTPS_PROXY_PORT"
+
+sudo sed -i.bak &#39;/http[s]::proxy/Id&#39; /etc/apt/apt.conf
+sudo tee -a /etc/apt/apt.conf &lt;&lt;EOF
+Acquire::http::proxy "http://$HTTP_PROXY_HOST:$HTTP_PROXY_PORT/";
+Acquire::https::proxy "http://$HTTPS_PROXY_HOST:$HTTPS_PROXY_PORT/";
+EOF
+
+sudo sed -i.bak &#39;/http[s]_proxy/Id&#39; /etc/environment
+sudo tee -a /etc/environment &lt;&lt;EOF
+http_proxy="http://$HTTP_PROXY_HOST:$HTTP_PROXY_PORT/"
+https_proxy="http://$HTTPS_PROXY_HOST:$HTTPS_PROXY_PORT/"
+EOF</pre>
+<p> </p>
+<p> </p>
+<p>https://unix.stackexchange.com/a/152292/88439</p>
+<p>https://askubuntu.com/questions/15719/where-are-the-system-wide-proxy-server-settings</p>

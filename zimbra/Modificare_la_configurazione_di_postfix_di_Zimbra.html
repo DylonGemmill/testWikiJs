@@ -1,0 +1,14 @@
+<p>In alcuni casi è necessario modificare la configurazione di Postfix di Zimbra, per variarne il comportamento.</p>
+<p>Ad esempio nel nostro caso abbiamo dovuto:</p>
+<ul>
+<li>proibire l&#39;invio da un determinato account, per evitare che venisse spedita una mail da un account attivato con i child</li>
+<li>rimuovere l&#39;header <em>Sender</em> dai messaggi, perché sempre con i child account, nelle intestazioni compariva <em>Inviata per conto di</em></li>
+</ul>
+<p>Per fare questo si modifica il file <em>/opt/zimbra/conf/postfix_header_checks.in</em>. Aprire quindi quel file, ed ad esempio per lo scopo qui sopra aggiungere in fondo le righe:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">/^Sender:.*/ IGNORE
+/^From:.*ufficio@dominio\.it.*/ REJECT Mittente non accettato</pre>
+<p>quindi eseguire, come utente zimbra,</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">zmprov mc yetopen zimbraSmtpRestrictEnvelopeFrom FALSE
+zmlocalconfig -e postfix_header_checks=pcre:\${zimbra_home}/conf/postfix_header_checks
+postfix reload</pre>
+<p>Il primo comando è indispensabile altrimenti non verrà considerata la seconda opzione. Il terzo comando in Zimbra è equivalente ad eseguire <em>zmmtactl restart</em>, che riscrive i file di configurazione.</p>

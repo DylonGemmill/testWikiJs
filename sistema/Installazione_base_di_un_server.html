@@ -1,0 +1,109 @@
+<p>Installare il server secondo le procedure guidate.</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">apt-get update
+apt-get dist-upgrade</pre>
+<p>Abilitare l&#39;utente root come da esempio</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">trusty@dlp:~$ sudo passwd root 
+Enter new UNIX password:# set root password
+Retype new UNIX password:# confirm
+passwd: password updated successfully  </pre>
+<p>Per i server su Contabo vedere le limitazioni indicate sotto.</p>
+<p>Abilitare la connessione ssh verso l&#39;utente root</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">vi /etc/ssh/sshd_config
+cambiare 
+PermitRootLogin without-password
+in
+PermitRootLogin yes
+
+Riavviare il servizio ssh:</pre>
+<pre class="brush: bash;fontsize: 100; first-line: 1; "> service ssh restart</pre>
+<p><span style="font-size: 13px;">Rimuovere utenti aggiuntivi creati eventualmente dall&#39;installer.</span></p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">userdel -r nomeutente</pre>
+<p>Al termine installare i seguenti pacchetti</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">apt-get install tmux vim logwatch htop bsd-mailx sharutils</pre>
+<p>Il pacchetto <em>bsd-mailx</em> richiede <em>postfix</em>. Durante l&#39;installazione verrà quindi presentata la configurazione di <em>postfix</em>. Per una configurazione base, scegliere <em>Sito internet con smarthost</em> ed inserire il mail server della rete.</p>
+<p>Installare a scelta <em>ntp</em> per l&#39;aggiornamento dell&#39;ora di sistema:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">apt-get install ntp acpid</pre>
+<p>Quindi eseguire queste operazioni:</p>
+<ul>
+<li>modificare <strong>/etc/cron.daily/00logwatch</strong> ed inserire l&#39;email che riceverà le analisi dei log.</li>
+<li>modificare <strong>/etc/screenrc</strong> decommentando la riga <em>startup_message off</em></li>
+<li>modificare <strong>/etc/vim/vimrc</strong> decommentando <em>set ignorecase</em> e <em>syntax on</em> (se non già attivo)</li>
+<li>modificare <strong>/root/.bashrc</strong> aggiungendo le seguenti linee<br />
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">alias rm=&#39;rm -i&#39; 
+alias cp=&#39;cp -i&#39; 
+alias mv=&#39;mv -i&#39; </pre>
+</li>
+<li>copiare le <strong>chiavi ssh</strong> necessarie sull&#39;utente root:<br />
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">ssh-copy-id -i ~/ownCloud/UfficYO_OC/_support/ssh/id_rsa_support.pub root@10.22.22.177</pre>
+dove <strong>.ssh/id_dsa.pub</strong> è il percorso locale della chiave da importare, mentre <strong>10.22.22.177</strong> è l&#39;ip della macchina che stiamo installando</li>
+<li>se avete installato <em>ntp</em>, modificare <strong>/etc/ntp.conf</strong> modificando le occorrenze di <em>server</em> con queste (e togliendo ntp.ubuntu.com):<br />
+<pre>server 0.it.pool.ntp.org
+server 1.it.pool.ntp.org
+server 2.it.pool.ntp.org
+server 3.it.pool.ntp.org</pre>
+(modificare il codice della nazione a seconda di dove si trova il server).<br />Se non c&#39;è necessità che questo server faccia da NTP server per altri PC in rete è possibile limitare l&#39;ascolto delle porte di NTP:
+<pre>interface ignore wildcard 
+interface listen 127.0.0.1</pre>
+</li>
+<li><span style="font-size: 13px;">copiare </span><strong style="font-size: 13px;">.vimrc</strong><span style="font-size: 13px;"> standard YetOpen (da ~/Nextcloud/UfficYO_OC/_support/vim/)</span></li>
+<li>configurare gli script di backup</li>
+<li>se non selezionato in fase di installazione configurare gli aggiornamenti di sicurezza automatici con <br />
+<pre class="language-markup"><code>dpkg-reconfigure unattended-upgrades</code></pre>
+<p>per impostare la <a href="https://askubuntu.com/a/959724/259807" target="_blank" rel="noopener">disinstallazione automatica dei kernel obsoleti</a> modificare il file <code>/etc/apt/apt.conf.d/50unattended-upgrades</code>, decommentare ed impostare a <em>true</em> questo parametro:</p>
+<pre class="language-markup"><code>Unattended-Upgrade::Remove-Unused-Dependencies  "true";</code></pre>
+</li>
+<li>insallare nullmailer per la consegna della posta locale (<a class="intfaqlink" href="index.php?action=artikel&amp;cat=1&amp;id=122&amp;artlang=it">Installazione di nullmailer, per la consegna della posta</a>), o in alternativa postfix</li>
+<li>installare il software di monitoraggio del RAID (vedere anche Zabbix)</li>
+<li>installare il software di monitoraggio dell&#39;UPS</li>
+<li>verificare <em>domain name </em>(ubuntu non lo chiede, lo prende da dhcp)</li>
+<li>creare la /dati/yetopen/bin dove installare i nostri script</li>
+<li>aggiungere in <em>/etc/default/grub</em> la riga<br />GRUB_RECORDFAIL_TIMEOUT=5<br />altrimenti in caso di mancata corrente o altra interruzione inaspettata di operatività, il server rimarrà al menu di grub senza il timeout!   </li>
+<li>per rimuovere l&#39;interfaccia <strong>usb0</strong> aggiungere in fondo a /etc/modprobe.d/blacklist.conf le righe:<br />
+<pre class="brush: bash;fontsize: 100; first-line: 1; "># Rimuovere usb0 
+blacklist cdc_ether</pre>
+ </li>
+<li>in caso di <strong>VM</strong> disabilitare lo scheduler del disco, aggiungendo in GRUB_CMDLINE_LINUX_DEFAULT il valore <em>elevator=noop</em>. (vedi <a href="http://lonesysadmin.net/2013/12/06/use-elevator-noop-for-linux-virtual-machines/">qui</a>)</li>
+<li>per forzare la visualizzazione del menu di Grub, che altrimenti NON viene mostrato, commentare le righe <br />GRUB_HIDDEN_TIMEOUT  <br />GRUB_HIDDEN_TIMEOUT_QUIET<br />in  <em>/etc/default/grub</em></li>
+</ul>
+<p> (dopo tutte le modifiche a grub eseguire <strong><em>update-grub2</em></strong><em>)</em></p>
+<p> Effettuare l&#39;installazione di Zabbix sul server:</p>
+<p>https://apps.ufficyo.com/kb/index.php?action=artikel&amp;cat=26&amp;id=675&amp;artlang=it</p>
+<h2>Per Contabo</h2>
+<p>Impostare il TimeZone corretto con</p>
+<pre class="language-markup"><code>dpkg-reconfigure tzdata</code></pre>
+<p>per impostare il server NTP di Ubuntu18 modificare il file /etc/systemd/timesyncd.conf in questo modo:</p>
+<pre class="language-markup"><code>[Time]
+NTP=1.de.pool.ntp.org 2.de.pool.ntp.org 0.de.pool.ntp.org</code></pre>
+<p>Segnare la password originale di root fornita da Contabo in BitWarden ed impostare una nuova password. Attenzione: non usare caratteri da digitare con l&#39;<em>alt-gr</em> perché poi via VNC non vengono inviati correttamente. Usare solo quelli <em>sopra</em> i numeri.</p>
+<p> </p>
+<h1>Adeguamento GDPR</h1>
+<p>Per il GDPR bisogna memorizzare almeno sei mesi di log. I servizi da tenere controllati sono:</p>
+<ul>
+<li>ssh</li>
+<li>mysql</li>
+<li>web</li>
+<li>VPN</li>
+<li>zimbra</li>
+</ul>
+<p>Bisogna modificare le regole di <em>logrotate</em>. Per tutte le istanze, per aggiungere la data al nome del file ruotato aggiungere <em>dateext</em> al blocco di configurazione.</p>
+<h2>ssh</h2>
+<p>Su <strong>Ubuntu</strong> gli accessi vengono registrati in /var/log/auth.log, controllato da /etc/logrotate.d/rsyslog. Siccome il log viene ruotato settimanalmente, <strong>impostare <em>rotate 24</em></strong>.</p>
+<p>Per <strong>RHEL/CentOS </strong>FIXME</p>
+<h2>MySQL</h2>
+<p>Il log degli accessi non è abilitato predefinito perché <span style="text-decoration: underline;">degrada molto le prestazioni del database</span>. Per abilitarlo aggiungere nel file di configurazione di MySQL, in un blocco <em>[mysqld]</em>, le righe:</p>
+<pre class="language-markup"><code>general_log_file        = /var/log/mysql/mysql.log
+general_log             = 1</code></pre>
+<p>Da MySQL 5.2 in avanti è possibile applicare questa configurazione senza riavviare il server, eseguendo queste query:</p>
+<pre class="language-markup"><code>SET GLOBAL general_log = 1;
+SET GLOBAL general_log_file="/var/log/mysql/mysql.log";</code></pre>
+<p>Modificare poi in /etc/logrotate.d/mysql-server la riga <em><strong>rotate 186</strong></em>.</p>
+<p>Info <a href="https://www.percona.com/blog/2012/12/28/auditing-login-attempts-in-mysql/">qui</a> e <a href="https://stackoverflow.com/a/6479183/738852">qui</a>.</p>
+<h2>Apache2</h2>
+<p>Su <strong>Ubuntu</strong> modificare in /etc/logrotate.d/apache2 la riga <em>rotate 24</em> (sono settimanali).</p>
+<h2>nginx</h2>
+<p>Su <strong>Ubuntu</strong> modificare in /etc/logrotate.d/nginx la riga rotate 186 (giornaliero).</p>
+<h2>VPN (pfSense)</h2>
+<p>pfSense adotta un logging diverso: usa dei <em>circular log files</em> (clogs) a dimensione fissa di circa 500KB (di default). Ci sono 20 file, quindi lo spazio occupato totale con la configurazione standard è circa 9,4M. Non è possibile espandere il file di log per una singola <em>applicazione</em> (ad esempio le VPN), né sapere per quanto tempo vengono conservati.</p>
+<p>Facendo attenzione allo spazio disponibile (viene indicato nelle informazioni del campo <em>Log file size</em>) si può aumentare la dimensione dei log, tenendo presente che lo spazio indicato va moltiplicato per <span style="text-decoration: underline;">venti</span>.</p>
+<p>Ad esempio con 10G di spazio disponibile per occupare circa 5G mettere come <em>Log file size</em> il valore <strong>262144000</strong>.</p>
+<p> </p>
