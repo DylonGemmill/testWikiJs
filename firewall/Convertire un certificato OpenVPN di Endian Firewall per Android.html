@@ -1,8 +1,0 @@
-<p>La configurazione di OpenVPN &egrave; possibile solo su dispositivi con <strong>ROM CyanoGen</strong>.</p>
-<p>Prelevare dal firewall i file <strong>cacert.pem</strong> e <strong>cacert.key</strong> da&nbsp;<strong>/etc/openvpn/</strong>.</p>
-<p>Eseguire quindi il comando</p>
-<p>&nbsp;</p>
-<pre class="brush: bash;fontsize: 100; first-line: 1; ">openssl pkcs12 -export -in cacert.pem -inkey cakey.pem -name EndianFWCert -out endian_firewall.p12</pre>
-<p>&nbsp;</p>
-<p>Caricare quindi il file <strong>endian_firewall.p12</strong> via USB sul telefono, ed andare in <em>Impostazioni &gt; Posizione e protezione &gt; Installa da scheda SD</em>.</p>
-<p>Quindi andare in <em>Wireless e Reti &gt; VPN &gt; OpenVPN</em> e configurare la connessione.</p>

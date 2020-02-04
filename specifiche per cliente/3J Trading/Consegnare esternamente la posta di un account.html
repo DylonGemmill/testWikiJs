@@ -1,8 +1,0 @@
-<p>Se si desidera ricevere tramite un relay esterno tutta la posta di un account, inclusa quella interna (ad esempio se si desidera ricevere le mail via blackberry, senza farlo accedere al server Zimbra), si può specificare un <em>mail transport</em> specifico per un indirizzo.</p>
-<p>Il comando da usare è il seguente:</p>
-<pre class="brush: bash;fontsize: 100; first-line: 1; ">zmprov ma myaccount@mydomain.it zimbraMailTransport smtp:smtp.myisp.it:25</pre>
-<p>dove <em>smtp.myisp.it</em> è il relay esterno.</p>
-<p>La stessa opzione (zimbraMailTransport) può essere applicata al dominio, usando <em>md dominio.it</em>.</p>
-<p>Questo farà in modo che tutte le mail destinate a quell&#39;indirizzo verranno redirezionate all&#39;smtp esterno. Potenzialmente significa che l&#39;utente, via SMTP, non riceverà mai più nessuna email. Per far "arrivare" a Zimbra questi messaggi occorre consegnare tramite LMTP, per cui in fetchmail, sulla riga relativa all&#39;account, aggiungere</p>
-<pre class="brush: bash;fontsize: 100; first-line: 1; ">smtphost localhost/7025 lmtp</pre>
-<p>ref: <a href="http://www.zimbra.com/forums/administrators/38337-solved-deliver-all-mails-external-mta.html#post176304">zimbra forum</a></p>

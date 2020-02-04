@@ -1,7 +1,0 @@
-<p>Con <a href="https://wiki.zimbra.com/wiki/Zmmailbox#Export.2Fimport_an_entire_account">getRestUrl</a> è possibile esportare tutto l&#39;account di un utente, di solito si usa per i backup. Ma si può usare anche per salvare solo alcuni elementi dell&#39;account, usando ad esempio la stessa query di ricerca del web.</p>
-<p> </p>
-<pre class="language-markup"><code>zmmailbox -z -m email@dominio.com getRestURL &#39;//?fmt=tgz&amp;query=before:"12/31/17" &#39; &gt; /tmp/export_account.tgz</code></pre>
-<p><strong>Attenzione</strong>: nel caso di ricerca per date va specificata nel formato (breve) americano: <em>m/d/y</em> (esempi <a href="https://wiki.zimbra.com/wiki/Ajcody-Migration-Notes#Export_Using_Query_String_-_Before_And_After_Dates">qui</a>).</p>
-<p>Si possono indicare diversi parametri di ricerca collegati dalla parola chiave <em>and</em>.</p>
-<pre class="language-markup"><code>zmmailbox -z -m email@dominio.com getRestURL &#39;//?fmt=tgz&amp;query=before:"12/31/17" and after:"12/31/17" &#39; &gt; /tmp/export_rudy_2017_2.tgz</code></pre>
-<p> </p>

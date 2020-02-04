@@ -1,8 +1,0 @@
-<p>Lavorando con id contenti caratteri particolari, ho scoperto che:</p>
-<p>
-<pre class="brush: jscript;fontsize: 100; first-line: 1; ">$("li#ZZBLINDO10/AGR")</pre>
-</p>
-<p>non funziona. Rimuovendo il carattere &#39;/&#39;, invece, funziona.&nbsp;Probabilmente il selettore # di JQuery non riesce a gestire un set particolare di caratteri, tra cui &#39;/&#39;. Per ovviare al problema occorre trattare l&#39;id come semplice attributo, utilizzando quindi il seguente selettore:</p>
-<p>
-<pre class="brush: jscript;fontsize: 100; first-line: 1; ">$("li[id=ZZBLINDO10/AGR]")</pre>
-</p>

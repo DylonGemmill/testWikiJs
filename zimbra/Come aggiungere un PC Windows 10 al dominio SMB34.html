@@ -1,3 +1,0 @@
-<p>Passi operativi per inserire un PC al dominio:</p>
-<p>Inserire il DNS :</p>
-<p>&gt; Per mettere la macchina sotto dominio ho eseguito i seguenti passi:<br />&gt;<br />&gt; -Inserimento Parametri Network:<br />&gt;<br />&gt; GW:10.0.0.7<br />&gt; DNS:10.0.0.7<br />&gt; WINS:10.0.0.7<br />&gt;<br />&gt; -Creazione ed esecuzione di un file samba.reg con le seguenti stringhe:<br />&gt;<br />&gt; Windows Registry Editor Version 5.00<br />&gt;<br />&gt; [HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\LanManWorkstation\Parameters]<br />&gt; "DomainCompatibilityMode"=dword:00000001<br />&gt; "DNSNameResolutionRequired"=dword:00000000</p>

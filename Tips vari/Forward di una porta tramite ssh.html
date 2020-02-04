@@ -1,8 +1,0 @@
-<p>E&#39; possibile fare il forward di una porta tramite ssh.</p>
-<p>Ad esempio se sulla rete del cliente c&#39;&egrave; un web server all&#39;IP 192.168.0.2 ma non &egrave; pubblicato, posso usare il server dove risiede ssh per fare da ponte.</p>
-<p>Sul mio client locale eseguo:</p>
-<p>&nbsp;</p>
-<pre class="brush: bash;fontsize: 100; first-line: 1; ">ssh -L 0.0.0.0:9030:192.168.0.2:80 root@server-ssh  -N</pre>
-<p>
-in questo modo ssh metter&agrave; in ascolto la porta locale sul client 9030 che punta al web server del cliente.</p>
-<p>&nbsp;</p>

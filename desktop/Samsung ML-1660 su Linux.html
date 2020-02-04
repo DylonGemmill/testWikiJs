@@ -1,8 +1,0 @@
-<p>La stampante funziona perfettamente con Linux.</p>
-<p>E&#39; possibile scaricare i driver dal sito <a href="http://www.samsung.com/hk_en/consumer/detail/support.do?group=computer-peripherals&amp;type=printers-multifunction&amp;subtype=monochrome-laser-printers&amp;model_nm=ML-1660&amp;disp_nm=ML-1660&amp;language=&amp;cate_type=all&amp;dType=D&amp;mType=DR&amp;vType=&amp;prd_ia_cd=06010400&amp;model_cd=ML-1660/XSS&amp;menu=download">Samsung</a>.</p>
-<p>Il file, un <em>tar.gz</em>, contiene tutti i software di gestione della stampante, e di tutte le altre MFC Samsung. In realt&agrave; &egrave; sufficiente installare il <strong>ppd</strong>&nbsp;e i filtri per cups.</p>
-<ol>
-<li>estarre il file in una directory di comodo (o prelevare gli allegati da questo documento)</li>
-<li>copiare <strong><em>x86_64/at_root/usr/lib/cups/filter/raster*</em></strong> in <strong><em>/usr/lib/cups/filter/</em></strong></li>
-<li>installare la stampante in CUPS fornendo il <em>ppd</em>&nbsp;che si trova in <strong><em>noarch/at_opt/share/ppd/ML-1660spl.ppd</em></strong></li>
-</ol>

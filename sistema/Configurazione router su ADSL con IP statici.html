@@ -1,9 +1,0 @@
-<p>Ad esempio Briantel, assegna al cliente una subnet di indirizzi.</p>
-<p>Nel caso di YetOpen, i parametri sono i seguenti:</p>
-<p>Indirizzo IP punto-punto lato cliente: 109.69.131.29<br /><br />Classe IP assegnata: 109.69.131.224/29<br />Netmask: 255.255.255.248</p>
-<p>Gli IP assegnati sono in teoria 8, in pratica utilizzabili sono solo 6.&nbsp;</p>
-<p>L&#39;IP punto-punto lato cliente &egrave; da <em>ignorare</em>. Il modem dovr&agrave; essere configurato in modalit&agrave; <strong>routed</strong>.&nbsp;</p>
-<p>Lato <strong>LAN</strong>, al router andr&agrave; assegnato il primo IP del range dopo il gateway, in questo caso <strong>109.679.131.225</strong>, con netmask <strong>/29</strong>&nbsp;(ovvero <strong>255.255.255.248</strong>).</p>
-<p>Il firewall, o comunque qualunque dispositivo che volesse impiegare uno degli IP pubblici, dovr&agrave; avere un IP compreso tra <strong>.226</strong> e <strong>.230</strong>, in quanto il <strong><em>231</em></strong> &egrave; l&#39;indirizzo di broadcast.</p>
-<p>&nbsp;</p>
-<p>Per calcolare le netmask, &egrave; possibile usare questo sito: <a href="http://jodies.de/ipcalc">http://jodies.de/ipcalc</a></p>

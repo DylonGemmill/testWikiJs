@@ -1,7 +1,0 @@
-<p>Il comando <em>mail</em>, del pacchetto <em><strong>bsd-mailx</strong></em>, &egrave; molto comodo ma non permette di per s&eacute; l&#39;invio di allegati. Per poter inviare file &egrave; necessario appoggiarsi al comando <em>uuencode</em>, del pacchetto <strong><em>sharutils</em></strong>.</p>
-<p>Supponendo di dover inviare il file <em>/root/backup.bz2</em>, aggiungendo come testo alla mail <em>"Ecco il file di log"</em>, procediamo come segue:</p>
-<p>
-<pre class="brush: bash;fontsize: 100; first-line: 1; ">echo "Ecco il file di log" &gt; /tmp/mailtmp
-uuencode /root/backup.bz2 /root/backup.bz2 &gt;&gt; /tmp/mailtmp
-cat /tmp/mailtmp | mail -s "Oggetto della mail" destinatario@yetopen.it</pre>
-</p>

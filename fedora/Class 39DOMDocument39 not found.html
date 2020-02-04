@@ -1,7 +1,0 @@
-<p>Se su Fedora non funziona il webserver e nei log trovate l&#39;errore <em>Class &#39;DOMDocument&#39; not found</em>, può essere semplicemente che non siano state installate le librerie XML di PHP.</p>
-<p>Per installarle</p>
-<pre class="brush: bash;fontsize: 100; first-line: 1; ">yum install php-xml</pre>
-<p>successivamente riavviare chi si occupa di interpretare il php (nel mio caso php-fpm)</p>
-<pre class="brush: bash;fontsize: 100; first-line: 1; ">systemctl restart  php-fpm.service</pre>
-<p> </p>
-<p>fonte: http://www.micene.net/?p=580</p>

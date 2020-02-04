@@ -1,8 +1,0 @@
-<p>Il meccanismo antispam e antivirus di Zimbra archivia un file su disco con una copia della mail filtrata.</p>
-<p>Per consegnare la mail bloccata occorre prima di tutto identificarne il nome dalla mail di notifica:</p>
-<pre class="brush: bash;fontsize: 100; first-line: 1; ">The message has been quarantined as: virus-n89eFiOoPVpn</pre>
-<p> </p>
-<p>Quindi lanciare, come utente zimbra:</p>
-<pre class="brush: bash;fontsize: 100; first-line: 1; ">/opt/zimbra/bin/zmlmtpinject -s MITTENTE /opt/zimbra/data/amavisd/quarantine/NOME_FILE -r DESTINATARIO</pre>
-<p> </p>
-<p>sostituendo MITTENTE con l&#39;email da cui si vuol far apparire la mail, NOME_FILE il nome del file contenuto nella notifica, DESTINATARIO con l&#39;email del destinatario che dovrà ricevere la mail.</p>

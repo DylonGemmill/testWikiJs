@@ -1,8 +1,0 @@
-<p>Accedere al centralino come utente root.</p>
-<p>Sbloccare la flash con il comando /usr/lib/mercurius/sbin/flash-open</p>
-<p>Rinominare i file /etc/asterisk/extensions.conf e /usr/lib/mercurius/functions.d/wakeupcall.conf in modo da mantenere un copia degli originali.</p>
-<p>Aggiungere quindi negli stessi percorsi i file di yetopen.</p>
-<p>Modificare il file /etc/asterisk/extensions.conf alla riga 14: impostare la variabile ADM con l&#39;interno di amministrazione (quello che pu&ograve; cancellare le sveglie, nel file &egrave; 11).</p>
-<p>Modificare il file /etc/asterisk/extensions.conf alle righe da 78 a 84: impostare l&#39;exten a seconda del namespace degli interni (es. &egrave; impostato _23601XX, le due X alla fine indicano che copre tutti gli interni di due cifre. Se gli interni sono da 3 cifre, impostare _23601XXX, ecc...)</p>
-<p>Bloccare nuovamente la flash con il comando /usr/lib/mercurius/sbin/flash-close</p>
-<p>Riavviare asterisk (/etc/init.d/asterisk restart).</p>

@@ -1,8 +1,0 @@
-<p>Siccome in RedHat/CentOS è abilitato SELinux di default, possono esserci dei problemi nello spostamento di una directory su un volume fisico diverso. </p>
-<p> </p>
-<p>Per effettuare lo spostamento della /var riavviare in modalità single-user, quindi spostare i dati nella nuova partizione assicurandosi di mantenere i permessi, montarla in /var, ed al termine lanciare il comando</p>
-<pre class="brush: bash;fontsize: 100; first-line: 1; ">restorecon /var</pre>
-<p> </p>
-<p>che andrà a ripristinare i parametri predefiniti di SELinux per la directory.</p>
-<p> </p>
-<p>rif: http://forums.fedoraforum.org/showpost.php?p=1568170&amp;postcount=3</p>

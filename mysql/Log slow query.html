@@ -1,4 +1,0 @@
-<p>In /etc/mysql nel file di configurazione di mysql verificare i path inclusi e cercare il file di configurazione specifico<br /> <br /> Verificare le variabili<br /> <code>slow_query_log = 1</code><br /><code> slow_query_log_file =           </code></p>
-<p>inserire il percorso = "_slow_log"</p>
-<p><code>slow_query_time = 1   </code></p>
-<p>sono 1 secondo<br /> <br /> fare il touch del file "_slow_log" chown mysql (altrimenti mysql non lo riesce a creare)<br /> <br /> riavviare mysql <br /> <code>systemctl restart mysql</code></p>

@@ -1,8 +1,0 @@
-<p>E&#39; capitato di avere problemi di affidabilit&agrave; sulle connessioni di rete sulle macchine virtuali Windows in XenServer. In particolare, dal firewall forwardate alcune porte verso il guest risultavano in connessioni interrotte di frequente oppure molto lente.</p>
-<p>Chiedendo sul <a href="http://forums.citrix.com/thread.jspa?messageID=1570538">forum citrix</a>, propongono di disabilitare il <strong>TCP offload</strong>, e sembra funzionare!</p>
-<p>&nbsp;</p>
-<p>Se XenServer 5.6fp1 si pu&ograve; risolvere disabilitando&nbsp; il <strong>checksum</strong> nelle impostazione del driver di windows: disabilitare il flag <em>Configure &gt; Advanced &gt; Large Send Offload</em>.</p>
-<p>&nbsp;</p>
-<p>Tramite <strong><em>regedit</em></strong>, aggiungere o modificare a <strong>1</strong> la chiave DWORD <strong>HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\DisableTaskOffload</strong>.</p>
-<p>&nbsp;</p>
-<p>rif: <a href="http://willsani.com/2010/02/09/xenserver-5-5-network-performance-woes/">http://willsani.com/2010/02/09/xenserver-5-5-network-performance-woes/</a></p>

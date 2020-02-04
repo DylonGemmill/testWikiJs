@@ -1,8 +1,0 @@
-<p>Inserire nelle impostazioni del server sotto la voce advanced configuration:</p>
-<pre class="brush: bash;fontsize: 100; first-line: 1; ">ifconfig-pool-persist /root/ipp.txt
-</pre>
-<div>Nel file /root/ipp.txt specificare</div>
-<div><em>username,IP</em></div>
-<div>l&#39;username è quello di accesso OpenVPN, l&#39;IP è uno della rete OpenVPN.</div>
-<div> </div>
-<div>ATTENZIONE che openvpn assegna una /30, significa che per ogni client si può usare un indirizzo ogni 4. Ovvero se al primo client connesso viene assegnato l&#39;IP <em>.6</em>, il successivo potrà avere <em>.10</em>, quello dopo <em>.14</em> e così via...</div>

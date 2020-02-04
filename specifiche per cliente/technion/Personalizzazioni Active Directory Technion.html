@@ -1,9 +1,0 @@
-<p>Per mitigare le problematiche avute con Nextcloud abbiamo introdotto le seguenti policy su AD:</p>
-<ul>
-<li>Richiesta di conferma cancellazione file anche per i file locali<br />Configurazione utente &gt; Criteri &gt; Modelli amministrativi (...) &gt; Componenti di Windows &gt; Esplora file: Visualizza finestra di conferma per la cancellazione file: Attivo<br />https://www.isumsoft.com/it/enable-delete-confirmation-dialog-box-in-windows-10-8/#way2</li>
-<li>Aumentati i pixel di trascinamento dei file, per cercare di ridurre gli spostamenti indesiderati di una cartella nell&#39;altra. Non c&#39;è una proprietà del GPO ma bisogna modificare il registro di Windows<br />Configurazione utente &gt; Preferenze &gt; Impostazioni di Windows &gt; Registro di sistema<br />DragHeight: 50<br />DragWidth: 50<br />https://winaero.com/blog/change-drag-drop-sensitivity-windows-10/</li>
-<li>Non sincronizzare i file di lock di Autocad (.dwl e .dwl2). Le esclusioni di Nextcloud sono nel file  %appdata%\Nextcloud\sync-exclude.lst, per fare in modo di averlo uguale su tutti i PC abbiamo un file <em>master</em> in \\fileserver\pubblica\nextcloud\sync-exclude.lst che viene copiato tramite GPO<br />Configurazione utente &gt; Impostazioni di Windows &gt; File<br />Quando si definisce la policy è importante che il file sorgente sia accessibile dal gruppo <em>domain users</em> e <em>domain computers</em> e che venga specificato anche il nome file di destinazione.</li>
-<li></li>
-</ul>
-<p> </p>
-<p> </p>

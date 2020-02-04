@@ -1,7 +1,0 @@
-<p>Con <strong>find</strong> &egrave; possibile trovare un file che &egrave; stato modificato entro <em>-mtime n*24</em> ore precedenti. Non &egrave; per&ograve; possibile specificare un orario pi&ugrave; preciso. Per fare questo, si usa una escamotage: find pu&ograve; usare un file come confronto, quindi</p>
-<p><strong>touch file_prova -t AAAAMMGGHHMM</strong></p>
-<p><strong>find . -newer file_prova</strong></p>
-<p>In questo modo <strong>find</strong> trover&agrave; tutti i file pi&ugrave; recenti di file_prova, e quindi della data assegnatagli.</p>
-<p>Per trovare i file entro un range, si crea un secondo file e il comando sar&agrave; il seguente:</p>
-<p><strong>find . -newer file_da -and ! -newer file_a</strong></p>
-<p>ovviamente newer si possono usare con i modificatori <em>cnewer</em> (data di creazione) e <em>anewer</em> (data di ultimo accesso).</p>
