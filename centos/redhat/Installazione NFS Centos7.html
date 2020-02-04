@@ -1,0 +1,17 @@
+<p>Installazione dei pacchetti NFS</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">yum install nfs-utils nfs-utils-lib</pre>
+<p> Abilitare i servizi all&#39;avvio:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">systemctl enable rpcbind
+systemctl enable nfs-server
+systemctl enable nfs-lock
+systemctl enable nfs-idmap</pre>
+<p>Effettuare lo start dei serivizi:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">systemctl start rpcbind
+systemctl start nfs-server
+systemctl start nfs-lock
+systemctl start nfs-idmap</pre>
+<p>Configurare il file di exports per condividere il percorso desiderato:</p>
+<p> </p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">vi /etc/exports
+/home   *(rw,sync,no_subtree_check,no_root_squash,async)
+</pre>

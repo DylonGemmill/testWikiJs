@@ -1,0 +1,61 @@
+<p>Modificare il grub:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">vim /etc/sysconfig/grub</pre>
+<p> </p>
+<p>Aggiungendo a fine riga nella stringa contente il <span>GRUB_CMDLINE_LINUX questi due parametri <strong>net.ifnames=0 biosdevname=0</strong></span></p>
+<p>Esempio</p>
+<p>Default</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">GRUB_CMDLINE_LINUX="rd.lvm.lv=centos/swap vconsole.font=latarcyrheb-sun16 rd.lvm.lv=centos/root crashkernel=auto  vconsole.keymap=us rhgb quiet"</pre>
+<p>Riga modificata</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">GRUB_CMDLINE_LINUX="rd.lvm.lv=centos/swap vconsole.font=latarcyrheb-sun16 rd.lvm.lv=centos/root crashkernel=auto  vconsole.keymap=us rhgb quiet net.ifnames=0 biosdevname=0"
+</pre>
+<p> </p>
+<p>Effettuare l&#39;update del GRUB digitando:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">grub2-mkconfig  -o /boot/grub2/grub.cfg</pre>
+<p> </p>
+<p>Rinominare il file di configurazione di rete </p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">mv /etc/sysconfig/network-scripts/ifcfg-enxxx /etc/sysconfig/network-scripts/ifcfg-ethxxx
+</pre>
+<p> </p>
+<p>Inserire la stringa HWADDR per settare il mac address e rinominare con il valore di eth0 gli atributi NAME e DEVICE come da esempio</p>
+<p> </p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; "># vim /etc/sysconfig/network-scripts/ifcfg-eth0
+TYPE=Ethernet
+BOOTPROTO=dhcp
+DEFROUTE=yes
+IPV4_FAILURE_FATAL=no
+IPV6INIT=yes
+IPV6_AUTOCONF=yes
+IPV6_DEFROUTE=yes
+IPV6_FAILURE_FATAL=no
+<strong>NAME=eth0</strong>
+<strong>DEVICE=eth0</strong>
+UUID=5ae10208-855b-41af-99e7-0673d3792d15
+ONBOOT=yes
+<strong>HWADDR=00:0C:29:C7:25:AE</strong>
+PEERDNS=yes
+PEERROUTES=yes
+IPV6_PEERDNS=yes
+IPV6_PEERROUTES=yes
+?</pre>
+<p> </p>
+<p>Effettuare il reboot della macchina</p>
+<p> </p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">reboot</pre>
+<p> </p>
+<p>Controllare le effettive modifiche con </p>
+<p> </p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">ifconfig</pre>
+<p> </p>
+<p>Esempio di configurazione interfaccia eth0 statica sempificata:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">TYPE="Ethernet"
+BOOTPROTO="static"
+NAME="eth0"
+DEVICE="eth0"
+ONBOOT="yes"
+HWADDR="98:be:94:f7:c6:88"
+IPADDR=10.22.22.145
+NETMASK=255.255.255.0
+GATEWAY=10.22.22.1
+</pre>
+<p> </p>
+<p> </p>

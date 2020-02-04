@@ -1,0 +1,15 @@
+<p>E&#39; possibile aggiornare comodamente pfSense da GUI.</p>
+<p>Consigliamo prima di fare un salvataggio di backup della configurazione andando in <em>Diagnostics</em> &gt; <em>Backup/Restore</em> quindi utilizzare il pulsante <em>Download configuration</em> per scaricare il file XML con la configurazione.</p>
+<p>A questo punto andare in <em>System</em> &gt; <em>Firmware</em> e selezionare la scheda <em>Auto Update</em>. Prima di confermare selezionare l&#39;opzione per eseguire un full backup (maggior sicurezza).</p>
+<p>pfSense scaricherà i file, aggiornerà il sistema, si riavvierà e reinstallerà i pacchetti in background.</p>
+<p>Nell&#39;interfaccia, qualsiasi pagina si visiti, ci avvisa con un messaggio su cosa sta facendo.</p>
+<p>Alla fine della procedura, in <em>System</em> &gt; <em>Firmware</em> scheda <em>Restore Full Backup</em>, troveremo il backup che è stato creato al momento dell&#39;update, con la possibilità di ripristinarlo in caso di necessità.</p>
+<p> </p>
+<p>Dopo l&#39;aggiornamento comparirà il messaggio di reinstallazione dei pacchetti in background, che specifica anche di non apportare modifiche alla configurazione finché l&#39;operazione non è terminata. Se dopo parecchie ore il messaggio persiste, provare a riavvare la macchina da <em>Diagnostics</em> &gt; <em>Reboot</em>.</p>
+<p> </p>
+<p>fonte:</p>
+<ul>
+<li><span style="font-size: 13px;"><a href="https://doc.pfsense.org/index.php/Configuration_Backup_and_Restore">https://doc.pfsense.org/index.php/Configuration_Backup_and_Restore</a></span></li>
+<li><span style="font-size: 13px;"><a href="https://doc.pfsense.org/index.php/Upgrade_Guide">https://doc.pfsense.org/index.php/Upgrade_Guide</a></span></li>
+<li><a href="https://doc.pfsense.org/index.php/Reboot_System">https://doc.pfsense.org/index.php/Reboot_System</a></li>
+</ul>

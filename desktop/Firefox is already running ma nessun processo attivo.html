@@ -1,0 +1,23 @@
+<p>Può capitare che tentando di avviare Firefox dica che c&#39;è già un processo attivo, anche se in realtà <em>task manager</em> o <em>ps</em> non riportino alcun programma in esecuzione.</p>
+<p>Questo perché probabilmente sono rimasti <em>appesi</em> i file di lock.</p>
+<p>Identificare il percorso del profilo, di solito <em>.mozilla/firefox/[profilename]/</em> e cancellare i file <strong><em>lock<span style="font-weight: normal;"> <span style="font-style: normal;">e </span><strong>.parentlock</strong><span style="font-style: normal;">.</span></span></em></strong></p>
+<h2>Sblocco automatico al login</h2>
+<p>Creare un file ~/bin/sblocca_firefox.sh con questo contenuto:</p>
+<pre class="language-markup"><code>#!/bin/bash
+
+rm -f /home/NOMEUTENTE/.mozilla/firefox/NOMEPROFILO/.parentlock
+rm -f /home/NOMEUTENTE/.mozilla/firefox/NOMEPROFILO/lock</code></pre>
+<p>sostituendo i testi in maiuscolo. Poi creare un altro file <em>~/.config/autostart/pulisci-firefox.desktop </em>con questo contenuto:</p>
+<pre class="language-markup"><code>[Desktop Entry]
+Type=Application
+Exec=bin/pulizia_firefox.sh
+Hidden=false
+NoDisplay=false
+X-GNOME-Autostart-enabled=true
+Name[it_IT]=pulizia_firefox
+Name=pulizia firefox
+Comment[it_IT]=Cancella i file di lock di Firefox
+Comment=Cancella i file di lock di Firefox</code></pre>
+<p> </p>
+<p>Per altri sistemi e dettagli vedere il link qui a seguito</p>
+<p><a href="http://kb.mozillazine.org/Profile_in_use">http://kb.mozillazine.org/Profile_in_use</a></p>

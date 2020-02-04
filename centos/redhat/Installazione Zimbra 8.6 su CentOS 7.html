@@ -1,0 +1,27 @@
+<p>Veificare che in /etc/hosts ci sia l&#39;indirizzo IP <em>pubblico</em> (LAN) associato all&#39;hostname di Zimbra e all&#39;hostname della macchina.</p>
+<p><strong>Importante</strong>: a causa di un <a href="https://bugzilla.zimbra.com/show_bug.cgi?id=95204#c18">bug in nmap-ncat</a> commentare le righe di localhost per ipv6 in /etc/hosts.</p>
+<p>Disabilitare SELinux mettendo <span><em>SELINUX=disabled</em> in </span><span> /etc/sysconfig/selinux</span><br /><span>Disabilitareil firewall con questi comandi:</span></p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">systemctl disable firewalld
+systemctl stop firewalld</pre>
+<p>Disinstallare postfix:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">yum remove postfix</pre>
+<p>Installare le dipendenze:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">yum install perl perl-core ntpl nmap-ncat libidn gmp libaio libstdc++ unzip sysstat sqlite  -y</pre>
+<p> </p>
+<p>Procedere ora all&#39;installazione dei pacchetti e alla configurazione base come per Ubuntu:</p>
+<p><a href="https://mail.ufficyo.com/kb/index.php?action=artikel&amp;cat=1&amp;id=102&amp;artlang=it">Installazione di Zimbra su server Debian/Ubuntu</a></p>
+<p> </p>
+<p>Per l&#39;installazione di Razor a Pizor eseguire le seguenti operazioni:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">yum install epel-release
+wget -q -O - http://www.atomicorp.com/installers/atomic.sh | sh
+yum install pyzor perl-Razor-Agent</pre>
+<p>Una volta abilitati i repo e installati i pacchetti DISABILITARE i repo se non necessario.</p>
+<p>Per configurare l&#39;invio della posta da linea di comando:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">/usr/sbin/alternatives --install /usr/sbin/sendmail mta /opt/zimbra/postfix/sbin/sendmail 25        --slave /usr/bin/mailq mta-mailq /opt/zimbra/postfix/sbin/mailq        --slave /usr/bin/newaliases mta-newaliases /opt/zimbra/postfix/sbin/newaliases        --slave /usr/share/man/man1/mailq.1.gz mta-mailqman /opt/zimbra/postfix/man/man1/mailq.1        --slave /usr/share/man/man1/newaliases.1.gz mta-newaliasesman /opt/zimbra/postfix/man/man1/newaliases.1        --slave /usr/share/man/man8/sendmail.8.gz mta-sendmailman /opt/zimbra/postfix/man/man1/sendmail.1        --slave /usr/share/man/man5/aliases.5.gz mta-aliasesman /opt/zimbra/postfix/share/man/man5/aliases.5        --initscript zimbra
+/usr/sbin/alternatives --config mta
+</pre>
+<p> </p>
+<p> </p>
+<p>Rif:</p>
+<p>http://linoxide.com/linux-how-to/setup-zimbra-email-server-centos-7/</p>
+<p>http://www.unixmen.com/install-zimbra-collaboration-suite-8-6-0-centos-7/</p>
