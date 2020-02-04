@@ -1,0 +1,10 @@
+<p>Sul sito MySQL uno script per la verifica dello stato dello slave MySQL. Ogni tanto pu&ograve; perdere la connessione...</p>
+<p>Mettere in cron il controllo ogni 2 minuti. Se lo stato &egrave; OK non stamper&agrave; nulla, altrimenti stamper&agrave; un errore che cron dovrebbe provvedere ad inviare via email a <em>root</em>.</p>
+<p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; "># Verifica stato della replica MySQL
+*/2 * * * *       root    /root/bin/check_slave_status.sh
+</pre>
+</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p><a href="http://forge.mysql.com/tools/tool.php?id=6">http://forge.mysql.com/tools/tool.php?id=6</a></p>

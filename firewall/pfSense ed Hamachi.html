@@ -1,0 +1,8 @@
+<p>Hamachi usa delle connessioni UDP per stabilire le VPN P2P tra i vari host. Il problema con pfSense è che quest&#39;ultimo effettua una riscrittura delle porte UDP in uscita (per aumentare la casualità nell&#39;utilizzo), operazione che però non è gradita a tutti i servizi (ad esempio IPSec).</p>
+<p> </p>
+<p>Per ovviare a questo problema occorre impostare le <strong>Static Port</strong> su pfSense.</p>
+<p>Andare in <em>Firewall &gt; NAT &gt; Outbount</em> ed impostare la creazione manuale delle regole (Manual Outbound Rule Generation). Verranno create automaticamente alcune regole.</p>
+<p>Selezionare la regola <em>Auto created rule for LAN to WAN</em> e modificarla. Nella sezione <em>Translation</em> abilitare la spunta su <em>Static-Port</em> e salvare la regola.</p>
+<p>Se si è in grado di restringere il campo è possibile clonare la suddetta regola (prima di aggiungere la porta statica) e crearne una seconda solo per determinate porte o per determinati IP LAN sorgente.</p>
+<p> </p>
+<p>Rif: <a href="https://doc.pfsense.org/index.php/Static_Port">https://doc.pfsense.org/index.php/Static_Port</a></p>

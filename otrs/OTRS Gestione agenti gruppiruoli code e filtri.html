@@ -1,0 +1,187 @@
+<p>Per creare un sistema di ticketing avanzato che gestisce i ticket per competenze esempio area commerciale e area tecnica bisogna prima creare gli agenti, creare i gruppi assegnando gli utenti che ne fanno parte e in fine assegnare i gruppi alla coda corrispondente.</p>
+<p>Per smistare i ticket ci sono diverse soluzioni la piu&#39; semplice e&#39; creare un indirizzo email e applicare dei filtri all&agrave; oggetto.</p>
+<p>&nbsp;</p>
+<p style="text-align: center;"><strong style="text-align: center;"><span style="font-size: large;">AGENTI&nbsp;</span></strong></p>
+<p style="text-align: left;"><span style="font-size: small;">Facendo clic sul link&nbsp;<span class="emphasis"><em>agenti</em></span>&nbsp;, &egrave; possibile accedere alla schermata gestione agente di OTRS (vedi figura sotto).&nbsp;Gli amministratori possono aggiungere, modificare o disattivare gli account degli agenti.&nbsp;Gli amministratori possono inoltre gestire le preferenze degli agenti, per esempio, le impostazioni della lingua e di notifica per la loro interfaccia.</span></p>
+<p style="text-align: left;"><strong style="font-size: large;"><img src="https://mail.ufficyo.com/kb/images/otrs/2.png" alt="" width="1142" height="793" /></strong></p>
+<p style="text-align: left;"><span style="font-size: small;">Per registrare un agente, fare clic sul &nbsp;pulsante&nbsp;"Aggiungi agente", digitare tutti i dati necessari e premere il pulsante accetta nella parte inferiore dello schermo</span></p>
+<p style="text-align: left;"><strong style="font-size: large;"><img src="https://mail.ufficyo.com/kb/images/otrs/3.png" alt="" width="1102" height="672" /></strong></p>
+<div class="section" title="Agenti">
+<p><span class="emphasis"><em><span><span>Figura: Aggiunta di un nuovo agente.</span></span></em></span></p>
+<p><span class="emphasis"><em><span><span><br /></span></span></em></span></p>
+<p><span style="font-size: small;">Dopo che l&#39;account nuovo agente &egrave; stato creato, si dovrebbe fare l&#39;agente di un membro di uno, pi&ugrave; gruppi e/o ruoli.</span></p>
+<p><span style="font-size: small;">Se il gruppo non e&#39; stato precedentemente creato, si puo&#39; crearlo successivamente e nella configurazione da la possibilita&#39; di assegnare gli utenti.</span></p>
+<p style="text-align: center;">&nbsp;<strong style="text-align: center;"><span style="font-size: medium;">GRUPPI</span></strong></p>
+<p style="text-align: center;">&nbsp;</p>
+</div>
+<p style="text-align: left;">&nbsp;</p>
+<p style="text-align: left;"><span class="goog-text-highlight">Ogni agente deve appartenere ad almeno un gruppo o un ruolo.&nbsp;</span><span>In un impianto nuovo, ci sono tre gruppi predefiniti, come mostrato sotto.</span></p>
+<p style="text-align: left;">&nbsp;</p>
+<table summary="Default groups available on a fresh OTRS installation" border="1">
+<thead>
+<tr><th><span><span>Gruppo</span></span></th><th><span><span>Descrizione</span></span></th></tr>
+</thead>
+<tbody>
+<tr>
+<td><em>admin</em></td>
+<td><span><span>Permesso di eseguire attivit&agrave; di amministrazione del sistema.</span></span></td>
+</tr>
+<tr>
+<td><em>stats</em></td>
+<td><span><span class="goog-text-highlight">Qualificati per accedere al modulo statistiche di OTRS e generare statistiche.</span></span></td>
+</tr>
+<tr>
+<td><em>gli utenti</em></td>
+<td>
+<p><span><span>Agenti dovrebbe appartenere a questo gruppo, con lettura e scrittura.&nbsp;</span><span>Essi possono quindi accedere a tutte le funzioni del sistema di ticket.</span></span></p>
+</td>
+</tr>
+</tbody>
+</table>
+<p style="text-align: left;"><span><br /></span></p>
+<div class="section" title="Gruppi"><span style="font-size: small;"><span class="goog-text-highlight">&Egrave; possibile accedere alla pagina di gestione del gruppo (vedi figura sotto) facendo clic sul collegamento&nbsp;</span><span class="emphasis"><em><span class="goog-text-highlight">Gruppi&nbsp;</span></em></span><span class="goog-text-highlight">nell&#39;area amministrativa.</span></span><span style="text-align: left;">&nbsp;</span><img style="text-align: left;" src="https://mail.ufficyo.com/kb/images/otrs/4.png" alt="" width="1146" height="511" /></div>
+<p><span class="emphasis" style="font-size: medium;"><em>F<span style="font-size: small;">igura: management del Gruppo.</span></em></span></p>
+<div class="note" title="Nota">
+<h3 class="title"><span style="font-size: small;">Nota</span></h3>
+<p><span style="font-size: small;">Come con gli agenti, un gruppo OTRS pu&ograve; essere disattivato ma non eliminato.&nbsp;La disattivazione viene eseguita impostando il flag <span class="emphasis"><em>non valida</em></span>&nbsp;o&nbsp;<span class="emphasis"><em>non valida-temporaneamente</em></span>&nbsp;.</span></p>
+<p>&nbsp;</p>
+<p><span style="font-size: small;">Per registrare un nuovo gruppo, fare clic sul&nbsp;&nbsp;pulsante&nbsp;"Aggiungi gruppo", digitare tutti i dati necessari e premere il pulsante accetta nella parte inferiore dello schermo</span></p>
+<p><span style="font-size: small;"><img src="https://mail.ufficyo.com/kb/images/otrs/5.png" alt="" width="1147" height="505" /><br /></span></p>
+</div>
+<p style="text-align: left;">&nbsp;</p>
+<p><span><span>Una panoramica di tutti i gruppi e gli agenti del sistema viene visualizzato alla fine della creazione del gruppo dove e&#39; possibile assegnare gli utenti che ne fanno parte.&nbsp;</span></span></p>
+<p><span><span class="goog-text-highlight"><img src="https://mail.ufficyo.com/kb/images/otrs/6.png" alt="" width="1125" height="574" /><br /></span></span></p>
+<p style="text-align: left;"><span>Se si desidera cambiare i gruppi che l&#39;agente &egrave; membro andare in admin agenti&lt;-&gt;gruppi, fare clic sul nome dell&#39;agente.&nbsp;</span><span class="goog-text-highlight">Per modificare gli agenti associati a un gruppo, &egrave; sufficiente fare clic sul gruppo che si desidera&nbsp;</span>modificare.</p>
+<p style="text-align: left;"><img src="https://mail.ufficyo.com/kb/images/otrs/7.png" alt="" width="1143" height="428" /></p>
+<p style="text-align: left;"><span>Ogni gruppo ha una serie di diritti, e ogni agente membro pu&ograve; avere questi diritti.&nbsp;</span><span class="goog-text-highlight">Un elenco delle autorizzazioni / diritti &egrave; mostrato sotto.</span></p>
+<p style="text-align: left;">&nbsp;</p>
+<p class="title"><strong><span><span>Diritti associate a gruppi di OTRS</span></span></strong></p>
+<div class="table-contents">
+<table summary="Rights associated with OTRS Groups" border="1"><colgroup><col /><col /></colgroup>
+<thead>
+<tr><th><span><span>Destra</span></span></th><th><span><span>Descrizione</span></span></th></tr>
+</thead>
+<tbody>
+<tr>
+<td><em>ro</em></td>
+<td><span><span>Accesso in sola lettura ai biglietti, le entrate e le code di questo gruppo.</span></span></td>
+</tr>
+<tr>
+<td><span><span><em>spostarsi</em> in</span></span></td>
+<td><span><span>Diritto di spostarsi tra le voci di biglietti o code o aree che appartengono a questo gruppo.</span></span></td>
+</tr>
+<tr>
+<td><em>creare</em></td>
+<td><span><span>Diritto di creare biglietti o voci nelle code o aree di questo gruppo.</span></span></td>
+</tr>
+<tr>
+<td><em>proprietario</em></td>
+<td><span><span>Diritto di aggiornare il proprietario dei biglietti o le voci in code o aree che appartengono a questo gruppo.</span></span></td>
+</tr>
+<tr>
+<td><em>priorit&agrave;</em></td>
+<td><span><span>Diritto di modificare la priorit&agrave; dei biglietti o le voci in code o aree che appartengono a questo gruppo.</span></span></td>
+</tr>
+<tr>
+<td><em>rw</em></td>
+<td><span><span>Completo in lettura e scrittura per i biglietti o le voci nelle code o aree che appartengono a questo gruppo.</span></span></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="table-contents">
+<div class="titlepage">
+<div>
+<div>
+<h3 class="title" style="text-align: center;"><span><span>Ruoli</span></span></h3>
+</div>
+</div>
+</div>
+<p><span><span>Sono una potente funzione di gestire i diritti di accesso di molti agenti in un modo molto semplice e veloce.&nbsp;</span><span>Sono particolarmente applicabile su grandi e complessi sistemi di supporto con un sacco di agenti,di gruppi e di code.&nbsp;</span><span>Un esempio di seguito illustra come possono essere utilizzati.</span></span></p>
+<p><span><span>Si supponga di avere un sistema con 100 agenti, 90 delle quali con accesso ad una singola coda chiamato "supporto" dove tutte le richieste di supporto sono gestite.&nbsp;</span><span>La coda di "supporto" contiene alcune sotto-code.&nbsp;</span><span>Gli altri 10 agenti hanno il permesso di accedere a tutte le code del sistema.&nbsp;</span><span>Questi 10 agenti pssono guardare la coda raw e spostare i messaggi di spam nella coda di "spazzatura".</span></span></p>
+<p>&nbsp;</p>
+<p><span><span>L&#39;azienda ora un nuovo reparto che vende alcuni prodotti. La r</span><span>ichiesta di ordine e di accettazione, di conferma d&#39;ordine, fatture, ecc devono essere trattati, da alcuni agenti della societ&agrave; attraverso OTRS.&nbsp;</span><span>Gli agenti hanno differenti per ottenere l&#39;accesso alle nuove code che devono essere creati.</span></span></p>
+<p><span><span>Perch&eacute; ci sarebbe voluto molto tempo per modificare i diritti di accesso per i diversi agenti manualmente, psoono essere creati dei ruoli che definiscono i diversi livelli di accesso.&nbsp;</span><span>Gli agenti possono essere aggiunti a uno o pi&ugrave; ruoli e i loro diritti cambiato automaticamente.&nbsp;</span><span class="goog-text-highlight">Se si crea un account nuovo agente, &egrave; &nbsp;possibile aggiungere a questo account uno o pi&ugrave; ruoli.</span></span></p>
+<p>&nbsp;</p>
+<p><span><span class="goog-text-highlight"><span><span class="goog-text-highlight">&Egrave; possibile accedere alla sezione gestione dei ruoli (vedi figura sotto) facendo clic sul collegamento&nbsp;</span></span><span class="emphasis"><em><span><span class="goog-text-highlight">Ruoli</span></span></em></span><span><span class="goog-text-highlight">&nbsp;nella pagina di amministrazione.</span></span></span></span></p>
+<p><span><span class="goog-text-highlight"><span><span class="goog-text-highlight"><img src="https://mail.ufficyo.com/kb/images/otrs/8.png" alt="" width="1136" height="419" /><br /></span></span></span></span></p>
+<p><span class="emphasis"><em><span><span>Figura: gestione dei ruoli.</span></span></em></span></p>
+<div class="note" title="Nota">
+<h3 class="title"><span><span>Nota</span></span></h3>
+<p><span><span class="goog-text-highlight">Come agente e gruppi, i ruoli, una volta creati possono essere disattivati ma non eliminati.&nbsp;</span><span>Per disattivarli, impostare l&#39;opzione&nbsp;</span></span><span class="emphasis"><em><span><span>non valida</span></span></em></span><span><span>&nbsp;o&nbsp;</span></span><span class="emphasis"><em><span><span>non valida-temporaneamente</span></span></em></span><span><span>&nbsp;.</span></span></p>
+<div>Per registrare un nuovo ruolo, fare clic sul&nbsp;&nbsp;pulsante&nbsp;"Aggiungi ruolo", digitare tutti i dati necessari e premere il pulsante Invia nella parte inferiore dello schermo&nbsp;</div>
+</div>
+<p><span><span class="goog-text-highlight"><img src="https://mail.ufficyo.com/kb/images/otrs/9.png" alt="" width="1129" height="401" /><br /></span></span></p>
+<div><span><span class="goog-text-highlight"><span>Per definire <span>&nbsp;diversi&nbsp;</span>diritti di accesso per un ruolo, fare clic sul nome di un ruolo.&nbsp;</span></span></span></div>
+<div><span><span class="goog-text-highlight"><img src="https://mail.ufficyo.com/kb/images/otrs/10.png" alt="" width="1133" height="417" /><br /></span></span></div>
+<div class="note" title="Nota">&nbsp;<em><span><span class="goog-text-highlight">Figura: cambiare i rapporti di gruppo per un ruolo.</span></span></em></div>
+<p><span><span><img src="https://mail.ufficyo.com/kb/images/otrs/11.png" alt="" width="1134" height="701" /></span></span></p>
+<p>&nbsp;</p>
+<p><span><span>Per assegnare a un agente un ruolo differente rispetto al gruppo di cui fa parte cliccare dal panello di amministrazione agenti&lt;-&gt;ruoli</span></span></p>
+<p><span><span><img src="https://mail.ufficyo.com/kb/images/otrs/12.png" alt="" width="1134" height="397" /></span></span></p>
+<p><span><span>Cliccare sopra l&#39;agente per definire un ruolo.</span></span></p>
+<p><span><span><img src="https://mail.ufficyo.com/kb/images/otrs/13.png" alt="" width="1144" height="383" /></span></span></p>
+<p>&nbsp;</p>
+<p style="text-align: center;"><span style="font-size: large;"><strong>CODE</strong></span></p>
+<p style="text-align: left;"><span style="font-size: large;"><span style="font-size: small;"><span class="goog-text-highlight">Cliccando sul <span>collegamento&nbsp;</span>"Code" nella pagina di amministrazione, &egrave; possibile gestire le&nbsp;</span><a class="link" title="Che cos&#39;&egrave; una coda?" href="http://doc.otrs.org/3.1/en/html/what-is-a-queue.html"><span class="goog-text-highlight">code</span></a><span class="goog-text-highlight">&nbsp;del vostro sistema (vedi figura sotto).&nbsp;</span>In una nuova installazione OTRS ci sono 4 code di default: Raw, Junk, Varie ed Postmaster.&nbsp;Tutti i messaggi verranno memorizzati nella coda "Raw" se non sono definite regole di filtro.&nbsp;La coda di "Junk" pu&ograve; essere utilizzato per memorizzare i messaggi di spam.</span></span></p>
+<p style="text-align: left;"><span style="font-size: large;"><strong><img src="https://mail.ufficyo.com/kb/images/otrs/14.png" alt="" width="1132" height="393" /></strong></span></p>
+<p style="text-align: left;">&nbsp;</p>
+<p><span class="emphasis"><em><span><span>Figura: gestione delle code.</span></span></em></span></p>
+<p style="text-align: left;">&nbsp;</p>
+<p><span><span>Qui potete aggiungere le code cliccando su Aggiungi coda (vedi figura sopra) e modificarle.&nbsp;</span><span>&Egrave; possibile specificare il gruppo che deve utilizzare la coda e</span><span>&nbsp;inoltre impostare la coda come un sotto-coda di una esistente.</span></span></p>
+<p><span><span><img src="https://mail.ufficyo.com/kb/images/otrs/15.png" alt="" width="1117" height="786" /><br /></span></span></p>
+<p style="text-align: left;">&nbsp;</p>
+<p><span class="emphasis"><em><span><span>Figura: Aggiunta di una nuova coda.</span></span></em></span></p>
+<p style="text-align: left;">&nbsp;</p>
+<p><span><span>&Egrave; possibile definire un timeout di sblocco per una coda - se un agente blocca un ticket e non lo chiude prima del timeout di sblocco &egrave; passato, il ticket verr&agrave; automaticamente sbloccato e reso disponibile per altri agenti.</span></span></p>
+<p style="text-align: left;">&nbsp;</p>
+<p><span><span>Ci sono tre impostazioni di tempo di escalation che possono essere associati a livello di coda:</span></span></p>
+<p style="text-align: left;">&nbsp;</p>
+<div class="itemizedlist" title="Escalation - Tempo di risposta prima">
+<p class="title"><strong><span><span>Escalation - Tempo di risposta prima</span></span></strong></p>
+<ul class="itemizedlist">
+<li class="listitem">
+<p><span><span>Dopo la creazione del biglietto, se il tempo qui definito scade senza alcuna comunicazione al cliente, tramite e-mail o telefono, viene messo in evidenza.</span></span></p>
+</li>
+</ul>
+</div>
+<p style="text-align: left;">&nbsp;</p>
+<div class="itemizedlist" title="Escalation - Tempo di aggiornamento">
+<p class="title"><strong><span><span>Escalation - Tempo di aggiornamento</span></span></strong></p>
+<ul class="itemizedlist">
+<li class="listitem">
+<p><span><span>Se c&#39;&egrave; un followup cliente via e-mail o il portale clienti e registrato nel biglietto, il tempo di aggiornamento escalation &egrave; resettato.&nbsp;</span><span>Se non c&#39;&egrave; contatto con il cliente prima che il tempo qui definito scade, il ticket <span>viene messo in evidenza</span>.</span></span></p>
+</li>
+</ul>
+</div>
+<p style="text-align: left;">&nbsp;</p>
+<div class="itemizedlist" title="Escalation - Tempo di soluzione">
+<p class="title"><strong><span><span>Escalation - Tempo di soluzione</span></span></strong></p>
+<ul class="itemizedlist">
+<li class="listitem">
+<p><span><span>Se il biglietto non viene chiuso prima del tempo definito di scadenza, il ticket<span>&nbsp;viene messo in evidenza</span>.</span></span></p>
+</li>
+</ul>
+</div>
+<p style="text-align: left;">&nbsp;</p>
+<p><span><span>Con &#39;blocco Ticket dopo un follow-up&#39;, &egrave; possibile definire se il ticket deve essere impostato a &#39;bloccato&#39; al vecchio proprietario o se il ticket che &egrave; stato chiuso si riapre.</span></span></p>
+<p style="text-align: left;">&nbsp;</p>
+<p><span><span>Il parametro indirizzo di sistema specifica l&#39;indirizzo email che verr&agrave; utilizzato per i ticket in uscita da questa coda.&nbsp;</span><span>C&#39;&egrave; anche la possibilit&agrave; di associare una coda con un saluto e una firma, per le risposte e-mail.</span></span></p>
+<p style="text-align: left;">&nbsp;</p>
+<div class="note" title="Nota">
+<h3 class="title"><span><span>Nota</span></span></h3>
+<p><span><span>Come con gli agenti, i gruppi e clienti, le code non ppssono essere cancellati, ma solo disattivati, impostando l&#39;opzione </span></span><span class="emphasis"><em><span><span>non valida</span></span></em></span><span><span>&nbsp;o&nbsp;</span></span><span class="emphasis"><em><span><span>non valida-temporaneamente</span></span></em></span><span><span>.</span></span></p>
+<p>&nbsp;</p>
+<h2 class="title" style="text-align: center;"><span><span>Filtraggio dei messaggi in arrivo</span></span></h2>
+<p><span><span><span class="goog-text-highlight">Le regole di filtraggio possono essere creati tramite il link "PostMaster filtro" nella pagina di amministrazione (vedi figura sotto).</span></span></span></p>
+<p><span><span>Cliccare sul collegamento aggiungi filtro</span></span></p>
+<p><span><span><img src="https://mail.ufficyo.com/kb/images/otrs/16.png" alt="" width="1145" height="509" /><br /></span></span></p>
+<p><span><span><br /></span></span></p>
+</div>
+<p style="text-align: left;"><span class="goog-text-highlight">Il nome deve essere specificato per ogni filtro.I c</span><span>riteri possono essere specificati nella "condizione per il filtro" intestazioni.&nbsp;</span><span>Scegli attraverso la listboxes per "Intestazione 1", "Intestazione 2" e cos&igrave; via per le parti dei messaggi in cui si desidera cercare e specificare sul lato destro nella casella di testo i valori che si desidera filtrare(Filtri per Oggetto, Corpo mail, mittente).&nbsp;</span><span>Nelle "Imposta header dell&#39;email" intestazione, &egrave; possibile scegliere le azioni che vengono attivati.&nbsp;</span><span>&Egrave; possibile selezionare per "Intestazione 1", "intestazione 2" e cos&igrave; via e impostare i valori associati (vedi figura sotto) (X-OTRS-Queue nome coda)</span>. per ulteriori approfondimenti vedi&nbsp;<a href="http://doc.otrs.org/3.1/en/html/adminarea-postmasterfilter.html">http://doc.otrs.org/3.1/en/html/adminarea-postmasterfilter.html</a>&nbsp;</p>
+<p style="text-align: left;"><img src="https://mail.ufficyo.com/kb/images/otrs/17.png" alt="" width="1128" height="617" /></p>
+<p style="text-align: left;">&nbsp;</p>
+<p style="text-align: left;">&nbsp;</p>
+<p style="text-align: left;">&nbsp;</p>
+<p style="text-align: left;">&nbsp;</p>
+</div>

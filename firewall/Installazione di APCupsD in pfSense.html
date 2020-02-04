@@ -1,0 +1,234 @@
+<table style="width: 100%;" border="0" bgcolor="#FFFFFF">
+<tbody>
+<tr>
+<td class="code">
+<pre>Last modified: May 15, 2012
+
+Contents
+1 - Summary
+2 - Dependencies
+3 - Apcupsd installation
+4 - Service configuration
+5 - Apcaccess example
+6 - Website status
+7 - Service check
+
+
+1 - Summary
+
+This guide will show you how to install apcupsd in pfSense. Apcupsd is used for
+power management and controlling of APC UPS&#39;s. This has been tested in pfSense
+2.0.1 i386.
+
+
+2 - Dependencies
+
+Log into the pfSense website. Navigate to the System menu, then click on
+Advanced. Click on the box next to Enable Secure Shell. Click on Save at the
+bottom of the page.</pre>
+<center><img src="http://www.packetwatch.net/images/2012051501_01.png" alt="Enable Secure Shell" width="674" height="141" border="0" /></center>
+<pre>Make sure that msmtp with TLS is already copied in and configured. Msmtp is an
+SMTP client used to send email We will use it to send email notifications.
+
+SSH in as the admin user and select option 8 to get to the shell. Add the
+following to the tcsh profile file.
+  setenv PACKAGESITE ftp://ftp-archive.freebsd.org/pub/FreeBSD-Archive/ports/`uname -m`/\
+    packages-8.1-release/Latest/
+  export PACKAGESITE
+# cd ~
+# cp /etc/skel/dot.tcshrc /etc/skell/dot.tcshrc.example
+# vi /etc/skel/dot.tcshrc
+# cp /etc/skel/dot.tcshrc /root/.tcshrc
+
+You will also need some information about the UPS and the UPS cable.
+  Model number
+  UPS cable type
+
+The serial port or USB ports will need to be enabled in the BIOS of the
+computer. You can find out the serial port or USB port information by typing
+out the following. In FreeBSD 8.1 uart is used instead of sio.
+# dmesg | grep -E "(sio[0-9]|uart[0-9]|American Power Conversion)"
+uart0: &lt;16550 or compatible&gt; port 0x3f8-0x3ff irq 4 flags 0x10 on acpi0
+uart0: [FILTER]
+
+In this case we are using the serial port.
+
+
+3 - Apcupsd installation
+
+Install the apcupsd package.
+# pkg_add -r apcupsd
+
+
+4 - Service configuration
+
+Find where the apcupsd daemon was installed to.
+# pkg_info -L apcupsd-* | grep sbin
+/usr/local/sbin/apcupsd
+/usr/local/sbin/apcaccess
+/usr/local/sbin/apctest
+/usr/local/sbin/smtp
+
+Edit /etc/rc so that the apcupsd service will start when the system starts up.
+Add the following after the line with /etc/rc.start_packages.
+  echo -n &#39;Starting custom applications:&#39;
+  echo -n &#39; apcupsd&#39;; /usr/local/sbin/apcupsd --kill-on-powerfail
+  echo &#39;.&#39;
+# cp /etc/rc /etc/rc.original
+# vi /etc/rc
+
+Find where the configuration file should be put.
+# strings /usr/local/sbin/apcupsd | grep apcupsd.conf
+Cannot perform killpower without authentication data. Please set ip:user:pass for \
+DEVICE in apcupsd.conf.
+## apcupsd.conf v1.1 ##
+/usr/local/etc/apcupsd/apcupsd.conf
+
+You can modify the apccontrol script to send email notifications for different
+UPS events.
+# pkg_info -L apcupsd-* | grep apccontrol
+/usr/local/man/man8/apccontrol.8.gz
+/usr/local/etc/apcupsd/apccontrol
+# cp /usr/local/etc/apcupsd/apccontrol /usr/local/etc/apcupsd/apccontrol.example
+# vi /usr/local/etc/apcupsd/apccontrol
+
+You can create your own configuration file. Here is a simple example. This
+uses an APC UPS 940-0024C serial cable. In FreeBSD /dev/cuau0 is used instead
+of /dev/cuad0.
+  ## apcupsd.conf v1.1 ##
+  UPSCABLE 940-0024C
+  UPSTYPE apcsmart
+  DEVICE /dev/cuau0
+  LOCKFILE /var/spool/lock
+  UPSCLASS standalone
+  UPSMODE disable
+# pkg_info -L apcupsd-* | grep apcupsd.conf
+/usr/local/etc/apcupsd/apcupsd.conf.sample
+# cp /usr/local/etc/apcupsd/apcupsd.conf.sample /usr/local/etc/apcupsd/apcupsd.conf
+# cp /usr/local/etc/apcupsd/apcupsd.conf /usr/local/etc/apcupsd/apcupsd.conf.example
+# vi /usr/local/etc/apcupsd/apcupsd.conf
+
+Start the apcupsd service.
+# /usr/local/sbin/apcupsd --kill-on-powerfail
+# cat /var/run/apcupsd.pid
+23750
+
+5 - Apcaccess example
+
+This command prints the UPS model number, software version, status, load
+percentage, battery charge and other information.
+# /usr/local/sbin/apcaccess status localhost
+APC      : 001,050,1208
+DATE     : 2012-05-15 16:45:30 -0500  
+HOSTNAME : server.test.com
+VERSION  : 3.14.8 (16 January 2010) freebsd
+UPSNAME  : UPS_IDEN
+CABLE    : APC Cable 940-0024C
+MODEL    : Smart-UPS 750
+UPSMODE  : Stand Alone
+STARTTIME: 2012-05-15 16:45:14 -0500  
+STATUS   : ONLINE 
+LINEV    : 120.9 Volts
+LOADPCT  :  21.4 Percent Load Capacity
+BCHARGE  : 100.0 Percent
+TIMELEFT :  50.0 Minutes
+MBATTCHG : 10 Percent
+MINTIMEL : 5 Minutes
+MAXTIME  : 0 Seconds
+MAXLINEV : 120.9 Volts
+MINLINEV : 120.2 Volts
+OUTPUTV  : 120.9 Volts
+SENSE    : High
+DWAKE    : 000 Seconds
+DSHUTD   : 090 Seconds
+DLOWBATT : 02 Minutes
+LOTRANS  : 106.0 Volts
+HITRANS  : 127.0 Volts
+RETPCT   : 000.0 Percent
+ITEMP    : 30.1 C Internal
+ALARMDEL : 5 seconds
+BATTV    : 27.5 Volts
+LINEFREQ : 60.0 Hz
+LASTXFER : Line voltage notch or spike
+NUMXFERS : 0
+TONBATT  : 0 seconds
+CUMONBATT: 0 seconds
+XOFFBATT : N/A
+SELFTEST : NO
+STESTI   : 336
+STATFLAG : 0x07000008 Status Flag
+REG1     : 0x00 Register 1
+REG2     : 0x00 Register 2
+REG3     : 0x00 Register 3
+MANDATE  : 07/15/09
+SERIALNO : AS0929141177
+BATTDATE : 07/15/09
+NOMOUTV  : 120 Volts
+NOMBATTV :  24.0 Volts
+EXTBATTS : 0
+FIRMWARE : 651.18.D
+APCMODEL : FWD
+END APC  : 2012-05-15 16:46:08 -0500  
+
+6 - Website status
+
+Make the following changes to be able to view the apcupsd status on the pfSense
+website. Create the following page that displays the results of the apcaccess
+status command.
+  &lt;?php
+  require("guiconfig.inc");         
+  $pgtitle = array(gettext("Status: Apcupsd"));
+  $apcaccess = "/usr/local/sbin/apcaccess";
+  include("head.inc");
+  ?&gt;
+  &lt;style&gt;
+  pre {
+          border: 2px solid #435370;
+          background: #F0F0F0;
+          padding: 1em;
+          font-family: courier new, courier;
+          white-space: pre;
+          line-height: 10pt;
+          font-size: 10pt;
+  }
+  &lt;/style&gt;
+  &lt;/head&gt;
+
+  &lt;body&gt;
+  &lt;?php
+  include("fbegin.inc");
+  $shell_output = array();
+  $output = exec($apcaccess ." status localhost", $shell_output);
+  echo "&lt;pre&gt;".implode($shell_output, &#39;&lt;br/&gt;&#39;)."&lt;/pre&gt;";
+  ?&gt;
+  &lt;/body&gt;
+  &lt;/html&gt;
+# vi /usr/local/www/status_apcupsd.php
+
+Modify the following include file to have the following.
+  $status_menu[] = array("Apcupsd", "/status_apcupsd.php");
+# cp /usr/local/www/fbegin.inc /usr/local/www/fbegin.inc.example
+# vi /usr/local/www/fbegin.inc
+
+Here is what the new menu looks like. Under the Status menu, click on Apcupsd.</pre>
+<center><img src="http://www.packetwatch.net/images/2012051501_02.png" alt="Status menu" width="153" height="127" border="0" /></center>
+<pre>The status page shows the output from apcaccess.</pre>
+<center><img src="http://www.packetwatch.net/images/2012051501_03.png" alt="Apcupsd status" width="666" height="659" border="0" /></center>
+<pre>
+7 - Service check
+
+Reboot your computer. SSH in as the admin user and select option 8 to get to
+the shell. Check to see that the apcupsd service is running. That&#39;s is, now
+you have apcupsd running in pfSense.
+# shutdown -r now
+# cat /var/run/apcupsd.pid
+54710
+</pre>
+</td>
+</tr>
+</tbody>
+</table>
+<p> </p>
+<p> </p>
+<p> </p>
+<p><a href="http://www.packetwatch.net/documents/guides/2012051501.php">http://www.packetwatch.net/documents/guides/2012051501.php</a></p>

@@ -1,0 +1,44 @@
+<p>Sul  server mail4.waylog.net,per la creazione di un account   è necessario quindi effettuare l&#39;accesso in ssh e svolgere i seguenti passi:</p>
+<p> </p>
+<p>Effettuare il login da mysql , accedere al database MAILDB ed effettuare la seguente INSERT sulla tabella USERS(modificare i valori di id,name,maildir,crypt in base alle caratteristiche dell&#39;account): </p>
+<p> </p>
+<p> </p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">mysql&gt;use maildb;
+mysql&gt; INSERT INTO users (id,name,uid,gid,home,maildir,enabled,change_password,clear,crypt) VALUES  (&#39;account@example.it&#39;,&#39;account@example.it&#39;,&#39;5000&#39;,&#39;5000&#39;,&#39;/var/spool/mail/virtual&#39;,&#39;example.it/account/&#39;,&#39;1&#39;,&#39;1&#39;,&#39;ChangeMe&#39;,ENCRYPT(&#39;password account&#39;));</pre>
+<p> </p>
+<p> </p>
+<p>Se non esistente nella tabella DOMAINS procedere anche alla creazione del dominio(<strong>non creare assolutamente il dominio se già presente nella tabella domains</strong>) esguendo questa query:</p>
+<p> </p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">INSERT INTO domains (domain,transport,enabled) VALUES (&#39;example.com&#39;,&#39;virtual:&#39;,&#39;1&#39;);</pre>
+<p> </p>
+<p> </p>
+<p>una volta creato l&#39;account e il dominio  procediamo alla creazione della directory su filesystem che conterranno le mail del nostro account:</p>
+<p> </p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">mkdir -p /var/spool/mail/virtual/example.com/account/{new,tmp,cur}</pre>
+<p> </p>
+<p> </p>
+<p>settiamo i giusti permessi:</p>
+<p> </p>
+<p> </p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">chown -R virtual:virtual /var/spool/mail/virtual/example.com/</pre>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">chmod -R 2700 /var/spool/mail/virtual/example.com/</pre>
+<p> </p>
+<p> </p>
+<p><span style="font-size: 13px;">Riavviamo postfix:</span></p>
+<p> </p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">service postfix restart </pre>
+<p> </p>
+<p> </p>
+<p>Una volta effettua questa operazione, effettuare l&#39;accesso con utente e password impostati in precedenza,</p>
+<p> </p>
+<p>http://195.245.116.233/roundcube/</p>
+<p> </p>
+<p> </p>
+<p> </p>
+<p> </p>
+<p> </p>
+<p> </p>
+<p> </p>
+<p><span><br /></span></p>
+<p> </p>
+<p> </p>

@@ -1,0 +1,11 @@
+<p>Un project event (evento in calendario, come quelli utilizzati per inserire gli appuntamenti di Zimbra) viene identificato da una riga nella tabella og_project_events.</p>
+<p>(ATTENZIONE: og_ &egrave; il prefisso utilizzato da noi, e potrebbe essere diverso da installazione ad installazione.)</p>
+<p>La riga ha come campo univoco l&#39;id (es. id = 123192).</p>
+<p>Se si vuole cancellare la riga, bisogna cancellare anche le seguenti corrispondenze in modo da non lasciare record orfani nel database.</p>
+<p>&nbsp;</p>
+<pre class="brush: sql;fontsize: 100; first-line: 1; ">DELETE FROM og_event_invitations WHERE event_id=123192
+DELETE FROM og_read_objects WHERE rel_object_manager=&#39;ProjectEvents&#39; AND rel_object_id=123192
+DELETE FROM og_searchable_objects WHERE rel_object_manager=&#39;ProjectEvents&#39; AND rel_object_id=123192
+DELETE FROM og_workspace_objects WHERE object_manager=&#39;ProjectEvents&#39; AND object_id=123192</pre>
+<p>&nbsp;</p>
+<p>Tali record sono stati trovati provando ad eliminare un evento con una funzione di sistema ed osservando le differenze nel database. Con questo metodo abbiamo notato che rimangono delle corrispondenze nella tabella dei log, che il sistema non elimina.</p>

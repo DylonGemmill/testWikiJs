@@ -1,0 +1,18 @@
+<p>Può succedere che la replica di un server MySQL si blocchi per un problema con le query.</p>
+<p>Ovviamente la soluzione migliore sarebbe capire quale query non va a buon fine e correggere il database. Per cercare cosa non va a buon fine possiamo usare il comando</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">grep -i mysql /var/log/syslog</pre>
+<p> </p>
+<p>In casi estremi, o se la query problematica è ignorabile, si può dire al server slave di ignorarla. </p>
+<p>Come prima cosa dalla shell di MySQL fermiamo lo slave:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">slave stop;</pre>
+<p>quindi indichiamo a MySQL quante query dobbiamo ignorare dal master:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">SET GLOBAL SQL_SLAVE_SKIP_COUNTER = 1;</pre>
+<p>quindi riavviamo la replica con</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">slave start;</pre>
+<p>a questo punto dovrebbe recuperare il backlog. Possiamo controllare lo stato con il comando:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">SHOW SLAVE STATUS \G</pre>
+<p>e vedere </p>
+<p> </p>
+<p> </p>
+<p> </p>
+<p>rif: <a href="http://www.howtoforge.com/how-to-repair-mysql-replication">http://www.howtoforge.com/how-to-repair-mysql-replication</a></p>

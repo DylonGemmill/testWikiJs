@@ -1,0 +1,30 @@
+<p>Sul server SQL insallare i pacchetti necessari:</p>
+<pre class="language-markup"><code>apt-get install postgresql postgresql-client postgresql-contrib</code></pre>
+<p>effettuare il primo accesso con l&#39;utente amministratore ed impostare la password:</p>
+<pre class="language-markup"><code>sudo -u postgres psql postgres</code></pre>
+<p>e nella shell di psql eseguire</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">\password postgres</pre>
+<p> </p>
+<p>Per consentire l&#39;accesso al server SQL da macchine remote modificare /etc/postgresql/9.1/main/postgresql.conf e cambiare la riga <em>listen_address</em> come segue:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">listen_addresses = &#39;*&#39;</pre>
+<p>e modificare /etc/postgresql/9.1/main/pg_hba.conf aggiungendo in fondo una riga come segue:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">host    all             all             10.22.22.0/24            md5</pre>
+<p>che consente l&#39;accesso tramite password criptata da tutti gli host della rete 10.22.22.0.</p>
+<p> </p>
+<p>Per creare un database, ed un utente con i privilegi di accesso:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">sudo -u postgres createuser -D -A -P myuser
+sudo -u postgres createdb -O myuser mydb</pre>
+<p> </p>
+<p>Per accedere da remoto ad un db pg:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">psql -h HOST DATABASE UTENTE</pre>
+<h2>Migrazione da MySQL</h2>
+<p>È possibile da MySQL fare dei dump <em>compatibili</em> con Postgres passando il parametro</p>
+<pre class="language-markup"><code>--compatibility="postgresql"</code></pre>
+<p>ma <a href="https://stackoverflow.com/a/5417602/738852" target="_blank" rel="noopener">sembra</a> non essere indolore.</p>
+<p>Altrimenti si può usare il tool <em>pgloader</em> che si connette al MySQL sorgente e al PG di destinazione e fa il passaggio direttamente. Vedere <a href="https://stackoverflow.com/a/54390186/738852">qui</a>.</p>
+<pre class="language-markup"><code>pgloader mysql://root:PASSWORD@127.0.0.1/app_comuni postgresql://maxxer@localhost/app_comuni</code></pre>
+<p> </p>
+<h2>Installazione su macOS</h2>
+<p> </p>
+<p><span style="font-size: 13px;"> </span></p>
+<p><a href="https://help.ubuntu.com/community/PostgreSQL">https://help.ubuntu.com/community/PostgreSQL</a></p>

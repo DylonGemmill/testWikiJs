@@ -1,0 +1,8 @@
+<p>L&#39;accesso da remoto a MySQL, aggiungere un utente con dominio %</p>
+<p>&nbsp;</p>
+<pre class="brush: sql;fontsize: 100; first-line: 1; ">mysql&gt; create user nomeutente@&#39;%&#39; identified by &#39;password&#39;;</pre>
+<p>Poi nella configurazione di mysql (file /etc/mysql/my.cnf) modificare la propriet&agrave; bind-address come segue</p>
+<p>&nbsp;</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">bind-address 0.0.0.0</pre>
+<p>&nbsp;</p>
+<p>Con la configurazione sopra riportata viene messo il server in ascolto su qualsiasi interfaccia invece che sulla sola localhost (come era di default). Al posto di % e<strong> 0.0.0.0</strong> &egrave; possibile effettuare una configurazione pi&ugrave; precisa inserendo l&#39;interfaccia del server desiderata (quindi ip del server e non del client).</p>

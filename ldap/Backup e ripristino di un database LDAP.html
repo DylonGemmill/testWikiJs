@@ -1,0 +1,65 @@
+<p> </p>
+<p>Full backup script:</p>
+<div id="highlighter_684511" class="syntaxhighlighter  ">
+<div class="lines">
+<div class="line alt1">
+<table>
+<tbody>
+<tr>
+<td class="number"><code>1</code></td>
+<td class="content"><code>#!/bin/sh</code></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="line alt2">
+<table>
+<tbody>
+<tr>
+<td class="number"><code>2</code></td>
+<td class="content"><code>LDAPBK=ldap-$( </code><code>date</code> <code>+%y%m%d-%H%M ).ldif</code></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="line alt1">
+<table>
+<tbody>
+<tr>
+<td class="number"><code>3</code></td>
+<td class="content"><code>BACKUPDIR=/home/backups</code></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="line alt2">
+<table>
+<tbody>
+<tr>
+<td class="number"><code>4</code></td>
+<td class="content"><code>&lt;pre&gt;/usr/sbin/slapcat -</code><code>v</code> <code>-b </code><code>"dc=yourDC,dc=local"</code> <code>-l $BACKUPDIR/$LDAPBK</code></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="line alt1">
+<table>
+<tbody>
+<tr>
+<td class="number"><code>5</code></td>
+<td class="content"><code>gzip</code> <code>-9 $BACKUPDIR/$LDAPBK</code></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<p> </p>
+<p>You should just change LDAP suffix from “dc=yourDC,dc=local” to your actual one.</p>
+<p>To <strong>restore</strong> you should perform the following steps.</p>
+<p>1.  stop <strong>slapd</strong> daemon:<br /><code>debian:~# /etc/init.d/slapd stop</code><br />2. delete old database (<strong>make sure you are in right directory to use rm</strong>):<br /><code>debian:~# cd /var/lib/ldap<br />rm -rf *</code><br />2. Restore database from LDIF file:<br /><code>debian:~# /usr/sbin/slapadd -l backup.ldif</code></p>
+<p>4. run <strong>slapd</strong> daemon:</p>
+<p><code>debian:~# /etc/init.d/slapd start</code></p>
+<p> </p>
+<p> </p>
+<p>rif: <a href="http://supportex.net/2011/02/backup-restore-ldap-database/">http://supportex.net/2011/02/backup-restore-ldap-database/</a></p>

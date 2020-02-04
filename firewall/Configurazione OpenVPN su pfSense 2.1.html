@@ -1,0 +1,51 @@
+<p>Prima occorre creare la CA e il certificato del server.</p>
+<p>Andare in <em>System &gt; Cert manager &gt; CAs</em> e premere <em>Add</em>.</p>
+<p>Compilare i campi con questi valori:</p>
+<ul>
+<li>Description name: descrizione della CA</li>
+<li>Method: Create an internal certificate authority</li>
+<li>Key length: <strong style="font-size: 13px;">2048</strong></li>
+<li><span style="font-size: 13px;">Lifetime: </span><strong style="font-size: 13px;">3650 days </strong><span style="font-size: 13px;">(10 anni)</span></li>
+<li><span style="font-size: 13px;">Distinguished Name: nome generico</span></li>
+<li><span style="font-size: 13px;">Country Code: Italy</span></li>
+<li><span style="font-size: 13px;">State or Province: Lecco</span></li>
+<li><span style="font-size: 13px;">City: Lecco</span></li>
+<li><span style="font-size: 13px;">Organization: YetOpen S.r.l. (o altro)</span></li>
+<li><span style="font-size: 13px;">Email Address: support@yetopen.it</span></li>
+<li><span style="font-size: 13px;">Common Name: </span><strong style="font-size: 13px;">internal-ca</strong></li>
+</ul>
+<p>Premere <em>Save</em>.</p>
+<p>Andare poi in <em>System &gt; Cert Manager &gt; Certificates</em> e premere <em>Add</em>. Specificare i valori come di seguito, per quelli mancanti inserimento libero:</p>
+<ul>
+<li>Method: Create an internal certificate</li>
+<li>Certificate Authority: usare la CA creata appena sopra</li>
+<li>Lifetime: 3650 days</li>
+<li>Common Name: hostname del firewall</li>
+</ul>
+<div>Premere <em>Save</em>.</div>
+<div>Andare quindi in <em>VPN &gt; OpenVPN &gt; Server</em> e premere <em>Add</em>.</div>
+<div>
+<ul>
+<li>Server mode: Remote Access (User Auth)</li>
+<li>Protocol: UDP</li>
+<li>Device mode: tun</li>
+<li>Interface: any (o wan)</li>
+<li>Local port: 41194 (default 1194)</li>
+<li>Peer Certificate Authority: selezionare la CA creata sopra</li>
+<li>Server Certificate: selezionare il certificato creato sopra</li>
+<li>DH Parameteres Length: 1024 bits</li>
+<li>Encryption algorithm: AES-128-CBC (128bit)</li>
+<li>Certificate depth: One (Client+Server)</li>
+<li>Tunnel Network: inserire una subnet libera (ad esempio 10.9.8.0/24)</li>
+<li><span>IPv4 Local Network/s: inserire la LAN locale con netmask (ad esempio 192.168.0.0/24)</span></li>
+<li><span>Compression: abilitare</span></li>
+<li><span>Dynamic IP: abilitare</span></li>
+</ul>
+<div>Premere <em>Save</em>.</div>
+</div>
+<div>Andare in Firewall &gt; Rules &gt; WAN e creare una nuova regola in ingresso per la vpn, protocollo UDP, porta 41194 (o quella configurata in OpenVPN).</div>
+<div>Sempre in Firewall &gt; Rules &gt; OpenVPN aggiungere un regola con le opzioni predefinite (in modo che venga creato un accesso libero a tutte le risorse da tutti gli IP).</div>
+<div>La configurazione dei client può essere fatta manualmente estraendo i certificati oppure usando un tool apposito.</div>
+<div>Per la seconda soluzione andare in System &gt; Packages &gt; Available packages ed installare <em>OpenVPN Client Export Utility</em>. Poi andare in VPN &gt; OpenVPN &gt; Client Export. Dovrebbero andare bene le opzioni predefinite, verificare comunque che nel campo "Host Name Resoluion" ci sia un valore compatibile con la rete. Ad esempio se la wan di pfSense ha un IP privato occorre impostare manualmente l&#39;indirizzo pubblico.</div>
+<div>In fondo Selezionare la configurazione standard come archivio, e copiare i file estratti in /etc/openvpn.</div>
+<div><a href="http://www.pfsenseitaly.com/2012/08/configurare-openvpn-server-su-pfsense.html">http://www.pfsenseitaly.com/2012/08/configurare-openvpn-server-su-pfsense.html</a></div>

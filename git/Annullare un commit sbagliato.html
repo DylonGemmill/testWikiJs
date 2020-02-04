@@ -1,0 +1,6 @@
+<p>Per annullare un commit sbagliato mantenendo le modifiche ai file:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">$ git reset --mixed HEAD~1</pre>
+<p>Per annullare invece il commit scordando le modifiche:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">$ git reset --hard HEAD~1</pre>
+<p>Modificando il numero finale, per esempio HEAD~2, HEAD~3, ecc..., si possono annullare pi&ugrave; commit in una sola volta.</p>
+<p>Per portare il cambiamento al branch remoto bisogna forzare il push (git push -f) altrimenti d&agrave; errore e non funziona. In questo caso, assicurarsi assolutamente che nessuno abbia pullato i commit che si stanno rimuovendo.</p>

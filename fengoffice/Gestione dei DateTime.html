@@ -1,0 +1,17 @@
+<p>In FengOffice le date e le ore vengono gestite con il tipo di dato DateTime di MySQL, che memorizza sia la data che l&#39;ora in un unico campo. E&#39; politica di Feng memorizzare tutti i DateTime in UTC e gestire il timezone dall&#39;applicazione. Quando andremo quindi a modificare il programma aggiungendo nuove funzionalit&agrave;, dovremo ricordarci di applicare il timezone sia in memorizzazione che in lettura. Un esempio &egrave; l&#39;aggiunta dell&#39;ora alle date di inizio e fine dei task, che prima non erano gestite. In questo caso andranno aggiunte ore e minuti al campo, ricordandosi di sottrarre il timezone relativo:</p>
+<pre class="brush: php;fontsize: 100; first-line: 1; ">            $task_data[&#39;due_date&#39;] = getDateValue(array_var($_POST, &#39;task_due_date&#39;));
+            if ($task_data[&#39;due_date&#39;] instanceof DateTimeValue) {
+                // add time to the due date
+                parseTime($_POST[&#39;due_time&#39;], $hour, $minute);
+                $task_data[&#39;due_date&#39;]-&gt;add("m", $minute);
+                $task_data[&#39;due_date&#39;]-&gt;add("h", $hour - logged_user()-&gt;getTimezone());
+            }</pre>
+<p>dove il timezone &egrave; rappresentato da <em>logged_user()-&gt;getTimezone()</em>.</p>
+<p>In fase di stampa a video, invece, occorre aggiungere il timezone; ecco un esempio che sfrutta il metodo add:</p>
+<pre class="brush: php;fontsize: 100; first-line: 1; ">    $startDate-&gt;add(&#39;h&#39;, logged_user()-&gt;getTimezone());</pre>
+<p>
+Se si vuole invece aggiungere il timezone ad un timestamp (invece che ad una variabile di tipo DateTime), bisogna considerare che il timezone &egrave; in ore. Dato che il timestamp in php &egrave; in secondi, occorre moltiplicarlo per 3600 prima di effettuare la somma.</p>
+<p>Un altro modo utile per stampare un&#39;ora, &egrave; quello di utilizzare la funzione <em>format_date</em> in questo modo:</p>
+<pre class="brush: php;fontsize: 100; first-line: 1; ">echo format_date($task_list-&gt;getDueDate(), &#39;H:i&#39;);</pre>
+<p>
+Come si pu&ograve; notare, la funzione vuole come primo parametro una variabile di tipo DateTime, e come secondo il pattern con cui stampare il dato. La funzione accetta anche un terzo parametro opzionale che corrisponde al timezone.Se lasciato vuoto (come nel nostro caso) la funzione prender&agrave; come timezone quello dell&#39;utente loggato, correggendo cos&igrave; l&#39;orario automaticamente. Nel caso particolare in cui la variabile DateTime sia gi&agrave; corretta (&egrave; gi&agrave; stato applicato il timezone) occorre passare come terzo parametro il valore zero.</p>

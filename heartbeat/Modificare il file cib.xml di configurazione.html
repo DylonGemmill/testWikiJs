@@ -1,0 +1,12 @@
+<h3><strong>2013.10.25 OBSOLETO</strong></h3>
+<h3> </h3>
+<p>La configurazione di Heartbeat risiede nel file /var/lib/heartbeat/crm/cib.xml. La modifica di questo file mentre hb è attivo però non avrà l&#39;effetto desiderato, infatti il file viene caricato in memoria e riscritto alla chiusura del programma. Esistono due modi:</p>
+<ol>
+<li>spegnere heartbeat, cancellare tutti i file che non sono cib.xml nella stessa directory, modificarlo e riavviare</li>
+<li>copiare il file in una directory temporanea, modificarlo, ed a heartbeat acceso eseguire<br />
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">cibadmin -R -x /tmp/cib.xml</pre>
+</li>
+</ol>
+<p> Nelle installazioni basate su corosync è possibile modificare la configurazione lanciando il comando:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">crm configure edit</pre>
+<p> </p>

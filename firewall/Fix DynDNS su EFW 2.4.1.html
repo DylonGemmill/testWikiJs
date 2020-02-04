@@ -1,0 +1,15 @@
+<p>In Endian 2.4.1 c&#39;è un bug per cui l&#39;aggiornamento DynDNS non funziona.</p>
+<p>Aprire il file /usr/local/bin/setddns.pl e modificare intorno alla riga 387:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">if ($settings{&#39;SERVICE&#39;} = &#39;zoneedit&#39;) 
+  {$serverdir = &#39;-s&#39;; $serveradd = &#39;dynamic.zoneedit.com&#39;;}
+else 
+  {$serverdir = &#39;&#39;; $serveradd = &#39;&#39;;}</pre>
+<p>con</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">if ($settings{&#39;SERVICE&#39;} eq &#39;zoneedit&#39;) 
+  {$serverdir = &#39;-s&#39;; $serveradd = &#39;dynamic.zoneedit.com&#39;;}
+else 
+  {$serverdir = &#39;&#39;; $serveradd = &#39;&#39;;}</pre>
+<p> </p>
+<p>(sostituire l&#39;= con eq nella prima riga dell&#39;if).</p>
+<p> </p>
+<p>rif: <a href="http://bugs.endian.com/view.php?id=3307">http://bugs.endian.com/view.php?id=3307</a></p>

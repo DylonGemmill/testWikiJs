@@ -1,0 +1,6 @@
+<p>Se MySQL restituisce l&#39;errore in oggetto, l&#39;utente non ha la GRANT per FILE.</p>
+<p>Quindi eseguire qualcosa simile a </p>
+<p>
+<pre class="brush: sql;fontsize: 100; first-line: 1; ">GRANT FILE ON *.* TO &#39;utente&#39;@&#39;host&#39;;
+flush privileges;</pre>
+</p>
