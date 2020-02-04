@@ -1,0 +1,28 @@
+<p>Installando distribuzioni da CD, queste verranno considerate come macchine fisiche, e quindi non virtualizzate, perdendo in prestazioni.</p>
+<p>Attenzione: per <strong>Ubuntu</strong> esiste una procedura pi&ugrave; veloce:&nbsp;<a class="intfaqlink" href="index.php?action=artikel&amp;cat=7&amp;id=61&amp;artlang=it"> Installare Ubuntu 10.04 su XenServer 5.5</a></p>
+<p>&nbsp;</p>
+<p>Per le distribuzioni Linux, come ad esempio Ubuntu, dopo aver installato occorre trasformare la macchina in modo che venga eseguita come paravirtualizzata. Per fare ci&ograve;, non basta installare il kernel Xen nella macchina guest, ma occorre anche modificare Grub di XenServer.</p>
+<p>&nbsp;</p>
+<p>aptitude install linux-virtual</p>
+<p>Sul server Xen:</p>
+<p>xe vm-list name-label=NOME_VM &nbsp;params=uuid --minimal</p>
+<p>in questo modo si ottiene l&#39;UUID della macchina Xen che dobbiamo modificare.</p>
+<p>xe vm-param-set uuid= HVM-boot-policy=</p>
+<p>xe vm-param-set uuid= PV-bootloader=pygrub</p>
+<p>xe vm-param-set uuid= PV-args="console=tty0 xencons=tty"</p>
+<p>&nbsp;</p>
+<p>xe vm-disk-list uuid=</p>
+<p>Cercare la riga <em><strong>Disk 0 VBD</strong></em>: UUID</p>
+<p>xe vbd-param-set uuid= bootable=true</p>
+<p>&nbsp;</p>
+<p>Se la macchia non parte pi&ugrave; e si vogliono ripristinare le impostazioni, i valori di default sono: <br />HVM-boot-policy="BIOS order"<br />PV-bootloader=<br />PV-args=<br />bootable=false</p>
+<p>&nbsp;</p>
+<p>Riavviare la macchina virtuale, e montare da XenCenter l&#39;immagine&nbsp;<em>xentools.iso</em>.</p>
+<p>Andare sul CD montato, ed installare il pacchetto relativo alla distribuzione/architettura della VM.</p>
+<p>&nbsp;</p>
+<p><a href="http://www.isaaczarb.com/installing-ubuntu-9-04-pv-on-citrix-xenserver/">http://www.isaaczarb.com/installing-ubuntu-9-04-pv-on-citrix-xenserver/</a></p>
+<p><a href="http://community.citrix.com/display/ocb/2008/07/02/Installing+Ubuntu+on+XenServer">http://community.citrix.com/display/ocb/2008/07/02/Installing+Ubuntu+on+XenServer</a></p>
+<p>&nbsp;</p>
+<p>In caso di problemi con l&#39;avvio della macchina (<strong>XenServer &ldquo;Internal error: Failure&hellip; no loader found&rdquo;</strong>), vedere</p>
+<p><a href="http://run.tournament.org.il/xenserver-internal-error-failure-no-loader-found/">http://run.tournament.org.il/xenserver-internal-error-failure-no-loader-found/</a></p>
+<p>dove ci sono anche istruzioni su come avviare manualmente <em>pygrub </em>e montare le partizioni.</p>

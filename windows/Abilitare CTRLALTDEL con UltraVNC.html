@@ -1,0 +1,9 @@
+<p>Dalle nuove versioni non è più "automatico" il funzionamento del CTRL+ALT+DEL attraverso VNC.</p>
+<p>Per abilitarlo assicurarsi che:</p>
+<ul>
+<li>UAC di Windows sia abilitato</li>
+<li>CAD di Windows sia abilitato</li>
+<li>UltraVNC sia in esecuzione come servizio</li>
+</ul>
+<div>Poi aprire <strong>gpedit.msc</strong> e navigare in <em>Configurazione computer &gt; Modelli amministrativi &gt; Componenti di Windows &gt; Opzioni di accesso a Windows </em>fare doppio click su <em>Disabilita o abilia la Secure Attention Sequence</em> ed impostarla attiva, e modificare l&#39;opzione sotto per essere su <em>Servizi</em> oppure <em>Servizi e applicazioni per l&#39;accessibilità</em>.</div>
+<div><a href="http://kb.realvnc.com/questions/102/How+can+I+enable+the+%22software+Secure+Attention+Sequence%22+policy%3F">http://kb.realvnc.com/questions/102/How+can+I+enable+the+%22software+Secure+Attention+Sequence%22+policy%3F</a></div>

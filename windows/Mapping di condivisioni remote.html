@@ -1,0 +1,12 @@
+<p>E&#39; possibile mappare unit&agrave; di rete via Explorer, oppure da linea di comando. In questo modo si usa il comando <strong><em>net</em></strong>, che ha il seguente format:</p>
+<p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">net use z: \\10.0.0.1\condivisa /persistent:yes /user:utente password</pre>
+</p>
+<ul>
+<li><em>z</em> &egrave; il disco di rete che andremo a <em>creare</em></li>
+<li><em>\\10.0.0.1\condivisa</em> &egrave; la condivisione a cui cerchiamo di accedere</li>
+<li><em>/persistent:yes</em> &egrave; un parametro opzionale che consente di mantenere l&#39;unit&agrave; montata anche dopo il riavvio</li>
+<li><em>/user:utente</em> &egrave; l&#39;utente con cui dovremo accedere alla risorsa. Se l&#39;utente &egrave; su un altro dominio windows, andr&agrave; specificato nel formato&nbsp;<em>DOMINIO\utente</em></li>
+</ul>
+<p>&nbsp;</p>
+<p><a href="http://www.andreabeggi.net/2007/01/29/net-use/">http://www.andreabeggi.net/2007/01/29/net-use/</a></p>

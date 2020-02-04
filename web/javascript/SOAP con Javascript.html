@@ -1,0 +1,49 @@
+<p>Per consumare delle chiamate SOAP con Javascript &egrave; possibile utilizzare la libreria <a href="http://www.codeproject.com/KB/ajax/JavaScriptSOAPClient.aspx">JavascriptSOAPClient</a>.</p>
+<p>Per effettuare la chiamata:</p>
+<p>
+<pre class="brush: jscript;fontsize: 100; first-line: 1; ">var url = "https://wifi.internavigare.com/WebService/hssoap.php";
+
+function GetPwd ()
+{
+    try {
+        // Variabile dei parametri
+        var pl = new SOAPClientParameters ();
+        // Aggiungo il parametro di nome "card_name" con valore "yetopen"
+        pl.add ("card_name", "yetopen");
+        // Faccio la chiamata alla funzione "GetCardPassword", e richiamo GetPwd_callBack al termine dell&#39;esecuzione
+        SOAPClient.invoke (url, "GetCardPassword", pl, true, GetPwd_callBack);
+    } catch (e) {
+        // Intercetto in caso di errore
+        alert ("Impossibile ottenere le informazioni\n"+e);
+    }
+}
+</pre>
+</p>
+<p>la callback dovr&agrave; parsare l&#39;XML del SOAP e stamparne i risultati, ad esempio in un div:</p>
+<p>
+<pre class="brush: jscript;fontsize: 100; first-line: 1; ">function GetPwd_callBack(r, soapResponse)
+{
+    // Metto l&#39;XML come stringa nella var "testo"
+    if (soapResponse.xml)    // IE
+        testo = soapResponse.xml;
+    else    // MOZ
+        testo = (new XMLSerializer()).serializeToString (soapResponse);
+
+    // Parsing dell&#39;XML in un DOMParser
+    if (window.DOMParser) {
+        parser=new DOMParser();
+        xmlDoc=parser.parseFromString(testo,"text/xml");
+    } else {
+        // Internet Explorer 
+        xmlDoc=new ActiveXObject("Microsoft.XMLDOM");
+        xmlDoc.async="false";
+        xmlDoc.loadXML(testo); 
+    }
+    // Inserimento del parametro "card_password" dall&#39;XML nello span id "pwspan".
+    document.getElementById ("pwspan").innerHTML = xmlDoc.getElementsByTagName("card_password")[0].childNodes[0].nodeValue;
+} 
+</pre>
+</p>
+<p>Altri esempi di utilizzo al link qui sotto:</p>
+<p><a href="http://www.guru4.net/articoli/javascript-soap-client/demo/en.aspx">http://www.guru4.net/articoli/javascript-soap-client/demo/en.aspx</a></p>
+<p><a href="http://www.codeproject.com/script/Articles/ViewDownloads.aspx?aid=12816">http://www.codeproject.com/script/Articles/ViewDownloads.aspx?aid=12816</a></p>

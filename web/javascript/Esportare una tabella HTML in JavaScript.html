@@ -1,0 +1,31 @@
+<p>Un plugin di <em>jQuery</em> consente di esportare la tabella di una pagina HTML in un file CSV, e di far partire automaticamente il download.<br />Ho modificato il plugin standard per far partire il download in automatico (in allegato).</p>
+<p>Per usufruire della funzione, includere <em>jQuery</em> ed il plugin nella sezione <em>&lt;HEAD&gt;</em> dell&#39;html:</p>
+<p>&nbsp;</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">&lt;script src="jquery.js" type="text/javascript"&gt;&lt;/script&gt;
+&lt;script src="jquery.table2csv.js" type="text/javascript"&gt;&lt;/script&gt;</pre>
+<p>&nbsp;</p>
+<p> Assicurarsi che la tabella abbia un identificativo univoco per la ricerca tramite <em>jQuery</em>, e che il corpo della tabella sia incluso nel tag <em>&lt;TBODY&gt;</em>. <br />Indispensabile per il download automatico la predisposizione di un <em>div</em> di nome <strong>main</strong> nella pagina. Il nome del div &egrave; hardcodato nello script <em>table2csv.js</em>.<br />Ad esempio:</p>
+<p>&nbsp;</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">&lt;table id="miatabella"&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th&gt;Intestazione 1&lt;/th&gt;
+   &lt;th&gt;Intestazione 2&lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+ &lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;th&gt;Dato 1&lt;/th&gt;
+   &lt;th&gt;Dato 2&lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/tbody&gt;
+&lt;/table&gt;<br /><br />&lt;!-- questo div &egrave; indispensabile per il download in automatico --&gt;<br />&lt;div id="main"&gt;&lt;/div&gt;</pre>
+<p>&nbsp;</p>
+<p>E&#39; possibile offire il download della tabella con un pulsante:</p>
+<p>&nbsp;</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">&lt;input value="Download Excel" type="button"   onclick="$(&#39;#miatabella&#39;).table2CSV({separator:&#39;;&#39;});"&gt;</pre>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p><a href="http://www.kunalbabre.com/projects/table2CSV.php">http://www.kunalbabre.com/projects/table2CSV.php</a></p>
+<p>Modifica per il download immediato da:<br /><a href="http://stackoverflow.com/questions/921037/jquery-table-to-csv-export">http://stackoverflow.com/questions/921037/jquery-table-to-csv-export</a></p>

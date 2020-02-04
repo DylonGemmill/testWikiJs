@@ -1,0 +1,58 @@
+<p>Xen non &egrave; attualmente (2011.06) supportato dalle principali distribuzioni, perch&eacute; non incluso nel mainline del kernel. E&#39; stato per&ograve; diramato un annuncio in questi giorni, che segnala l&#39;inclusione dal kernel 3.0, quindi con buona probabilit&agrave; in futuro verr&agrave; nuovamente gestito, almeno da Canonical. Attualmente il kernel dom0 &egrave; disponibile pacchettizzato in Debian, quindi le installazioni dom0 le faremo con Squeeze. Seguire i passaggi per l&#39;installazione di un server base.</p>
+<h3>Rete</h3>
+<p>Come prima cosa &egrave; fondamentale predisporre la rete. Per fare in modo che le VM possano accedere alle interfacce dell&#39;host &egrave; necessario configurare tutte le porte che si intende usare all&#39;interno. Supponendo di avere due schede di rete, una configurata anche sull&#39;host ed una no, modificheremo <strong>/etc/network/interfaces</strong> come segue:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; "># The primary network interface
+auto eth0
+iface eth0 inet manual
+auto eth1
+iface eth1 inet manual
+
+auto br0
+iface br0 inet static
+	address 10.22.22.151
+	netmask 255.255.255.0
+	gateway 10.22.22.1
+	bridge-ports eth0
+	bridge-fd 0
+	bridge-hello 2
+	bridge-maxage 12
+	bridge-stp off
+
+auto br1
+iface br1 inet manual
+	bridge-ports eth1
+	bridge-fd 0
+	bridge-hello 2
+	bridge-maxage 12
+	bridge-stp off
+</pre>
+<p>I parametri <em>bridge-*</em> successivi al primo consentono di creare il bridge senza per&ograve; doverlo configurare per forza. Per attivare la configurazione occorre installare <strong>bridge-utils</strong>:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">apt-get install bridge-utils</pre>
+<h3>Kernel e hypervisor</h3>
+<p>Xen usa un kernel modificato, sia per l&#39;host (dom0) che per i guest (domU). L&#39;hypervisor &egrave; invece il demone che consente di gestire le vm.</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">apt-get install xen-linux-system-2.6-xen-amd64 xen-tools libvirt-bin virtinst </pre>
+<p>L&#39;ultimo pacchetto &egrave; opzionale, ma consente di amministrare il server usando <em>virt-manager</em> una gui utilizzabile da remoto con ssh.</p>
+<p>Occorrono alcune modifiche a Grub2, per fare in modo che il sistema si avvii con il kernel modificato, con i parametri corretti. Aprire <strong>/etc/default/grub</strong> ed aggiungere la riga</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">GRUB_CMDLINE_XEN_DEFAULT="dom0_mem=412M nosmp"</pre>
+<p>Questo parametro far&agrave; in modo che il sistema host non avr&agrave; pi&ugrave; di 412Mb, riservando il resto per le VM. Eseguire ancora</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">mv /etc/grub.d/{20,09}_linux_xen
+update-grub</pre>
+<p>Modificare in <strong>/etc/modules</strong> la riga <em>loop</em> come segue</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">loop max_loop=64</pre>
+<p><em>libvirt</em>&nbsp;usa <em>cgroup</em>, ma non viene creata di default (<a href="https://bugs.launchpad.net/ubuntu/+source/libvirt/+bug/544146">lp#544146</a>), quindi eseguire:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">echo "cgroup          /dev/cgroup cgroup defaults 0 0" &gt;&gt; /etc/fstab
+mkdir /lib/udev/devices/cgroup</pre>
+<p>il secondo comando serve a dire ad <em>udev</em> di creare <em>/dev/cgroup</em> al boot.</p>
+<p>Quindi riavviare il sistema, dovrebbe partire con il nuovo kernel.</p>
+<p>Per gestire Xen con virt-manager, modificare <strong>/etc/xen/xend-config.sxp</strong> le righe:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">(xend-http-server yes)<br />(xend-unix-server yes)
+(xend-port            8000)</pre>
+<p>Sempre per usare <strong>virt-manager</strong>, occorrono un paio di modifiche:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">apt-get install xen-qemu-dm-4.0<br />ln -s /usr/lib/xen-4.0/ /usr/lib/xen</pre>
+<p>In caso si voglia configurare la <em>live migration</em>, modificare sempre in <strong>/etc/xen/xend-config.sxp&nbsp;</strong></p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">(xend-relocation-server yes)
+(xend-relocation-port 8002)</pre>
+<p> che in origine dovrebbero esserci, ma commentate.</p>
+<p>&nbsp;</p>
+<p>Convertire il file di configurazione sxp in xml per libvirt:&nbsp;<a href="http://libvirt.org/drvxen.html">http://libvirt.org/drvxen.html</a></p>
+<p>Accesso remoto del demone libvirt:&nbsp;<a href="http://libvirt.org/remote.html#Remote_TLS_CA">http://libvirt.org/remote.html#Remote_TLS_CA</a></p>

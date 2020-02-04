@@ -1,0 +1,7 @@
+<p>Per effettuare un redirect completo di un sito verso un altro, redirezionando all&#39;url richiesto, creare un file <strong><em>.htaccess</em></strong> con il seguente contenuto:</p>
+<p><code>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">Options +FollowSymLinks
+RewriteEngine on
+RewriteRule ^(.*)$ http://nuovo.sito.it/$1 [R=301]</pre>
+</code></p>
+<p>In caso di problemi (<em>internal server error</em>), &egrave; possibile commentare la prima riga.</p>

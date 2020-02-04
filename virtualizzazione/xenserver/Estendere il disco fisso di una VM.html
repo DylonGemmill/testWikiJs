@@ -1,0 +1,12 @@
+<p>Come prima cosa spegnere la VM ed espandere il disco della VM selezionata da XenCenter, oppure da CLI elencare gli storage della VM con il primo comando ed espandarlo con il secondo:</p>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">xe vm-disk-list vm=&lt;vm name&gt;
+xe vdi-resize uuid=&lt;vdi uuid&gt; size=&lt;size (GiB, MiB)&gt;</pre>
+<p> </p>
+<h2>Estensione filesystem macchina Windows</h2>
+<p>Premere il pulsante Start &gt; tasto destro su Computer e poi Gestione. Andare in Archiviazione &gt; Gestione disco, fare tasto destro sul disco da estendere e selezionare "Estensione disco". Partirà una procedura guidata per espandere la partizione allo spazio aggiuntivo.</p>
+<p> </p>
+<h2>Estensione di una macchina Linux</h2>
+<p>Avviare da CD di installazione o knoppix ed estendere la partizione</p>
+<p> </p>
+<p> </p>
+<p>http://support.citrix.com/article/CTX116114</p>

@@ -1,0 +1,17 @@
+<p>In <strong>XenServer 5.5</strong>, derivato da <strong>CentOS</strong>, non esiste il file <em>/etc/modules</em>.</p>
+<p>Per caricare un modulo all&#39;avvio del sistema, occorre creare un file in <em>/etc/sysconfig/modules</em>, con estensione <em>.modules</em>, in formato <em>bash.</em></p>
+<p>Ad esempio, per caricare il modulo del raid MPT, creo il file&nbsp;</p>
+<p><code>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">/etc/sysconfig/modules/mptctl.modules</pre>
+</code></p>
+<p>con il seguente contenuto:</p>
+<div id="_mcePaste" style="position: absolute; left: -10000px; top: 0px; width: 1px; height: 1px; overflow-x: hidden; overflow-y: hidden;">#!/bin/sh</div>
+<div id="_mcePaste" style="position: absolute; left: -10000px; top: 0px; width: 1px; height: 1px; overflow-x: hidden; overflow-y: hidden;">modprobe mptctl &gt;/dev/null 2&gt;&amp;1</div>
+<p><code>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">#!/bin/sh
+modprobe mptctl &gt;/dev/null 2&gt;&amp;1</pre>
+</code></p>
+<p>ed infine mi assicuro che sia eseguibile</p>
+<p><code>
+<pre class="brush: bash;fontsize: 100; first-line: 1; ">chmod +x /etc/sysconfig/modules/mptctl.modules</pre>
+</code></p>

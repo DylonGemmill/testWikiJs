@@ -1,0 +1,18 @@
+<p> </p>
+<p> </p>
+<p> </p>
+<p>Se il lettore cd del titolo non si vede con windows 8 (in gestione periferiche viene visualizzato con l&#39;icona del triangolo giallo di pericolo, in esplora risorse non si vede ed inserendo un qualsiasi cd non compare la solita finestra che vi chiede cosa fare) può darsi che si tratti di un problema di registro di sistema.</p>
+<p>Un&#39;altra prova che potete fare prima di modificare il registeo è bootare con una live Linux e verificare l&#39;effettivo funzionamento dell&#39;unità.</p>
+<p>Per effettuare la modifica al registro di sistema:</p>
+<p>* win + R &gt; regedit</p>
+<p>* eseguire un intero backup del registro da File &gt; Esporta</p>
+<p>* andare in HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Class</p>
+<p>* trovate diverse chiavi col nome <span>{4D36E965-E325-11CE-BFC1-08002BE10318}</span></p>
+<p><span>* scorretele una ad una fino a trovare quella che nel pannello di destra contiene la chiave <em>Class</em> con valore <em>CDROM</em> e la chiave <em>Default</em> con valore <em>DVD/CD-ROM</em> (nel mio caso è la prima e non ha la chiave <em>Default</em>, la chiave <em>Class</em> basta per riconoscere la voce giusta, controllando nessun&#39;altra ha <em>Class CDROM</em>)</span></p>
+<p>* cliccare col tasto destro sulla voce <em>UpperFilters</em> nel pannello di destra e selezionare <em>Elimina</em></p>
+<p><em>* </em>confermare l&#39;eliminazione</p>
+<p>* riavviare il computer</p>
+<p> </p>
+<p>fonte: <a href="http://www.fixya.com/support/t3449842-hl_dt_st_dvdram_gma_4082n_ata_driver">http://www.fixya.com/support/t3449842-hl_dt_st_dvdram_gma_4082n_ata_driver</a></p>
+<p> </p>
+<p> </p>
