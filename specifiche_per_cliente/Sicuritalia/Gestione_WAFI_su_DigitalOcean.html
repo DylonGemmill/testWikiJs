@@ -1,19 +1,27 @@
-<p>Il WAF è un container Docker basato su OpenResty (nginx), libModSecurity e le regole di OWASP (v3.1) (<a href="https://gitlab.com/maxxer/docker-openresty-modsecurity/">qui</a>).</p>
+<!--
+title: Gestione_WAFI_su_DigitalOcean
+description: 
+published: true
+date: 2020-02-06T08:18:44.223Z
+tags: test1, test2, test4, test3, tag, tag1, tag2
+-->
+
+<p>Il WAF ï¿½ un container Docker basato su OpenResty (nginx), libModSecurity e le regole di OWASP (v3.1) (<a href="https://gitlab.com/maxxer/docker-openresty-modsecurity/">qui</a>).</p>
 <p>Attenzione: siccome le richieste gestite dal WAF vengono poi reindirizzate a servizi interni alla rete Sicuritalia, l&#39;IP pubblico deve essere abilitato su:</p>
 <ul>
 <li>frontend Nginx Trento (le due VM in HA) - vedere <a href="https://apps.ufficyo.com/kb/index.php?action=artikel&amp;cat=80&amp;id=916&amp;artlang=it">qui</a>;</li>
 <li>firewall Como - gestito dal CED SI.</li>
 </ul>
 <h2>Avvio</h2>
-<p>Il container è stato avviato con il comando:</p>
+<p>Il container ï¿½ stato avviato con il comando:</p>
 <pre class="language-markup"><code>docker run -d -p 80:80 -p 443:443 -e TZ=Europe/Rome --restart=unless-stopped --name wafi -v /dati/yetopen/waf/nginx/:/data/nginx/ maxx3r/openresty-modsecurity</code></pre>
 <p>Serve solo in caso di upgrade dell&#39;immagine.</p>
-<p>Il parametro <em>-v</em> fa si che tutto quello che sull&#39;host è in <em>/dati/yetopen/waf/nginx</em> venga visto dal container in <em>/data/nginx</em>. Questo assicura che le configurazioni (ed i log) rimangano persistenti ad un riavvio o rebuild del container. </p>
+<p>Il parametro <em>-v</em> fa si che tutto quello che sull&#39;host ï¿½ in <em>/dati/yetopen/waf/nginx</em> venga visto dal container in <em>/data/nginx</em>. Questo assicura che le configurazioni (ed i log) rimangano persistenti ad un riavvio o rebuild del container.ï¿½</p>
 <h2>Configurazione</h2>
 <p>Tutte le configurazioni (ed i log) sono in <em><strong>/dati/yetopen/waf/nginx/</strong></em>. nginx del container prende tutti i file <em>*.conf</em> presenti in quella directory come file di configurazione dei <em>virtualhost</em>, quindi attenzione se si vogliono creare template o altro da includere in altre definizioni di non usare quel suffisso.</p>
-<p>L&#39;unica cosa particolare è <strong>fare attenzione</strong> che i path dei file devono sempre essere relativi all&#39;interno del container (quindi partire da <em>/data/nginx</em>).</p>
+<p>L&#39;unica cosa particolare ï¿½ <strong>fare attenzione</strong> che i path dei file devono sempre essere relativi all&#39;interno del container (quindi partire da <em>/data/nginx</em>).</p>
 <p>I certificati SSL sono in <em>/dati/yetopen/waf/nginx/cert</em>, i log in <em>/dati/yetopen/waf/nginx/log</em>.</p>
-<p>La configurazione <em>base</em> di modSecurity è in <em>modsecurity.base</em>, e contiene tutte le regole OWASP ed è impostata per bloccare tutto ciò che viene intercettato dalle regole definite.</p>
+<p>La configurazione <em>base</em> di modSecurity ï¿½ in <em>modsecurity.base</em>, e contiene tutte le regole OWASP ed ï¿½ impostata per bloccare tutto ciï¿½ che viene intercettato dalle regole definite.</p>
 <h3>Esempio di configurazione automezzi.sicuritalia.it</h3>
 <p>Il file sicuritalia-automezzi.conf contiene:</p>
 <pre class="language-markup"><code>server {
@@ -52,16 +60,16 @@ SecRuleRemoveById 959100
 <p>Quando si fa una modifica bisogna ricaricare nginx, <strong>dentro il container</strong>.</p>
 <p>Per fare il <strong>test</strong> della configurazione:</p>
 <pre class="language-markup"><code>docker exec -it wafi /usr/local/nginx/bin/nginx -t</code></pre>
-<p>se è tutto ok per ricaricare la configurazione:</p>
+<p>se ï¿½ tutto ok per ricaricare la configurazione:</p>
 <pre class="language-markup"><code>docker exec -it wafi /usr/local/nginx/bin/nginx -s reload</code></pre>
 <p>Per avviare una shell dentro il container:</p>
 <pre class="language-markup"><code>docker exec -it wafi /bin/bash</code></pre>
-<p> </p>
+<p>ï¿½</p>
 <h2>Falsi positivi</h2>
-<p>È possibile che le regole di OWASP identifichino dei falsi positivi, vuoi perché possono essere molto restrittive oppure perché l&#39;applicativo servito necessità funzioni particolari che non possono essere modificate.</p>
-<p>Per identificare i falsi positivi è utile abilitare il <em>SecAuditLog</em>. Per ogni evento di blocco viene generato un <em>hash</em> univoco con tutte le fasi di analisi (in ordine alfabetico). Ad esempio per <em>automezzi</em> durante l&#39;invio dell&#39;email viene generato un errore perché il body di risposta contiene <em>inetpub</em>, che OWASP identifica come vulnerabilità in quanto espone informazioni sensibili sul server.</p>
+<p>ï¿½ possibile che le regole di OWASP identifichino dei falsi positivi, vuoi perchï¿½ possono essere molto restrittive oppure perchï¿½ l&#39;applicativo servito necessitï¿½ funzioni particolari che non possono essere modificate.</p>
+<p>Per identificare i falsi positivi ï¿½ utile abilitare il <em>SecAuditLog</em>. Per ogni evento di blocco viene generato un <em>hash</em> univoco con tutte le fasi di analisi (in ordine alfabetico). Ad esempio per <em>automezzi</em> durante l&#39;invio dell&#39;email viene generato un errore perchï¿½ il body di risposta contiene <em>inetpub</em>, che OWASP identifica come vulnerabilitï¿½ in quanto espone informazioni sensibili sul server.</p>
 <p>Tutti i log vengono caricati su <a href="https://app-eu.logz.io" target="_blank" rel="noopener">Logz.io</a>. Per filtrare direttamente le richieste bloccate andare su <em>Kibana &gt; Open</em> e selezionare <em>Eventi ModSecurity lorenzo</em>. In alto sulla destra selezionare l&#39;intervallo di date e verranno mostrati i log in formato JSON, con le stesse informazioni degli esempi qui sotto.</p>
-<p>Nei log c&#39;è questo:</p>
+<p>Nei log c&#39;ï¿½ questo:</p>
 <pre class="language-markup"><code>---kJcZcOsM---A--
 [06/Jun/2019:19:07:49 +0000] 155984806961.366484 87.0.118.152 50228 87.0.118.152 443
 ---kJcZcOsM---B--
@@ -104,8 +112,8 @@ ModSecurity: Warning. Matched "Operator `Ge&#39; with parameter `4&#39; against 
 ---kJcZcOsM---J--
 
 ---kJcZcOsM---Z--</code></pre>
-<p>Qui c&#39;è tutto il dettaglio di corpo ed intestazioni di richiesta e risposta.</p>
-<p>Nel blocco <em>H</em> vediamo le regole identificate da modSecurity. Per bypassare la regola ci serve il suo <strong>id</strong>, ed è da cercare <span style="text-decoration: underline;">nella prima riga di errore</span>. In questo caso l&#39;ID della regola è <strong>954100</strong>. Sarebbe un errore prendere al 959100 perché quella è una regola di valutazione, ed andrebbe a bypassare molte più casistiche!</p>
+<p>Qui c&#39;ï¿½ tutto il dettaglio di corpo ed intestazioni di richiesta e risposta.</p>
+<p>Nel blocco <em>H</em> vediamo le regole identificate da modSecurity. Per bypassare la regola ci serve il suo <strong>id</strong>, ed ï¿½ da cercare <span style="text-decoration: underline;">nella prima riga di errore</span>. In questo caso l&#39;ID della regola ï¿½ <strong>954100</strong>. Sarebbe un errore prendere al 959100 perchï¿½ quella ï¿½ una regola di valutazione, ed andrebbe a bypassare molte piï¿½ casistiche!</p>
 <p>Aggiungere in <em>modsecurity.automezzi</em> una riga come questa:</p>
 <pre class="language-markup"><code>SecRuleRemoveById 954100</code></pre>
 <p>e ricaricare nginx.</p>
